@@ -8,13 +8,13 @@ import com.czertainly.signserver.csc.common.Result;
 import com.czertainly.signserver.csc.crypto.AlgorithmPair;
 import com.czertainly.signserver.csc.crypto.AlgorithmUnifier;
 import com.czertainly.signserver.csc.api.signhash.SignHashRequestDto;
-import com.czertainly.signserver.csc.model.SighHashParameters;
+import com.czertainly.signserver.csc.model.SignHashParameters;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class SignHashValidatingRequestMapper implements SignatureRequestMapper<SignHashRequestDto, SighHashParameters> {
+public class SignHashValidatingRequestMapper implements SignatureRequestMapper<SignHashRequestDto, SignHashParameters> {
 
     AlgorithmUnifier algorithmUnifier;
     SADParser sadParser;
@@ -27,7 +27,7 @@ public class SignHashValidatingRequestMapper implements SignatureRequestMapper<S
     }
 
     @Override
-    public Result<SighHashParameters, ErrorWithDescription> map(SignHashRequestDto dto, SignatureActivationData sad) {
+    public Result<SignHashParameters, ErrorWithDescription> map(SignHashRequestDto dto, SignatureActivationData sad) {
         final List<String> hashes;
         final String keyAlgo;
         final String digestAlgo;
@@ -76,11 +76,11 @@ public class SignHashValidatingRequestMapper implements SignatureRequestMapper<S
 
 
         return Result.ok(
-                new SighHashParameters(hashes, keyAlgo, digestAlgo, sad, operationMode, clientData)
+                new SignHashParameters(hashes, keyAlgo, digestAlgo, sad, operationMode, clientData)
         );
     }
 
-    private Result<SighHashParameters, ErrorWithDescription> toInvalidRequestError(String errorMessage) {
+    private Result<SignHashParameters, ErrorWithDescription> toInvalidRequestError(String errorMessage) {
         return Result.error(new ErrorWithDescription(INVALID_REQUEST, errorMessage));
     }
 

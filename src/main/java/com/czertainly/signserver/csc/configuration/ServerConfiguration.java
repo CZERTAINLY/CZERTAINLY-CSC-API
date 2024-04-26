@@ -56,7 +56,7 @@ public class ServerConfiguration {
             @Value("${signserver.clientKeyStore.storePassword}") String keystorePassword,
             @Value("${signserver.clientKeyStore.keyPassword}") String keyPassword,
             @Value("${signserver.clientKeyStore.storePath}") String keystorePath) throws ApplicationConfigurationException {
-        KeyStore keyStore = null;
+        KeyStore keyStore;
         try {
             keyStore = KeyStore.getInstance("PKCS12");
             try (InputStream keyStoreInputStream = new FileInputStream(keystorePath)) {

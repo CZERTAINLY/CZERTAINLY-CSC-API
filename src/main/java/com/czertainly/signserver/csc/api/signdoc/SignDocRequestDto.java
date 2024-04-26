@@ -18,9 +18,9 @@ public class SignDocRequestDto {
     // with scope “credential”, which is also good for the credential identified by credentialID
     private final String SAD;
 
-    // TODO add documentDigests
+    private final List<DocumentDto> documents;
 
-    private final List<DocumentDto> documentDtos;
+    private final List<DocumentDigestsDto> documentDigests;
 
 
     /*
@@ -58,14 +58,15 @@ public class SignDocRequestDto {
     private final Boolean returnValidationInfo;
 
 
-    public SignDocRequestDto(String credentialID, String signatureQualifier, String SAD, List<DocumentDto> documentDtos,
-                             String operationMode, Integer validityPeriod, String responseUri, String clientData,
-                             Boolean returnValidationInfo
+    public SignDocRequestDto(String credentialID, String signatureQualifier, String SAD, List<DocumentDto> documents,
+                             List<DocumentDigestsDto> documentDigests, String operationMode, Integer validityPeriod,
+                             String responseUri, String clientData, Boolean returnValidationInfo
     ) {
         this.credentialID = credentialID;
         this.signatureQualifier = signatureQualifier;
         this.SAD = SAD;
-        this.documentDtos = documentDtos;
+        this.documents = documents != null ? documents : List.of();
+        this.documentDigests = documentDigests != null ? documentDigests : List.of();
         this.operationMode = operationMode;
         this.validityPeriod = validityPeriod;
         this.responseUri = responseUri;
@@ -82,7 +83,11 @@ public class SignDocRequestDto {
     }
 
     public List<DocumentDto> getDocuments() {
-        return documentDtos;
+        return documents;
+    }
+
+    public List<DocumentDigestsDto> getDocumentDigests() {
+        return documentDigests;
     }
 
     public Optional<String> getResponseUri() {

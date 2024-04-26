@@ -6,6 +6,12 @@ import com.czertainly.signserver.csc.api.auth.SignatureActivationData;
 import java.util.List;
 
 public record SignDocParameters(
-        List<Document> documents, String credentialID, String signatureQualifier, SignatureActivationData sad,
-        OperationMode operationMode, String clientData, boolean returnValidationInfo) {
+        OperationMode operationMode,
+        List<DocumentToSign> documentsToSign,
+        List<DocumentDigestsToSign> documentDigestsToSign,
+        String credentialID,
+        String signatureQualifier,
+        SignatureActivationData sad,
+        String clientData,
+        boolean returnValidationInfo) {
 }

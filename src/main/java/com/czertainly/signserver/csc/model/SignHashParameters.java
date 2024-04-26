@@ -5,7 +5,7 @@ import com.czertainly.signserver.csc.api.auth.SignatureActivationData;
 
 import java.util.List;
 
-public record SighHashParameters(
+public record SignHashParameters(
         List<String> hashes, String keyAlgo, String digestAlgo, SignatureActivationData sad,
         OperationMode operationMode, String clientData) {
 }

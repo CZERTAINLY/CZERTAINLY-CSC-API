@@ -100,9 +100,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <packageName>com.czertainly.signserver.csc.ws.signserver</packageName>
+                    <packageName>com.czertainly.signserver.csc.ws.ejbca</packageName>
                     <wsdlUrls>
-                        <wsdlUrl>https://signserver.3key.company/signserver/AdminWSService/AdminWS?wsdl</wsdlUrl>
+                        <wsdlUrl>https://ejbca.3key.company/ejbca/ejbcaws/ejbcaws?wsdl</wsdlUrl>
                     </wsdlUrls>
                     <sourceDestDir>${sourcesDir}</sourceDestDir>
                     <destDir>${classesDir}</destDir>
