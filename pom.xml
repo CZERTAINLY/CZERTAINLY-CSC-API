@@ -15,6 +15,7 @@
     <description>CSC API for Signserver</description>
     <properties>
         <java.version>21</java.version>
+        <sonar.projectKey>3KeyCompany_SignServer-CSC-API</sonar.projectKey>
     </properties>
     <dependencies>
         <dependency>
