@@ -1,7 +1,7 @@
 package com.czertainly.signserver.csc.crypto;
 
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;

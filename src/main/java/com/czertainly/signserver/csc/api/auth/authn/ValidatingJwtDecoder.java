@@ -1,8 +1,8 @@
 package com.czertainly.signserver.csc.api.auth.authn;
 
 import com.czertainly.signserver.csc.api.auth.TokenValidator;
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.springframework.security.oauth2.jwt.*;

@@ -3,19 +3,17 @@ package com.czertainly.signserver.csc.configuration;
 import com.czertainly.signserver.csc.api.auth.authn.CscJwtAuthenticationConverter;
 import com.czertainly.signserver.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.signserver.csc.clients.signserver.ws.SignserverWsClient;
-import com.czertainly.signserver.csc.common.ApplicationConfigurationException;
+import com.czertainly.signserver.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.signserver.csc.model.signserver.CryptoToken;
 import com.czertainly.signserver.csc.signing.configuration.*;
 import com.czertainly.signserver.csc.signing.filter.Worker;
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +29,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.ws.transport.http.HttpComponents5MessageSender;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
 import javax.net.ssl.SSLContext;
 import java.io.FileInputStream;

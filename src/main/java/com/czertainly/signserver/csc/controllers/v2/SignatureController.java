@@ -7,12 +7,15 @@ import com.czertainly.signserver.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.signserver.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.signserver.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.signserver.csc.api.signhash.SignHashResponseDto;
+import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
 import com.czertainly.signserver.csc.controllers.exceptions.BadRequestException;
 import com.czertainly.signserver.csc.controllers.exceptions.ServerErrorException;
 import com.czertainly.signserver.csc.model.mappers.SignDocResponseMapper;
 import com.czertainly.signserver.csc.model.mappers.SignDocValidatingRequestMapper;
 import com.czertainly.signserver.csc.model.mappers.SignHashValidatingRequestMapper;
 import com.czertainly.signserver.csc.signing.SignatureFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +29,8 @@ import java.util.List;
 @RequestMapping("csc/v2/signatures")
 @PreAuthorize("hasAuthority('SCOPE_credential') || hasAuthority('SCOPE_service')")
 public class SignatureController {
+
+    private static final Logger log = LoggerFactory.getLogger(SignatureController.class);
 
     final SignatureFacade signatureFacade;
 
@@ -51,45 +56,68 @@ public class SignatureController {
     public SignHashResponseDto signHash(@RequestBody SignHashRequestDto signHashRequest,
                                         Authentication authentication
     ) {
-        return signHashValidationRequestMapper
-                .map(signHashRequest, getSadIfAvailable(authentication))
-                .with(
-                        parameters -> new SignHashResponseDto(
-                                List.of("signature1", "signature2")),
-                        error -> {
-                            throw new BadRequestException(error.error(),
-                                                          error.description()
-                            );
-                        }
-                );
+        try {
+            return signHashValidationRequestMapper
+                    .map(signHashRequest, getSadIfAvailable(authentication))
+                    .with(
+                            parameters -> new SignHashResponseDto(
+                                    List.of("signature1", "signature2")),
+                            error -> {
+                                throw new BadRequestException(error.error(),
+                                                              error.description()
+                                );
+                            }
+                    );
+        } catch (RemoteSystemException e) {
+            log.error("An error occurred when communicating with a remote system.", e);
+            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred.", e);
+            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
+        }
     }
 
     @PostMapping(path = "/signDoc")
-    public SignDocResponseDto signHash(@RequestBody SignDocRequestDto signDocRequest,
-                                       Authentication authentication
+    public SignDocResponseDto signDoc(@RequestBody SignDocRequestDto signDocRequest,
+                                      Authentication authentication
     ) {
+        try {
+            return signDocValidatingRequestMapper
+                    .map(signDocRequest, getSadIfAvailable(authentication))
+                    .with(
+                            parameters -> signatureFacade.signDocuments(parameters,
+                                                                        ((CscAuthenticationToken) authentication).getToken()
+                                                                                                                 .getTokenValue()
+                            ).with(
+                                    signatures -> signDocResponseMapper.map(signatures).with(
+                                            signDocResponseDto -> signDocResponseDto,
+                                            error -> {
+                                                throw new ServerErrorException(error.error(), error.description());
+                                            }
 
-        return signDocValidatingRequestMapper
-                .map(signDocRequest, getSadIfAvailable(authentication))
-                .with(
-                        parameters -> signatureFacade.signDocuments(parameters, ((CscAuthenticationToken) authentication).getToken().getTokenValue()).with(
-                                signatures -> signDocResponseMapper.map(signatures).with(
-                                        signDocResponseDto -> signDocResponseDto,
-                                        error -> {
-                                            throw new ServerErrorException(error.error(), error.description());
-                                        }
+                                    ),
+                                    error -> {
+                                        throw new ServerErrorException(error.error(), error.description());
+                                    }
+                            ),
+                            error -> {
+                                throw new BadRequestException(error.error(),
+                                                              error.description()
+                                );
+                            }
+                    );
+        } catch (RemoteSystemException e) {
+            log.error("An error occurred when communicating with a remote system.", e);
+            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred.", e);
+            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
+        }
 
-                                ),
-                                error -> {
-                                    throw new ServerErrorException(error.error(), error.description());
-                                }
-                        ),
-                        error -> {
-                            throw new BadRequestException(error.error(),
-                                                          error.description()
-                            );
-                        }
-                );
     }
 
     private SignatureActivationData getSadIfAvailable(Authentication authentication) {

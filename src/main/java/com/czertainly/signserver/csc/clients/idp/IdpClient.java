@@ -1,5 +1,6 @@
 package com.czertainly.signserver.csc.clients.idp;
 
+import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
 import com.czertainly.signserver.csc.model.UserInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,22 +28,24 @@ public class IdpClient {
                                .build();
     }
 
-    public UserInfo downloadUserInfo(String token) throws JsonProcessingException {
+    public UserInfo downloadUserInfo(String token) {
         ResponseEntity<String> response = restClient.get()
                                                     .header("Authorization", "Bearer " + token)
                                                     .accept(MediaType.APPLICATION_JSON)
                                                     .retrieve()
                                                     .toEntity(String.class);
 
-
-        JsonNode json = new ObjectMapper().readTree(response.getBody());
-
-        Map<String, String> attributes = new HashMap<>();
-        var fields = json.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
-            attributes.put(field.getKey(), field.getValue().asText());
+        try {
+            JsonNode json = new ObjectMapper().readTree(response.getBody());
+            Map<String, String> attributes = new HashMap<>();
+            var fields = json.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> field = fields.next();
+                attributes.put(field.getKey(), field.getValue().asText());
+            }
+            return new UserInfo(attributes);
+        } catch (JsonProcessingException e) {
+            throw new RemoteSystemException("Failed to parse response from IDP into a JSON object.", e);
         }
-        return new UserInfo(attributes);
     }
 }

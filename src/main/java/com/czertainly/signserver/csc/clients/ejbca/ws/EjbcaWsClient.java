@@ -2,10 +2,12 @@ package com.czertainly.signserver.csc.clients.ejbca.ws;
 
 import com.czertainly.signserver.csc.clients.ejbca.ws.dto.*;
 import com.czertainly.signserver.csc.clients.signserver.ws.SignserverWsClient;
+import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
 import jakarta.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
+import org.springframework.ws.soap.client.SoapFaultClientException;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,7 +36,7 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         this.certificateProfileName = certificateProfileName;
     }
 
-    public EditUserResponse editUser(String username, String password, String subjectDn) {
+    public void editUser(String username, String password, String subjectDn) {
         var request = new EditUser();
         var userDataVOWS = new UserDataVOWS();
         userDataVOWS.setUsername(username);
@@ -49,11 +51,14 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
 
 
         logger.info("Editing EJBCA user '" + username + " '.");
-        var response = (JAXBElement<EditUserResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
-        return response.getValue();
+        try {
+            getWebServiceTemplate().marshalSendAndReceive(request);
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to edit EJBCA user " + username, e);
+        }
     }
 
-    public CertificateRequestResponse requestCertificate(String username, String password, String subjectDn, byte[] csr,
+    public CertificateResponse requestCertificate(String username, String password, String subjectDn, byte[] csr,
                                                          ZonedDateTime certificateValidityStart,
                                                          ZonedDateTime certificateValidityEnd
     ) {
@@ -77,8 +82,12 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         request.setArg3(null); // hardTokenSN; support dropped in EJBCA 7.1.0
         request.setArg4("PKCS7WITHCHAIN"); // responseType
 
-        logger.info("Requesting certificate for EJBCA user '" + username + " '.");
-        var response = (JAXBElement<CertificateRequestResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
-        return response.getValue();
+        logger.info("Requesting certificate for EJBCA user '" + username);
+        try {
+            var response = (JAXBElement<CertificateRequestResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
+            return response.getValue().getReturn();
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to sign certificate request with DN " + subjectDn, e);
+        }
     }
 }

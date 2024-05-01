@@ -1,6 +1,6 @@
-package com.czertainly.signserver.csc.common;
+package com.czertainly.signserver.csc.common.exceptions;
 
-public class ApplicationException extends Exception {
+public class ApplicationException extends RuntimeException {
 
     public ApplicationException(String message) {
         super(message);

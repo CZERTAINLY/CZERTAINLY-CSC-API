@@ -6,8 +6,8 @@ import com.czertainly.signserver.csc.api.auth.SignatureActivationData;
 import com.czertainly.signserver.csc.api.signdoc.DocumentDto;
 import com.czertainly.signserver.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.signserver.csc.api.signdoc.DocumentDigestsDto;
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 import com.czertainly.signserver.csc.crypto.AlgorithmPair;
 import com.czertainly.signserver.csc.crypto.AlgorithmUnifier;
 import com.czertainly.signserver.csc.model.DocumentDigestsToSign;
@@ -18,7 +18,6 @@ import com.czertainly.signserver.csc.signing.configuration.SignatureFormat;
 import com.czertainly.signserver.csc.signing.configuration.SignaturePackaging;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 

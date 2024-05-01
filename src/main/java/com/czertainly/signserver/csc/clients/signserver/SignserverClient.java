@@ -3,20 +3,25 @@ package com.czertainly.signserver.csc.clients.signserver;
 import com.czertainly.signserver.csc.clients.signserver.rest.SignserverProcessEncoding;
 import com.czertainly.signserver.csc.clients.signserver.rest.SignserverRestClient;
 import com.czertainly.signserver.csc.clients.signserver.ws.SignserverWsClient;
+import com.czertainly.signserver.csc.clients.signserver.ws.dto.CertReqData;
 import com.czertainly.signserver.csc.clients.signserver.ws.dto.GetPKCS10CertificateRequestForAlias2Response;
 import com.czertainly.signserver.csc.clients.signserver.ws.dto.TokenEntry;
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.clients.signserver.ws.dto.TokenSearchResults;
+import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 import com.czertainly.signserver.csc.crypto.DigestAlgorithmJavaName;
 import com.czertainly.signserver.csc.model.DocumentDigestsToSign;
 import com.czertainly.signserver.csc.model.builders.CryptoTokenKeyBuilder;
 import com.czertainly.signserver.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.signserver.csc.signing.Signature;
 import com.czertainly.signserver.csc.signing.configuration.SignaturePackaging;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.soap.client.SoapFaultClientException;
 
+import java.io.IOException;
 import java.util.*;
 
 @Component
@@ -37,33 +42,25 @@ public class SignserverClient {
     }
 
 
-    public Result<Signature, ErrorWithDescription> signSingleHash(String workerName, byte[] data, String keyAlias,
-                                                                  String digestAlgorithm
-    ) {
+    public Signature signSingleHash(String workerName, byte[] data, String keyAlias, String digestAlgorithm) {
         var metadata = new HashMap<String, String>();
         metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
         metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
-        try {
-            // SignserverProcessEncoding.NONE is used as hash is already base64 encoded, so no need to encode it again
-            Result<String, ErrorWithDescription> signatureResult = sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
-            if (signatureResult.isSuccess()) {
-                return Result.ok(new Signature(signatureResult.getValue().getBytes(), SignaturePackaging.DETACHED));
-            } else {
-                return Result.error(new ErrorWithDescription("Failed to sign hash.", signatureResult.getError().error()));
-            }
-        } catch (Exception e) {
-            return Result.error(new ErrorWithDescription("Error while signing data", e.getMessage()));
-        }
+
+        // SignserverProcessEncoding.NONE is used as hash is already base64 encoded, so no need to encode it again
+        byte[] signatureBytes = sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
+        return new Signature(signatureBytes, SignaturePackaging.DETACHED);
     }
 
-    public Result<List<Signature>, ErrorWithDescription> signMultipleHashes(String workerName, DocumentDigestsToSign digests,
-                                                                   String keyAlias
-    ) {
+    public List<Signature> signMultipleHashes(String workerName, DocumentDigestsToSign digests, String keyAlias) {
         var signatureRequests = new ArrayList<BatchSignatureRequest>();
         int i = 0;
 
         for (String hash : digests.hashes()) {
-            var signatureRequest = new BatchSignatureRequest(hash, DigestAlgorithmJavaName.get(digests.digestAlgorithm()), "r" + i);
+            var signatureRequest = new BatchSignatureRequest(hash,
+                                                             DigestAlgorithmJavaName.get(digests.digestAlgorithm()),
+                                                             "r" + i
+            );
             signatureRequests.add(signatureRequest);
         }
 
@@ -72,99 +69,84 @@ public class SignserverClient {
         metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
         metadata.put("USING_BATCHSIGNING", "true");
         metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digests.digestAlgorithm()));
+
+        final byte[] requestBytes;
         try {
-            var bytes = objectMapper.writeValueAsBytes(batchRequest);
-            Result<String, ErrorWithDescription> signatureResult = sign(workerName, bytes, keyAlias, metadata, SignserverProcessEncoding.NONE);
-            if (signatureResult.isSuccess()) {
-                byte[] jsonBytes = Base64.getDecoder().decode(signatureResult.getValue());
-                BatchSignaturesResponse batchSignatures = objectMapper.readValue(jsonBytes, BatchSignaturesResponse.class);
-                List<Signature> signatures = new ArrayList<>();
-                for (BatchSignatureResponse response : batchSignatures.signatures()) {
-                    signatures.add(new Signature(response.signature().getBytes(), SignaturePackaging.DETACHED));
-                }
-                return Result.ok(signatures);
-            } else {
-                return Result.error(new ErrorWithDescription("Failed to sign hash.", signatureResult.getError().error()));
-            }
-        } catch (Exception e) {
-            return Result.error(new ErrorWithDescription("Error while signing data", e.getMessage()));
+            requestBytes = objectMapper.writeValueAsBytes(batchRequest);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Serialization of batch signature request has failed.", e);
         }
+
+        byte[] encodedSignatureData = sign(workerName, requestBytes, keyAlias, metadata,
+                                           SignserverProcessEncoding.NONE
+        );
+        byte[] signatureData = Base64.getDecoder().decode(encodedSignatureData);
+
+        BatchSignaturesResponse batchSignatures;
+        try {
+            batchSignatures = objectMapper.readValue(
+                    signatureData,
+                    BatchSignaturesResponse.class
+            );
+        } catch (IOException e) {
+            throw new RemoteSystemException("Signserver batch signature response could not be parsed.", e);
+        }
+        List<Signature> signatures = new ArrayList<>();
+        for (BatchSignatureResponse response : batchSignatures.signatures()) {
+            signatures.add(new Signature(response.signature().getBytes(), SignaturePackaging.DETACHED));
+        }
+        return signatures;
     }
 
     // Returns the signed data encoded in base64
-    public Result<String, ErrorWithDescription> sign(String workerName, byte[] data, String keyAlias,
-                                                     Map<String, String> metadata,
-                                                     SignserverProcessEncoding encoding
+    public byte[] sign(String workerName, byte[] data, String keyAlias,
+                       Map<String, String> metadata,
+                       SignserverProcessEncoding encoding
     ) {
         metadata.put("ALIAS", keyAlias);
-        try {
-            var response = signserverRestClient.process(workerName, data, metadata, encoding);
-            return Result.ok(response.data());
-        } catch (Exception e) {
-            return Result.error(new ErrorWithDescription("Error while signing data", e.getMessage()));
-        }
+        var response = signserverRestClient.process(workerName, data, metadata, encoding);
+        return response.data().getBytes();
     }
 
 
-    public Result<byte[], ErrorWithDescription> generateCSR(int signerId, String keyAlias,
-                                                            String distinguishedName,
-                                                            String signatureAlgorithm
-    ) {
-        GetPKCS10CertificateRequestForAlias2Response response = signserverWSClient
+    public byte[] generateCSR(int signerId, String keyAlias, String distinguishedName, String signatureAlgorithm) {
+        CertReqData response = signserverWSClient
                 .generateCsr(signerId, keyAlias, signatureAlgorithm, distinguishedName);
-        try {
-            return Result.ok(response.getReturn().getBinary());
-        } catch (SoapFaultClientException e) {
-            return Result.error(new ErrorWithDescription("Error while parsing CSR", e.getMessage()));
-        }
+
+        return response.getBinary();
     }
 
-    public Result<List<CryptoTokenKey>, ErrorWithDescription> queryCryptoTokenKeys(int cryptoTokenId,
-                                                                                   boolean includeData,
-                                                                                   int startIndex, int numOfItems
+    public List<CryptoTokenKey> queryCryptoTokenKeys(int cryptoTokenId, boolean includeData, int startIndex,
+                                                    int numOfItems
     ) {
-        try {
-            var response = signserverWSClient.queryTokenEntries(cryptoTokenId, includeData, startIndex, numOfItems);
-            var keyEntries = response.getReturn().getEntries();
+        TokenSearchResults searchResult = signserverWSClient.queryTokenEntries(cryptoTokenId, includeData,
+                                                                               startIndex, numOfItems
+        );
 
-            var keys = new ArrayList<CryptoTokenKey>();
-            for (TokenEntry key : keyEntries) {
-                var info = key.getInfo();
-                var builder = new CryptoTokenKeyBuilder()
-                        .withCryptoTokenId(cryptoTokenId)
-                        .withKeyAlias(key.getAlias());
+        ArrayList<CryptoTokenKey> keys = new ArrayList<>();
+        for (TokenEntry key : searchResult.getEntries()) {
+            var info = key.getInfo();
+            var builder = new CryptoTokenKeyBuilder()
+                    .withCryptoTokenId(cryptoTokenId)
+                    .withKeyAlias(key.getAlias());
 
-                info.getEntries().forEach(entry -> {
-                    switch (entry.getKey()) {
-                        case "Key specification" -> {
-                            var keySpec = keySpecificationParser.parse(entry.getValue());
-                            builder.withKeySpecification(keySpec.keySpecification())
-                                   .withStatus(keySpec.keyStatus());
-                        }
-                        case "Key algorithm" -> builder.withKeyAlgorithm(entry.getValue());
+            info.getEntries().forEach(entry -> {
+                switch (entry.getKey()) {
+                    case "Key specification" -> {
+                        var keySpec = keySpecificationParser.parse(entry.getValue());
+                        builder.withKeySpecification(keySpec.keySpecification())
+                               .withStatus(keySpec.keyStatus());
                     }
-                });
-                keys.add(builder.build());
-            }
-            return Result.ok(keys);
-        } catch (Exception e) {
-            return Result.error(
-                    new ErrorWithDescription("Failed to obtain keys of crypto token " + cryptoTokenId + ". ",
-                                             e.getMessage()
-                    ));
+                    case "Key algorithm" -> builder.withKeyAlgorithm(entry.getValue());
+                }
+            });
+            keys.add(builder.build());
         }
+        return keys;
     }
 
-    public Result<Void, ErrorWithDescription> importCertificateChain(int workerId, String keyAlias, byte[] chain) {
-        try {
-            signserverWSClient.importCertificateChain(workerId, keyAlias, chain);
-            return Result.ok(null);
-        } catch (Exception e) {
-            return Result.error(
-                    new ErrorWithDescription("Failed to import certificate chain for key " + keyAlias + ". ",
-                                             e.getMessage()
-                    ));
-        }
+    public void importCertificateChain(int workerId, String keyAlias, byte[] chain) {
+        signserverWSClient.importCertificateChain(workerId, keyAlias, chain);
     }
 
 }

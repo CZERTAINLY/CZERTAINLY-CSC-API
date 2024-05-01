@@ -1,4 +1,4 @@
-package com.czertainly.signserver.csc.common;
+package com.czertainly.signserver.csc.common.exceptions;
 
 public class ApplicationConfigurationException extends ApplicationException {
 

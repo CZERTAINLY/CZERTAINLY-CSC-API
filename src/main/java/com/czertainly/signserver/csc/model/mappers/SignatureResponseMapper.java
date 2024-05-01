@@ -1,8 +1,7 @@
 package com.czertainly.signserver.csc.model.mappers;
 
-import com.czertainly.signserver.csc.api.auth.SignatureActivationData;
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 
 public interface SignatureResponseMapper<IN, OUT> {
 

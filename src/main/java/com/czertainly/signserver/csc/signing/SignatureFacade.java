@@ -1,7 +1,7 @@
 package com.czertainly.signserver.csc.signing;
 
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 import com.czertainly.signserver.csc.model.SignDocParameters;
 import com.czertainly.signserver.csc.model.SignHashParameters;
 import com.czertainly.signserver.csc.model.SignedDocuments;

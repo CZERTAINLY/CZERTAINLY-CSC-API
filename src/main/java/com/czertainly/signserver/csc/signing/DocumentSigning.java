@@ -1,12 +1,10 @@
 package com.czertainly.signserver.csc.signing;
 
 import com.czertainly.signserver.csc.clients.signserver.SignserverClient;
-import com.czertainly.signserver.csc.common.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.Result;
+import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
+import com.czertainly.signserver.csc.common.result.Result;
 import com.czertainly.signserver.csc.model.SignDocParameters;
 import com.czertainly.signserver.csc.model.SignedDocuments;
-import com.czertainly.signserver.csc.signing.configuration.CapabilitiesFilter;
-import com.czertainly.signserver.csc.signing.configuration.ConformanceLevel;
 import com.czertainly.signserver.csc.signing.configuration.WorkerRepository;
 import org.springframework.stereotype.Component;
 

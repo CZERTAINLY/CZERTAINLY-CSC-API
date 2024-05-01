@@ -1,6 +1,7 @@
 package com.czertainly.signserver.csc.clients.signserver.ws;
 
 import com.czertainly.signserver.csc.clients.signserver.ws.dto.*;
+import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
 import jakarta.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         setDefaultUri(signserverUrl + WEB_SERVICE_BASE_PATH);
     }
 
-    public GetPKCS10CertificateRequestForAlias2Response generateCsr(
+    public CertReqData generateCsr(
             int workerId, String keyAlias, String signatureAlgorithm, String dn
     ) {
 
@@ -32,14 +33,17 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setCertReqInfo(certReqInfo);
 
         logger.info("Requesting CSR for key: " + keyAlias);
-        var response = (JAXBElement<GetPKCS10CertificateRequestForAlias2Response>) getWebServiceTemplate()
-                .marshalSendAndReceive(request);
-
-        return response.getValue();
+        try {
+            var response = (JAXBElement<GetPKCS10CertificateRequestForAlias2Response>) getWebServiceTemplate()
+                    .marshalSendAndReceive(request);
+            return response.getValue().getReturn();
+        } catch (Exception e) {
+            throw new RemoteSystemException("CSR generation failed for worker " + workerId, e);
+        }
     }
 
-    public QueryTokenEntriesResponse queryTokenEntries(int workerId, boolean includeData, int startIndex,
-                                                       int numOfItems
+    public TokenSearchResults queryTokenEntries(int workerId, boolean includeData, int startIndex,
+                                                int numOfItems
     ) {
         var request = new QueryTokenEntries();
         request.setWorkerId(workerId);
@@ -49,21 +53,28 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.addCondition(new QueryCondition("alias", RelationalOperator.LIKE, "pregenerated___%"));
 
 
-        logger.info("Querying token entries for worker: " + workerId);
-        var response = (JAXBElement<QueryTokenEntriesResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
-        return response.getValue();
+        logger.debug("Querying token entries for worker: " + workerId);
+        try {
+            var response = (JAXBElement<QueryTokenEntriesResponse>) getWebServiceTemplate().marshalSendAndReceive(
+                    request);
+            return response.getValue().getReturn();
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to query token entries of worker " + workerId, e);
+        }
     }
 
-    public ImportCertificateChainResponse importCertificateChain(int workerId, String keyAlias, byte[] chain) {
+    public void importCertificateChain(int workerId, String keyAlias, byte[] chain) {
         var request = new ImportCertificateChain();
         request.setWorkerId(workerId);
         request.setAlias(keyAlias);
         request.setCertificateChain(new String(chain));
 
-        logger.info("Importing certificate chain for key: " + keyAlias);
-        var response = (JAXBElement<ImportCertificateChainResponse>) getWebServiceTemplate().marshalSendAndReceive(
-                request);
-        return response.getValue();
+        logger.debug("Importing certificate chain for key: " + keyAlias);
+        try {
+            getWebServiceTemplate().marshalSendAndReceive(request);
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to import certificate chain for key " + keyAlias, e);
+        }
     }
 
 

@@ -1,6 +1,6 @@
 package com.czertainly.signserver.csc.api.auth.exceptions;
 
-import com.czertainly.signserver.csc.common.ApplicationException;
+import com.czertainly.signserver.csc.common.exceptions.ApplicationException;
 
 public class AuthorizationException extends ApplicationException {
     public AuthorizationException(String message) {
