@@ -6,6 +6,7 @@ import java.util.List;
 public record WorkerCapabilities(
         List<String> signatureQualifiers,
         SignatureFormat signatureFormat,
-        ConformanceLevel conformanceLevel
+        ConformanceLevel conformanceLevel,
+        SignaturePackaging signaturePackaging
         ) {
 }

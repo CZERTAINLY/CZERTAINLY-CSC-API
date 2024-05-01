@@ -24,9 +24,9 @@ public class NaiveKeySelector implements KeySelector {
     public CryptoTokenKey selectKey(int workerId) {
         var workerWithCapabilities = workerRepository.getWorker(workerId);
         var cryptoToken = workerWithCapabilities.worker().cryptoToken();
-        var result = signserverClient.queryCryptoTokenKeys(cryptoToken.id(), true, 0, 5);
+        var result = signserverClient.queryCryptoTokenKeys(cryptoToken.id(), true, 0, 50);
         return result.with(
-                keys -> keys.stream().filter(key -> !key.status().certified()).findFirst().orElse(null),
+                keys -> keys.stream().filter(key -> key.status() != null && !key.status().certified()).findFirst().orElse(null),
                 error -> {
                     logger.warn("Unable to select a suitable key: " + error.description());
                     return null;

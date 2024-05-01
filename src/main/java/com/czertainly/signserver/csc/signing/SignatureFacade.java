@@ -23,12 +23,12 @@ public class SignatureFacade {
         this.extCMSSigning = extCMSSigning;
     }
 
-    public Result<SignedDocuments, ErrorWithDescription> signDocuments(SignDocParameters signDocParameters) {
+    public Result<SignedDocuments, ErrorWithDescription> signDocuments(SignDocParameters signDocParameters, String accessToken) {
 
         if (!signDocParameters.documentsToSign().isEmpty()) {
             return documentSigning.sign(signDocParameters);
         } else if (!signDocParameters.documentDigestsToSign().isEmpty()) {
-            return documentHashSigning.sign(signDocParameters);
+            return documentHashSigning.sign(signDocParameters, accessToken);
         } else {
             return Result.error(new ErrorWithDescription("Invalid input", "No documents to sign."));
         }

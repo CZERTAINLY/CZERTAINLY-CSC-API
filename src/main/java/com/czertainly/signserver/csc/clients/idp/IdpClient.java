@@ -1,43 +1,48 @@
 package com.czertainly.signserver.csc.clients.idp;
 
-import com.czertainly.signserver.csc.clients.signserver.rest.SignserverProcessEncoding;
-import com.czertainly.signserver.csc.clients.signserver.rest.WorkerProcessRequest;
-import com.czertainly.signserver.csc.clients.signserver.rest.WorkerProcessResponse;
+import com.czertainly.signserver.csc.model.UserInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class IdpClient {
 
-    public static final String WORKERS_REST_API_PATH = "/rest/v1/";
-    public static final String WORKER_PROCESS_REST_API_PATH = WORKERS_REST_API_PATH + "workers/{workerName}/process";
-
     RestClient restClient;
 
 
-    public IdpClient(@Value("${signserver.url}") String signserverUrl) {
+    public IdpClient(@Value("${idp.userInfoUrl}") String signserverUrl) {
         restClient = RestClient.builder()
-                               .requestFactory(new JdkClientHttpRequestFactory())
+                               .requestFactory(new HttpComponentsClientHttpRequestFactory())
                                .baseUrl(signserverUrl)
                                .build();
     }
 
-    public void process(String workerName, String data, Map<String, String> metadata, SignserverProcessEncoding encoding) {
-        WorkerProcessRequest workerProcessRequest = new WorkerProcessRequest(data, metadata, encoding);
+    public UserInfo downloadUserInfo(String token) throws JsonProcessingException {
+        ResponseEntity<String> response = restClient.get()
+                                                    .header("Authorization", "Bearer " + token)
+                                                    .accept(MediaType.APPLICATION_JSON)
+                                                    .retrieve()
+                                                    .toEntity(String.class);
 
-        WorkerProcessResponse response = restClient.post()
-                                                   .uri(WORKER_PROCESS_REST_API_PATH, workerName)
-                                                   .body(workerProcessRequest)
-                                                   .contentType(MediaType.APPLICATION_JSON)
-                                                   .accept(MediaType.APPLICATION_JSON)
-                                                   .retrieve()
-                                                   .body(WorkerProcessResponse.class);
 
-        System.out.println(response);
+        JsonNode json = new ObjectMapper().readTree(response.getBody());
+
+        Map<String, String> attributes = new HashMap<>();
+        var fields = json.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            attributes.put(field.getKey(), field.getValue().asText());
+        }
+        return new UserInfo(attributes);
     }
 }

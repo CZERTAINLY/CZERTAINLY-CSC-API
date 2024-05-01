@@ -11,4 +11,9 @@ import java.util.Map;
 public record DocumentDigestsToSign(List<String> hashes, SignatureFormat signatureFormat, ConformanceLevel conformanceLevel,
                                     String keyAlgorithm, String digestAlgorithm, String signAlgoParams,
                                     Map<String, String> signedAttributes, SignaturePackaging signaturePackaging) {
+
+    public String getSignatureAlgorithm() {
+        return digestAlgorithm + "With" + keyAlgorithm;
+    }
+
 }

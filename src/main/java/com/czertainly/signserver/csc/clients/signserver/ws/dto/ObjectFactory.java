@@ -570,22 +570,22 @@ public class ObjectFactory {
 //        return new GlobalResyncResponse();
 //    }
 //
-//    /**
-//     * Create an instance of {@link ImportCertificateChain }
-//     *
-//     */
-//    public ImportCertificateChain createImportCertificateChain() {
-//        return new ImportCertificateChain();
-//    }
-//
-//    /**
-//     * Create an instance of {@link ImportCertificateChainResponse }
-//     *
-//     */
-//    public ImportCertificateChainResponse createImportCertificateChainResponse() {
-//        return new ImportCertificateChainResponse();
-//    }
-//
+    /**
+     * Create an instance of {@link ImportCertificateChain }
+     *
+     */
+    public ImportCertificateChain createImportCertificateChain() {
+        return new ImportCertificateChain();
+    }
+
+    /**
+     * Create an instance of {@link ImportCertificateChainResponse }
+     *
+     */
+    public ImportCertificateChainResponse createImportCertificateChainResponse() {
+        return new ImportCertificateChainResponse();
+    }
+
 //    /**
 //     * Create an instance of {@link Process }
 //     *
@@ -1631,33 +1631,33 @@ public class ObjectFactory {
 //    public JAXBElement<GlobalResyncResponse> createGlobalResyncResponse(GlobalResyncResponse value) {
 //        return new JAXBElement<GlobalResyncResponse>(_GlobalResyncResponse_QNAME, GlobalResyncResponse.class, null, value);
 //    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link ImportCertificateChain }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link ImportCertificateChain }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "importCertificateChain")
-//    public JAXBElement<ImportCertificateChain> createImportCertificateChain(ImportCertificateChain value) {
-//        return new JAXBElement<ImportCertificateChain>(_ImportCertificateChain_QNAME, ImportCertificateChain.class, null, value);
-//    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link ImportCertificateChainResponse }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link ImportCertificateChainResponse }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "importCertificateChainResponse")
-//    public JAXBElement<ImportCertificateChainResponse> createImportCertificateChainResponse(ImportCertificateChainResponse value) {
-//        return new JAXBElement<ImportCertificateChainResponse>(_ImportCertificateChainResponse_QNAME, ImportCertificateChainResponse.class, null, value);
-//    }
-//
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ImportCertificateChain }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link ImportCertificateChain }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "importCertificateChain")
+    public JAXBElement<ImportCertificateChain> createImportCertificateChain(ImportCertificateChain value) {
+        return new JAXBElement<ImportCertificateChain>(_ImportCertificateChain_QNAME, ImportCertificateChain.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ImportCertificateChainResponse }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link ImportCertificateChainResponse }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "importCertificateChainResponse")
+    public JAXBElement<ImportCertificateChainResponse> createImportCertificateChainResponse(ImportCertificateChainResponse value) {
+        return new JAXBElement<ImportCertificateChainResponse>(_ImportCertificateChainResponse_QNAME, ImportCertificateChainResponse.class, null, value);
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link Process }{@code >}
 //     *

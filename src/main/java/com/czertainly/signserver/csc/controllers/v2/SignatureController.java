@@ -7,13 +7,11 @@ import com.czertainly.signserver.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.signserver.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.signserver.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.signserver.csc.api.signhash.SignHashResponseDto;
-import com.czertainly.signserver.csc.common.ApplicationException;
 import com.czertainly.signserver.csc.controllers.exceptions.BadRequestException;
 import com.czertainly.signserver.csc.controllers.exceptions.ServerErrorException;
 import com.czertainly.signserver.csc.model.mappers.SignDocResponseMapper;
 import com.czertainly.signserver.csc.model.mappers.SignDocValidatingRequestMapper;
 import com.czertainly.signserver.csc.model.mappers.SignHashValidatingRequestMapper;
-import com.czertainly.signserver.csc.signing.DocumentSigning;
 import com.czertainly.signserver.csc.signing.SignatureFacade;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -74,7 +72,7 @@ public class SignatureController {
         return signDocValidatingRequestMapper
                 .map(signDocRequest, getSadIfAvailable(authentication))
                 .with(
-                        parameters -> signatureFacade.signDocuments(parameters).with(
+                        parameters -> signatureFacade.signDocuments(parameters, ((CscAuthenticationToken) authentication).getToken().getTokenValue()).with(
                                 signatures -> signDocResponseMapper.map(signatures).with(
                                         signDocResponseDto -> signDocResponseDto,
                                         error -> {

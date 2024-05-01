@@ -20,20 +20,28 @@ public class SignDocResponseMapper implements SignatureResponseMapper<SignedDocu
     public Result<SignDocResponseDto, ErrorWithDescription> map(SignedDocuments model) {
 
         List<String> documentWithSignature = model.signatures().stream()
-                                                  .filter(signature -> signature.packaging() == SignaturePackaging.DETACHED)
+                                                  .filter(signature -> signature.packaging() != SignaturePackaging.DETACHED)
                                                   .map(signature -> encoder.encodeToString(signature.value()))
                                                   .toList();
 
         List<String> signatureObject = model.signatures().stream()
-                                            .filter(signature -> signature.packaging() != SignaturePackaging.DETACHED)
+                                            .filter(signature -> signature.packaging() == SignaturePackaging.DETACHED)
                                             .map(signature -> encoder.encodeToString(signature.value()))
                                             .toList();
+
+        ValidationInfo validationInfo = model.certs().isEmpty() && model.crls().isEmpty() && model.ocsps().isEmpty() ?
+                null :
+                new ValidationInfo(
+                        model.crls().stream().toList(),
+                        model.ocsps().stream().toList(),
+                        model.certs().stream().toList()
+                );
 
         return Result.ok(
                 new SignDocResponseDto(
                         documentWithSignature,
                         signatureObject,
-                        new ValidationInfo(model.crls(), model.ocsps(), model.certs())
+                        validationInfo
                 )
         );
     }
