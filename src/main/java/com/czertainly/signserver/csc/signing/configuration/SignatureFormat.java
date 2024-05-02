@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public enum SignatureFormat {
-    CAdES("CAdES"),
-    PAdES("PAdES"),
-    XAdES("XAdES"),
-    JAdEs("JAdES");
+    CAdES("C"),
+    PAdES("P"),
+    XAdES("X"),
+    JAdEs("J");
 
     private final String value;
 

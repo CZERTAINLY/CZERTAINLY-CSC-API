@@ -1,5 +1,6 @@
 package com.czertainly.signserver.csc.model.mappers;
 
+import com.czertainly.signserver.csc.api.ErrorCode;
 import com.czertainly.signserver.csc.api.OperationMode;
 import com.czertainly.signserver.csc.api.auth.SADParser;
 import com.czertainly.signserver.csc.api.auth.SignatureActivationData;
@@ -20,9 +21,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
-
-import static com.czertainly.signserver.csc.api.ErrorCodes.INVALID_REQUEST;
-
 
 @Component
 public class SignDocValidatingRequestMapper implements SignatureRequestMapper<SignDocRequestDto, SignDocParameters> {
@@ -213,7 +211,7 @@ public class SignDocValidatingRequestMapper implements SignatureRequestMapper<Si
     }
 
     private Result<SignDocParameters, ErrorWithDescription> toInvalidRequestError(String errorMessage) {
-        return Result.error(new ErrorWithDescription(INVALID_REQUEST, errorMessage));
+        return Result.error(new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(), errorMessage));
     }
 
 }

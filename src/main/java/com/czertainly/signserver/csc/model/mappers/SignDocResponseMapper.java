@@ -41,6 +41,7 @@ public class SignDocResponseMapper implements SignatureResponseMapper<SignedDocu
                 new SignDocResponseDto(
                         documentWithSignature,
                         signatureObject,
+                        null,
                         validationInfo
                 )
         );

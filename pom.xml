@@ -91,6 +91,24 @@
             <artifactId>snakeyaml</artifactId>
             <version>2.2</version>
         </dependency>
+
+        <!--OpenAPI-->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -98,27 +116,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>com.sun.xml.ws</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <packageName>com.czertainly.signserver.csc.ws.ejbca</packageName>
-                    <wsdlUrls>
-                        <wsdlUrl>https://ejbca.3key.company/ejbca/ejbcaws/ejbcaws?wsdl</wsdlUrl>
-                    </wsdlUrls>
-                    <sourceDestDir>${sourcesDir}</sourceDestDir>
-                    <destDir>${classesDir}</destDir>
-                    <extension>true</extension>
-                </configuration>
             </plugin>
         </plugins>
     </build>

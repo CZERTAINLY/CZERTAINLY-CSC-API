@@ -1,5 +1,6 @@
 package com.czertainly.signserver.csc.signing;
 
+import com.czertainly.signserver.csc.api.ErrorCode;
 import com.czertainly.signserver.csc.api.auth.SignatureActivationData;
 import com.czertainly.signserver.csc.clients.ejbca.EjbcaClient;
 import com.czertainly.signserver.csc.clients.signserver.SignserverClient;
@@ -23,8 +24,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Supplier;
-
-import static com.czertainly.signserver.csc.api.ErrorCodes.INVALID_REQUEST;
 
 @Component
 public class DocumentHashSigning {
@@ -67,7 +66,7 @@ public class DocumentHashSigning {
                 allHashes, parameters.sad(),
                 () -> generateKeyAndSign(parameters, accessToken),
                 () -> Result.error(
-                        new ErrorWithDescription(INVALID_REQUEST,
+                        new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(),
                                                  "Some of documentDigests not authorized by the SAD."
                         )
                 )
@@ -122,7 +121,7 @@ public class DocumentHashSigning {
 
             } else {
                 return Result.error(
-                        new ErrorWithDescription(INVALID_REQUEST,
+                        new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(),
                                                  "No suitable signer found for the signature parameters specified."
                         ));
             }
