@@ -5,9 +5,9 @@ import com.czertainly.signserver.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.signserver.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.signserver.csc.common.PatternReplacer;
 import com.czertainly.signserver.csc.common.exceptions.ApplicationConfigurationException;
-import com.czertainly.signserver.csc.model.signserver.CryptoToken;
-import com.czertainly.signserver.csc.signing.configuration.*;
-import com.czertainly.signserver.csc.signing.filter.Worker;
+import com.czertainly.signserver.csc.signing.configuration.WorkerRepository;
+import com.czertainly.signserver.csc.signing.configuration.WorkerWithCapabilities;
+import com.czertainly.signserver.csc.signing.configuration.loader.WorkerConfigurationLoader;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
@@ -218,20 +218,10 @@ public class ServerConfiguration {
     }
 
     @Bean
-    public WorkerRepository signerSelector() {
-        CryptoToken entrustCryptoToken = new CryptoToken("EntrustSAMCryptoToken", 10);
-        Worker XAdESBBWorker = new Worker("XAdES-Baseline-B", 1009, entrustCryptoToken);
+    public WorkerRepository signerSelector(WorkerConfigurationLoader workerConfigurationLoader) {
+        List<WorkerWithCapabilities> workers = workerConfigurationLoader.getWorkers();
 
-        List<WorkerWithCapabilities> workersWithCapabilities = List.of(
-                new WorkerWithCapabilities(XAdESBBWorker,
-                                           new WorkerCapabilities(List.of("eu_eidas_qes", "eu_eidas_aes"),
-                                                                  SignatureFormat.XAdES, ConformanceLevel.AdES_B_B,
-                                                                  SignaturePackaging.DETACHED
-                                           )
-                )
-        );
-
-        return new WorkerRepository(workersWithCapabilities);
+        return new WorkerRepository(workers);
     }
 
     @Bean("dnProvider")

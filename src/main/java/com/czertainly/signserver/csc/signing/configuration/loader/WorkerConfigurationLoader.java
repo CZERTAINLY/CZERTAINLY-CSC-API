@@ -1,0 +1,132 @@
+package com.czertainly.signserver.csc.signing.configuration.loader;
+
+import com.czertainly.signserver.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.signserver.csc.model.signserver.CryptoToken;
+import com.czertainly.signserver.csc.signing.configuration.*;
+import com.czertainly.signserver.csc.signing.filter.Worker;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Component
+public class WorkerConfigurationLoader {
+
+    private final WorkerConfigurationFile configuration;
+
+    public WorkerConfigurationLoader(@Value("${csc.workerConfigurationFile}") String configurationFilePath) {
+        Yaml yaml = new Yaml(new Constructor(WorkerConfigurationFile.class, new LoaderOptions()));
+        try {
+            configuration = yaml.load(new BufferedReader(new FileReader(configurationFilePath)));
+            getCryptoTokenMap(configuration.getCryptoTokens());
+        } catch (FileNotFoundException e) {
+            throw new ApplicationConfigurationException("Worker configuration file not found.", e);
+        }
+    }
+
+    public List<WorkerWithCapabilities> getWorkers() {
+        List<WorkerWithCapabilities> workersWithCapabilities = new ArrayList<>();
+
+        Map<String, CryptoToken> cryptoTokenMap = getCryptoTokenMap(configuration.getCryptoTokens());
+        for (WorkerConfiguration workerConfiguration : configuration.getSigners()) {
+            String workerName = workerConfiguration.getName();
+            if (workerName == null) {
+                throw new ApplicationConfigurationException(
+                        "Worker configuration is not valid. Worker is missing a 'name' property.");
+            }
+            int workerId = workerConfiguration.getId();
+            if (workerId == -1) {
+                throw new ApplicationConfigurationException(
+                        "Worker configuration is not valid. Worker '" + workerName + "' is missing an 'id' property.");
+            }
+            String tokenName = workerConfiguration.getCryptoToken();
+            if (tokenName == null) {
+                throw new ApplicationConfigurationException(
+                        "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'cryptoToken' property.");
+            }
+            CryptoToken cryptoToken = cryptoTokenMap.get(tokenName);
+            if (cryptoToken == null) {
+                throw new ApplicationConfigurationException(
+                        "Worker configuration is not valid. Worker '" + workerName + "' references an unknown CryptoToken '" + tokenName + "'.");
+            }
+
+            WorkerCapabilities capabilities = getCapabilities(workerConfiguration.getCapabilities(), workerName);
+            Worker worker = new Worker(workerName, workerId, cryptoToken);
+
+            workersWithCapabilities.add(new WorkerWithCapabilities(worker, capabilities));
+
+        }
+        return workersWithCapabilities;
+    }
+
+    private WorkerCapabilities getCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
+                                               String workerName
+    ) {
+        List<String> signatureQualifiers = capabilitiesConfiguration.getSignatureQualifiers();
+        if (signatureQualifiers == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signatureQualifiers' capability.");
+        }
+        String signatureFormat = capabilitiesConfiguration.getSignatureFormat();
+        if (signatureFormat == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signatureFormat' capability.");
+        }
+
+        String conformanceLevel = capabilitiesConfiguration.getConformanceLevel();
+        if (conformanceLevel == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'conformanceLevel' capability.");
+        }
+
+        String signaturePackaging = capabilitiesConfiguration.getSignaturePackaging();
+        if (signaturePackaging == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signaturePackaging' capability.");
+        }
+
+        try {
+            return new WorkerCapabilities(signatureQualifiers, SignatureFormat.fromString(signatureFormat),
+                                          ConformanceLevel.fromString(conformanceLevel),
+                                          SignaturePackaging.fromString(signaturePackaging)
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);
+        }
+    }
+
+    private Map<String, CryptoToken> getCryptoTokenMap(List<CryptoTokenDefinition> cryptoTokenConfigurations) {
+        Map<String, CryptoToken> map = new HashMap<>();
+        for (CryptoTokenDefinition cryptoTokenConfiguration : cryptoTokenConfigurations) {
+            String tokenName = cryptoTokenConfiguration.getName();
+            if (tokenName == null) {
+                throw new ApplicationConfigurationException(
+                        "Worker configuration is not valid. CryptoToken is missing a 'name' property.");
+            }
+            int id = cryptoTokenConfiguration.getId();
+            if (id == -1) {
+                throw new ApplicationConfigurationException(
+                        "Worker configuration is not valid. CryptoToken '" + tokenName + "' is missing an 'id' property.");
+            }
+
+            map.put(tokenName, new CryptoToken(tokenName, id));
+        }
+        return map;
+    }
+
+    public static void main(String[] args) {
+        WorkerConfigurationLoader workerConfigurationLoader = new WorkerConfigurationLoader(
+                "/home/lukas/dev/customers/3key/SignServer-CSC-API/src/main/resources/workers.yml");
+        List<WorkerWithCapabilities> workers = workerConfigurationLoader.getWorkers();
+        System.out.println(workers);
+    }
+}
