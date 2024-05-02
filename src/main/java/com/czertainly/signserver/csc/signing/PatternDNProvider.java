@@ -12,14 +12,17 @@ public class PatternDNProvider implements DistinguishedNameProvider {
 
     String pattern;
 
-    public PatternDNProvider(@Value("${dnPattern}") String pattern) {
+    public PatternDNProvider(@Value("${caProvider.ejbca.dnPattern}") String pattern) {
         this.pattern = pattern;
     }
 
+
+    // TODO: return 400
     @Override
     public String getDistinguishedName(UserInfo userInfo) {
         StringSubstitutor sub = new StringSubstitutor(userInfo.getAttributes());
-        sub.setVariablePrefix("@{");
+        sub.setVariablePrefix("@(");
+        sub.setVariableSuffix(")");
         return sub.replace(pattern);
     }
 }

@@ -26,7 +26,7 @@ public class SignserverRestClient {
     private final String basicAuth = "Basic " + Base64.getEncoder().encodeToString("user:password".getBytes());
 
 
-    public SignserverRestClient(@Value("${signserver.url}") String signserverUrl,
+    public SignserverRestClient(@Value("${signingProvider.signserver.url}") String signserverUrl,
                                 HttpComponentsClientHttpRequestFactory requestFactory
     ) {
         log.debug("Creating SignserverRestClient with base URL: {}", signserverUrl);

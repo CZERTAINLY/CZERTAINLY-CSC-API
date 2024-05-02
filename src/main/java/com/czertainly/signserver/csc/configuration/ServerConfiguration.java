@@ -62,19 +62,18 @@ public class ServerConfiguration {
 
     @Bean("signserverMessageSender")
     public HttpComponents5MessageSender signserverHttpComponentsMessageSender(
-            @Value("${signserver.clientKeyStore.storePassword}") String keystorePassword,
-            @Value("${signserver.clientKeyStore.keyPassword}") String keyPassword,
-            @Value("${signserver.clientKeyStore.storePath}") String keystorePath
+            @Value("${signingProvider.signserver.clientKeyStore.storePath}") String keystorePath,
+            @Value("${signingProvider.signserver.clientKeyStore.password}") String password
     ) throws ApplicationConfigurationException {
         KeyStore keyStore;
         try {
             keyStore = KeyStore.getInstance("PKCS12");
             try (InputStream keyStoreInputStream = new FileInputStream(keystorePath)) {
-                keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
+                keyStore.load(keyStoreInputStream, password.toCharArray());
             }
 
             SSLContext sslContext = SSLContexts.custom()
-                                               .loadKeyMaterial(keyStore, keyPassword.toCharArray())
+                                               .loadKeyMaterial(keyStore, password.toCharArray())
                                                .build();
 
 
@@ -102,19 +101,18 @@ public class ServerConfiguration {
 
     @Bean("ejbcaMessageSender")
     public HttpComponents5MessageSender ejbcaHttpComponentsMessageSender(
-            @Value("${ejbca.clientKeyStore.storePassword}") String keystorePassword,
-            @Value("${ejbca.clientKeyStore.keyPassword}") String keyPassword,
-            @Value("${ejbca.clientKeyStore.storePath}") String keystorePath
+            @Value("${caProvider.ejbca.clientKeyStore.storePath}") String keystorePath,
+            @Value("${caProvider.ejbca.clientKeyStore.password}") String password
     ) throws ApplicationConfigurationException {
         KeyStore keyStore;
         try {
             keyStore = KeyStore.getInstance("PKCS12");
             try (InputStream keyStoreInputStream = new FileInputStream(keystorePath)) {
-                keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
+                keyStore.load(keyStoreInputStream, password.toCharArray());
             }
 
             SSLContext sslContext = SSLContexts.custom()
-                                               .loadKeyMaterial(keyStore, keyPassword.toCharArray())
+                                               .loadKeyMaterial(keyStore, password.toCharArray())
                                                .build();
 
 
@@ -157,7 +155,7 @@ public class ServerConfiguration {
     @Bean
     public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
                                                  @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
-                                                 @Value("${signserver.url}") String signserverUrl
+                                                 @Value("${signingProvider.signserver.url}") String signserverUrl
     ) {
         SignserverWsClient client = new SignserverWsClient(signserverUrl);
         client.setMarshaller(marshaller);
@@ -168,19 +166,18 @@ public class ServerConfiguration {
 
     @Bean
     public HttpComponentsClientHttpRequestFactory requestFactory(
-            @Value("${signserver.clientKeyStore.storePassword}") String keystorePassword,
-            @Value("${signserver.clientKeyStore.keyPassword}") String keyPassword,
-            @Value("${signserver.clientKeyStore.storePath}") String keystorePath
+            @Value("${signingProvider.signserver.clientKeyStore.storePath}") String storePath,
+            @Value("${signingProvider.signserver.clientKeyStore.password}") String password
     ) throws ApplicationConfigurationException {
         KeyStore keyStore;
         try {
             keyStore = KeyStore.getInstance("PKCS12");
-            try (InputStream keyStoreInputStream = new FileInputStream(keystorePath)) {
-                keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
+            try (InputStream keyStoreInputStream = new FileInputStream(storePath)) {
+                keyStore.load(keyStoreInputStream, password.toCharArray());
             }
 
             SSLContext sslContext = SSLContexts.custom()
-                                               .loadKeyMaterial(keyStore, keyPassword.toCharArray())
+                                               .loadKeyMaterial(keyStore, password.toCharArray())
                                                .build();
 
 
@@ -207,12 +204,12 @@ public class ServerConfiguration {
     @Bean
     public EjbcaWsClient ejbcaWsClient(@Qualifier("ejbcaWsMarshaller") Jaxb2Marshaller marshaller,
                                        @Qualifier("ejbcaMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
-                                       @Value("${ejbca.url}") String ejbcaUrl
+                                       @Value("${caProvider.ejbca.url}") String ejbcaUrl,
+                                       @Value("${caProvider.ejbca.ca}") String caName,
+                                       @Value("${caProvider.ejbca.endEntityProfile}") String endEntityProfileName,
+                                       @Value("${caProvider.ejbca.certificateProfile}") String certificateProfileName
     ) {
-        EjbcaWsClient client = new EjbcaWsClient(ejbcaUrl, "DemoClientSubCA_2307RSA",
-                                                 "DemoDocumentSigningEndEntityProfile",
-                                                 "DemoDocumentSigningLongEECertificateProfile"
-        );
+        EjbcaWsClient client = new EjbcaWsClient(ejbcaUrl, caName, endEntityProfileName, certificateProfileName);
         client.setMessageSender(httpComponentsMessageSender);
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);

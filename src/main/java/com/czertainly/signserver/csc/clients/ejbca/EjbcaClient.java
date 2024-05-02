@@ -24,11 +24,9 @@ public class EjbcaClient {
     private final EjbcaWsClient ejbcaWsClient;
     private final Period certificateValidity;
 
-    public EjbcaClient(EjbcaWsClient ejbcaWsClient,
-                       @Value("${ejbca.certificateValidityDays}") int certificateValidityDays
-    ) {
+    public EjbcaClient(EjbcaWsClient ejbcaWsClient) {
         this.ejbcaWsClient = ejbcaWsClient;
-        this.certificateValidity = Period.ofDays(certificateValidityDays);
+        this.certificateValidity = Period.ofDays(365);
     }
 
     public void createEndEntity(EndEntity endEntity) {
