@@ -9,7 +9,7 @@ signers:
         signatureQualifiers:
           - eu_eidas_qes
           - eu_eidas_aes
-        signatureFormat: XAdES
+        signatureFormat: X
         conformanceLevel: Ades-B-B
         signaturePackaging: Detached
     - name: "XAdES-Baseline-LT"
@@ -19,6 +19,6 @@ signers:
         signatureQualifiers:
           - eu_eidas_qes
           - eu_eidas_aes
-        signatureFormat: XAdES
+        signatureFormat: X
         conformanceLevel: Ades-B-LT
         signaturePackaging: Detached

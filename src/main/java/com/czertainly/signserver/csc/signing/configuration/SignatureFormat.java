@@ -22,19 +22,13 @@ public enum SignatureFormat {
             }
         }
 
-        return switch (value) {
-            case "C" -> CAdES;
-            case "P" -> PAdES;
-            case "X" -> XAdES;
-            case "J" -> JAdEs;
-            default -> throw new IllegalArgumentException(
-                    "Unknown signature format '" + value + "'. Allowed values: [" + Arrays.stream(
-                            SignatureFormat.values()).map(cl -> cl.value).collect(
-                            Collectors.joining(",")) + "]");
-        };
-    }
+        throw new IllegalArgumentException(
+                "Unknown signature format '" + value + "'. Allowed values: [" + Arrays.stream(
+                        SignatureFormat.values()).map(cl -> cl.value).collect(
+                        Collectors.joining(",")) + "]");
+}
 
-    public String toString() {
-        return this.value;
-    }
+public String toString() {
+    return this.value;
+}
 }
