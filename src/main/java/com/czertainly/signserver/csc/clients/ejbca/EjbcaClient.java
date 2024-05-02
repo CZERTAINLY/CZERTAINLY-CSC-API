@@ -30,7 +30,7 @@ public class EjbcaClient {
     }
 
     public void createEndEntity(EndEntity endEntity) {
-        ejbcaWsClient.editUser(endEntity.username(), endEntity.password(), endEntity.subjectDN());
+        ejbcaWsClient.editUser(endEntity.username(), endEntity.password(), endEntity.subjectDN(), endEntity.san());
     }
 
     /*

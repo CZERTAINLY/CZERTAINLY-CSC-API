@@ -11,6 +11,9 @@ import com.czertainly.signserver.csc.model.DocumentDigestsToSign;
 import com.czertainly.signserver.csc.model.SignDocParameters;
 import com.czertainly.signserver.csc.model.SignedDocuments;
 import com.czertainly.signserver.csc.model.ejbca.EndEntity;
+import com.czertainly.signserver.csc.providers.DistinguishedNameProvider;
+import com.czertainly.signserver.csc.providers.PatternUsernameProvider;
+import com.czertainly.signserver.csc.providers.SubjectAlternativeNameProvider;
 import com.czertainly.signserver.csc.signing.configuration.CapabilitiesFilter;
 import com.czertainly.signserver.csc.signing.configuration.WorkerRepository;
 import com.czertainly.signserver.csc.signing.configuration.WorkerWithCapabilities;
@@ -29,7 +32,8 @@ public class DocumentHashSigning {
     private final WorkerRepository workerRepository;
     private final KeySelector keySelector;
     private final DistinguishedNameProvider distinguishedNameProvider;
-
+    private final PatternUsernameProvider patternUsernameProvider;
+    private final SubjectAlternativeNameProvider subjectAlternativeNameProvider;
     private final UserInfoProvider userInfoProvider;
     private final PasswordGenerator passwordGenerator;
     private final SignserverClient signserverClient;
@@ -37,14 +41,18 @@ public class DocumentHashSigning {
 
     public DocumentHashSigning(WorkerRepository workerRepository, KeySelector keySelector,
                                IdpUserInfoProvider userInfoProvider, NaivePasswordGenerator passwordGenerator,
-                               DistinguishedNameProvider distinguishedNameProvider, SignserverClient signserverClient,
-                               EjbcaClient ejbcaClient
+                               DistinguishedNameProvider distinguishedNameProvider,
+                               PatternUsernameProvider patternUsernameProvider,
+                               SubjectAlternativeNameProvider subjectAlternativeNameProvider,
+                               SignserverClient signserverClient, EjbcaClient ejbcaClient
     ) {
         this.workerRepository = workerRepository;
         this.keySelector = keySelector;
         this.userInfoProvider = userInfoProvider;
         this.passwordGenerator = passwordGenerator;
         this.distinguishedNameProvider = distinguishedNameProvider;
+        this.patternUsernameProvider = patternUsernameProvider;
+        this.subjectAlternativeNameProvider = subjectAlternativeNameProvider;
         this.signserverClient = signserverClient;
         this.ejbcaClient = ejbcaClient;
     }
@@ -80,10 +88,12 @@ public class DocumentHashSigning {
             if (worker != null) {
                 var key = keySelector.selectKey(worker.worker().workerId());
                 var userInfo = userInfoProvider.getUserInfo(accessToken);
-                var dn = distinguishedNameProvider.getDistinguishedName(userInfo);
+                var dn = distinguishedNameProvider.getDistinguishedName(userInfo::getAttributes);
+                var san = subjectAlternativeNameProvider.getSan(userInfo::getAttributes);
+                var username = patternUsernameProvider.getUsername(userInfo::getAttributes);
                 var password = passwordGenerator.generate();
 
-                EndEntity endEntity = new EndEntity(userInfo.getAttribute("name", "no name"), password, dn);
+                EndEntity endEntity = new EndEntity(username, password, dn, san);
                 ejbcaClient.createEndEntity(endEntity);
                 byte[] csr = signserverClient.generateCSR(
                         key.cryptoTokenId(), key.keyAlias(), dn, documentDigestsToSign.getSignatureAlgorithm()

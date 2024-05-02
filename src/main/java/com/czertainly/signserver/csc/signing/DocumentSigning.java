@@ -5,6 +5,7 @@ import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
 import com.czertainly.signserver.csc.common.result.Result;
 import com.czertainly.signserver.csc.model.SignDocParameters;
 import com.czertainly.signserver.csc.model.SignedDocuments;
+import com.czertainly.signserver.csc.providers.DistinguishedNameProvider;
 import com.czertainly.signserver.csc.signing.configuration.WorkerRepository;
 import org.springframework.stereotype.Component;
 

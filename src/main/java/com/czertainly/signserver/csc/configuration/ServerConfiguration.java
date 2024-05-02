@@ -3,6 +3,7 @@ package com.czertainly.signserver.csc.configuration;
 import com.czertainly.signserver.csc.api.auth.authn.CscJwtAuthenticationConverter;
 import com.czertainly.signserver.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.signserver.csc.clients.signserver.ws.SignserverWsClient;
+import com.czertainly.signserver.csc.common.PatternReplacer;
 import com.czertainly.signserver.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.signserver.csc.model.signserver.CryptoToken;
 import com.czertainly.signserver.csc.signing.configuration.*;
@@ -231,5 +232,10 @@ public class ServerConfiguration {
         );
 
         return new WorkerRepository(workersWithCapabilities);
+    }
+
+    @Bean("dnProvider")
+    public PatternReplacer usernameProvider(@Value("${caProvider.ejbca.dnPattern}") String dnPattern) {
+        return new PatternReplacer(dnPattern, "Distinguished Name Provider");
     }
 }

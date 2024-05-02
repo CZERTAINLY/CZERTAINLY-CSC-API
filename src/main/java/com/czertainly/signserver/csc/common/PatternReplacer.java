@@ -1,32 +1,29 @@
-package com.czertainly.signserver.csc.signing;
+package com.czertainly.signserver.csc.common;
 
 import com.czertainly.signserver.csc.common.exceptions.InputDataException;
-import com.czertainly.signserver.csc.model.UserInfo;
 import org.apache.commons.text.StringSubstitutor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-@Component
-public class PatternDNProvider implements DistinguishedNameProvider {
+public class PatternReplacer {
 
-    String pattern;
+    private final String pattern;
+    private final String replacerName;
 
-    public PatternDNProvider(@Value("${caProvider.ejbca.dnPattern}") String pattern) {
+    public PatternReplacer(String pattern, String replacerName) {
         this.pattern = pattern;
+        this.replacerName = replacerName;
     }
+
     private static final Pattern variableRegex = Pattern.compile("\\$\\[([^]]+)]");
 
-    @Override
-    public String getDistinguishedName(UserInfo userInfo) {
-        StringSubstitutor sub = new StringSubstitutor(userInfo.getAttributes());
+    public String replacePattern(Supplier<Map<String, String>> keyValueSource) {
+        StringSubstitutor sub = new StringSubstitutor(keyValueSource.get());
         sub.setVariablePrefix("$[");
         sub.setVariableSuffix("]");
         String processedPattern = sub.replace(pattern);
@@ -40,8 +37,9 @@ public class PatternDNProvider implements DistinguishedNameProvider {
             while (matcher.find()) {
                 notReplacedVariables.add(matcher.group(1));
             }
-            throw new InputDataException("Not all variables could be replaced in the pattern provided. Unknown variables: [" + String.join(
-                    ", ", notReplacedVariables) + "]");
+            throw new InputDataException(
+                    "Not all variables could be replaced in the pattern provided to " + replacerName +
+                            ". Unknown variables: [" + String.join(", ", notReplacedVariables) + "]");
         }
     }
 }

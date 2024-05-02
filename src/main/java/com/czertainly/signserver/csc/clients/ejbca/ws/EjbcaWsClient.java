@@ -36,12 +36,13 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         this.certificateProfileName = certificateProfileName;
     }
 
-    public void editUser(String username, String password, String subjectDn) {
+    public void editUser(String username, String password, String subjectDn, String san) {
         var request = new EditUser();
         var userDataVOWS = new UserDataVOWS();
         userDataVOWS.setUsername(username);
         userDataVOWS.setPassword(password);
         userDataVOWS.setSubjectDN(subjectDn);
+        userDataVOWS.setSubjectAltName(san);
         userDataVOWS.setCaName(caName);
         userDataVOWS.setEndEntityProfileName(endEntityProfileName);
         userDataVOWS.setCertificateProfileName(certificateProfileName);

@@ -19,8 +19,8 @@ caProvider:
             storePath: /home/lukas/dev/customers/3key/lukas.najman.p12
             password: lukas.najman
         usernamePattern: $[name]
-        dnPattern: CN=$[name], UID=$[aa]
-        sanPattern: DNS=$[name]
+        dnPattern: CN=$[name], UID=$[id]
+        sanPattern: None
         ca: DemoClientSubCA_2307RSA
         endEntityProfile: DemoDocumentSigningEndEntityProfile
         certificateProfile: DemoDocumentSigningLongEECertificateProfile
