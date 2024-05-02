@@ -28,6 +28,10 @@ caProvider:
         endEntityProfile: DemoDocumentSigningEndEntityProfile
         certificateProfile: DemoDocumentSigningLongEECertificateProfile
 
+spring:
+    jackson:
+        default-property-inclusion: NON_NULL
+
 logging:
     level:
         com.czertainly.signserver: DEBUG
