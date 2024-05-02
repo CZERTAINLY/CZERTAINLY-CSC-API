@@ -7,6 +7,7 @@ import com.czertainly.signserver.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.signserver.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.signserver.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.signserver.csc.api.signhash.SignHashResponseDto;
+import com.czertainly.signserver.csc.common.exceptions.InputDataException;
 import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
 import com.czertainly.signserver.csc.controllers.exceptions.BadRequestException;
 import com.czertainly.signserver.csc.controllers.exceptions.ServerErrorException;
@@ -108,6 +109,9 @@ public class SignatureController {
                                 );
                             }
                     );
+        } catch (InputDataException e) {
+            log.error("Invalid input data provided.", e);
+            throw new BadRequestException("invalid_request", e.getMessage());
         } catch (RemoteSystemException e) {
             log.error("An error occurred when communicating with a remote system.", e);
             throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
