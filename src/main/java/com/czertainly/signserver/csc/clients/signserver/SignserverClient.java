@@ -149,4 +149,11 @@ public class SignserverClient {
         signserverWSClient.importCertificateChain(workerId, keyAlias, chain);
     }
 
+    public void removeKey(int workerId, String keyAlias) {
+        boolean removed = signserverWSClient.removeKey(workerId, keyAlias);
+        if (!removed) {
+            throw new RemoteSystemException("Failed to remove key " + keyAlias + " from crypto token " + workerId);
+        }
+    }
+
 }

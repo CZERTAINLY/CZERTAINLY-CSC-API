@@ -69,7 +69,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setAlias(keyAlias);
         request.setCertificateChain(new String(chain));
 
-        logger.debug("Importing certificate chain for key: " + keyAlias);
+        logger.debug("Importing certificate chain to crypto token " + workerId + " and key alias: " + keyAlias);
         try {
             getWebServiceTemplate().marshalSendAndReceive(request);
         } catch (Exception e) {
@@ -77,5 +77,17 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         }
     }
 
+    public boolean removeKey(int workerId, String keyAlias) {
+        var request = new RemoveKey();
+        request.setSignerId(workerId);
+        request.setAlias(keyAlias);
 
+        logger.debug("Removing key " + keyAlias + " from crypto token " + workerId);
+        try {
+            var response = (JAXBElement<RemoveKeyResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
+            return response.getValue().isReturn();
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to remove key " + keyAlias + " from crypto token " + workerId, e);
+        }
+    }
 }

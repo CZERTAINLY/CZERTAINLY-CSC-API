@@ -713,23 +713,23 @@ public class ObjectFactory {
 //    public RemoveGlobalPropertyResponse createRemoveGlobalPropertyResponse() {
 //        return new RemoveGlobalPropertyResponse();
 //    }
-//
-//    /**
-//     * Create an instance of {@link RemoveKey }
-//     *
-//     */
-//    public RemoveKey createRemoveKey() {
-//        return new RemoveKey();
-//    }
-//
-//    /**
-//     * Create an instance of {@link RemoveKeyResponse }
-//     *
-//     */
-//    public RemoveKeyResponse createRemoveKeyResponse() {
-//        return new RemoveKeyResponse();
-//    }
-//
+
+    /**
+     * Create an instance of {@link RemoveKey }
+     *
+     */
+    public RemoveKey createRemoveKey() {
+        return new RemoveKey();
+    }
+
+    /**
+     * Create an instance of {@link RemoveKeyResponse }
+     *
+     */
+    public RemoveKeyResponse createRemoveKeyResponse() {
+        return new RemoveKeyResponse();
+    }
+
 //    /**
 //     * Create an instance of {@link RemoveWorkerProperty }
 //     *
@@ -1865,33 +1865,33 @@ public class ObjectFactory {
 //    public JAXBElement<RemoveGlobalPropertyResponse> createRemoveGlobalPropertyResponse(RemoveGlobalPropertyResponse value) {
 //        return new JAXBElement<RemoveGlobalPropertyResponse>(_RemoveGlobalPropertyResponse_QNAME, RemoveGlobalPropertyResponse.class, null, value);
 //    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveKey }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link RemoveKey }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "removeKey")
-//    public JAXBElement<RemoveKey> createRemoveKey(RemoveKey value) {
-//        return new JAXBElement<RemoveKey>(_RemoveKey_QNAME, RemoveKey.class, null, value);
-//    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveKeyResponse }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link RemoveKeyResponse }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "removeKeyResponse")
-//    public JAXBElement<RemoveKeyResponse> createRemoveKeyResponse(RemoveKeyResponse value) {
-//        return new JAXBElement<RemoveKeyResponse>(_RemoveKeyResponse_QNAME, RemoveKeyResponse.class, null, value);
-//    }
-//
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveKey }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link RemoveKey }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "removeKey")
+    public JAXBElement<RemoveKey> createRemoveKey(RemoveKey value) {
+        return new JAXBElement<RemoveKey>(_RemoveKey_QNAME, RemoveKey.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveKeyResponse }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link RemoveKeyResponse }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "removeKeyResponse")
+    public JAXBElement<RemoveKeyResponse> createRemoveKeyResponse(RemoveKeyResponse value) {
+        return new JAXBElement<RemoveKeyResponse>(_RemoveKeyResponse_QNAME, RemoveKeyResponse.class, null, value);
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveWorkerProperty }{@code >}
 //     *

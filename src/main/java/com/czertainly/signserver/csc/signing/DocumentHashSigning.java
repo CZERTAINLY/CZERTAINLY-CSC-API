@@ -18,6 +18,8 @@ import com.czertainly.signserver.csc.providers.SubjectAlternativeNameProvider;
 import com.czertainly.signserver.csc.signing.configuration.CapabilitiesFilter;
 import com.czertainly.signserver.csc.signing.configuration.WorkerRepository;
 import com.czertainly.signserver.csc.signing.configuration.WorkerWithCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ import java.util.function.Supplier;
 @Component
 public class DocumentHashSigning {
 
+
+    private final static Logger logger = LoggerFactory.getLogger(DocumentHashSigning.class);
     private final WorkerRepository workerRepository;
     private final KeySelector keySelector;
     private final DistinguishedNameProvider distinguishedNameProvider;
@@ -86,39 +90,51 @@ public class DocumentHashSigning {
 
             if (worker != null) {
                 var key = keySelector.selectKey(worker.worker().workerId());
-                var userInfo = userInfoProvider.getUserInfo(accessToken);
-                var dn = distinguishedNameProvider.getDistinguishedName(userInfo::getAttributes);
-                var san = subjectAlternativeNameProvider.getSan(userInfo::getAttributes);
-                var username = patternUsernameProvider.getUsername(userInfo::getAttributes);
-                var password = passwordGenerator.generate();
+                try {
+                    var userInfo = userInfoProvider.getUserInfo(accessToken);
+                    var dn = distinguishedNameProvider.getDistinguishedName(userInfo::getAttributes);
+                    var san = subjectAlternativeNameProvider.getSan(userInfo::getAttributes);
+                    var username = patternUsernameProvider.getUsername(userInfo::getAttributes);
+                    var password = passwordGenerator.generate();
 
-                EndEntity endEntity = new EndEntity(username, password, dn, san);
-                ejbcaClient.createEndEntity(endEntity);
-                byte[] csr = signserverClient.generateCSR(
-                        key.cryptoTokenId(), key.keyAlias(), dn, documentDigestsToSign.getSignatureAlgorithm()
-                );
-
-                byte[] certificateChain = ejbcaClient.signCertificateRequest(endEntity, csr);
-                signserverClient.importCertificateChain(key.cryptoTokenId(), key.keyAlias(), certificateChain);
-
-                if (documentDigestsToSign.hashes().size() == 1) {
-                    Signature signature = signserverClient.signSingleHash(
-                            worker.worker().workerName(),
-                            documentDigestsToSign.hashes().getFirst().getBytes(),
-                            key.keyAlias(),
-                            documentDigestsToSign.digestAlgorithm()
+                    EndEntity endEntity = new EndEntity(username, password, dn, san);
+                    ejbcaClient.createEndEntity(endEntity);
+                    byte[] csr = signserverClient.generateCSR(
+                            key.cryptoTokenId(), key.keyAlias(), dn, documentDigestsToSign.getSignatureAlgorithm()
                     );
-                    allSignatures.add(signature);
-                } else {
-                    List<Signature> signatures = signserverClient.signMultipleHashes(
-                            worker.worker().workerName(),
-                            documentDigestsToSign,
-                            key.keyAlias()
+
+                    byte[] certificateChain = ejbcaClient.signCertificateRequest(endEntity, csr);
+                    signserverClient.importCertificateChain(key.cryptoTokenId(), key.keyAlias(), certificateChain);
+
+                    if (documentDigestsToSign.hashes().size() == 1) {
+                        Signature signature = signserverClient.signSingleHash(
+                                worker.worker().workerName(),
+                                documentDigestsToSign.hashes().getFirst().getBytes(),
+                                key.keyAlias(),
+                                documentDigestsToSign.digestAlgorithm()
+                        );
+                        allSignatures.add(signature);
+                    } else {
+                        List<Signature> signatures = signserverClient.signMultipleHashes(
+                                worker.worker().workerName(),
+                                documentDigestsToSign,
+                                key.keyAlias()
+                        );
+                        allSignatures.addAll(signatures);
+                    }
+                    signserverClient.removeKey(key.cryptoTokenId(), key.keyAlias());
+                } catch (Exception e) {
+                    logger.info(
+                            "An error occurred during the signing process. Pre-generated "
+                                    + key.keyAlias() + " key will be removed.", e
                     );
-                    allSignatures.addAll(signatures);
+                    try {
+                        signserverClient.removeKey(key.cryptoTokenId(), key.keyAlias());
+                    } catch (Exception ex) {
+                        logger.error("Key " + key.keyAlias() + " was not removed and may be in inconsistent state!", ex);
+                    }
+                    throw e;
                 }
-
-
             } else {
                 return Result.error(
                         new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(),
