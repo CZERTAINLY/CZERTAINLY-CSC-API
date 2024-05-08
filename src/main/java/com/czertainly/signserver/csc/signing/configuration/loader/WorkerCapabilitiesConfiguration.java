@@ -7,6 +7,7 @@ public class WorkerCapabilitiesConfiguration{
         private String signatureFormat;
         private String conformanceLevel;
         private String signaturePackaging;
+        private List<String> signatureAlgorithms;
 
     public List<String> getSignatureQualifiers() {
         return signatureQualifiers;
@@ -38,5 +39,13 @@ public class WorkerCapabilitiesConfiguration{
 
     public void setSignaturePackaging(String signaturePackaging) {
         this.signaturePackaging = signaturePackaging;
+    }
+
+    public List<String> getSignatureAlgorithms() {
+        return signatureAlgorithms;
+    }
+
+    public void setSignatureAlgorithms(List<String> signatureAlgorithms) {
+        this.signatureAlgorithms = signatureAlgorithms;
     }
 }

@@ -139,6 +139,8 @@ public class DocumentHashSigning {
                 .withSignatureQualifier(parameters.signatureQualifier())
                 .withSignatureFormat(documentDigestsToSign.signatureFormat())
                 .withConformanceLevel(documentDigestsToSign.conformanceLevel())
+                .withSignatureAlgorithm(documentDigestsToSign.getSignatureAlgorithm())
+                .withSignaturePackaging(documentDigestsToSign.signaturePackaging())
                 .build();
 
         return workerRepository.selectWorker(requiredWorkerCapabilities);

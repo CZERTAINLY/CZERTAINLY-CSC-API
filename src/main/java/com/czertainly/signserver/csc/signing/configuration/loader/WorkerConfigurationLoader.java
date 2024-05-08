@@ -94,10 +94,18 @@ public class WorkerConfigurationLoader {
                     "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signaturePackaging' capability.");
         }
 
+        List<String> supportedSignatureAlgorithms = capabilitiesConfiguration.getSignatureAlgorithms();
+        if (supportedSignatureAlgorithms == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signatureAlgorithms' capability."
+            );
+        }
+
         try {
             return new WorkerCapabilities(signatureQualifiers, SignatureFormat.fromString(signatureFormat),
                                           ConformanceLevel.fromString(conformanceLevel),
-                                          SignaturePackaging.fromString(signaturePackaging)
+                                          SignaturePackaging.fromString(signaturePackaging),
+                                          supportedSignatureAlgorithms
             );
         } catch (IllegalArgumentException e) {
             throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);

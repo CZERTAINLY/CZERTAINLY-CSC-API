@@ -33,4 +33,8 @@ public class WorkerRepository {
                                       .orElse(null);
     }
 
+    public List<WorkerWithCapabilities> getAllWorkers() {
+        return workersWithCapabilities;
+    }
+
 }

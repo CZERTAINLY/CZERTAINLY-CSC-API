@@ -7,6 +7,9 @@ public class CapabilitiesFilter {
     private String signatureQualifier;
     private SignatureFormat signatureFormat;
     private ConformanceLevel conformanceLevel;
+    private SignaturePackaging signaturePackaging;
+    private String signatureAlgorithm;
+    private String signatureAlgorithmParameters;
 
     public static CapabilitiesFilter configure() {
         return new CapabilitiesFilter();
@@ -27,6 +30,21 @@ public class CapabilitiesFilter {
         return this;
     }
 
+    public CapabilitiesFilter withSignaturePackaging(SignaturePackaging signaturePackaging) {
+        this.signaturePackaging = signaturePackaging;
+        return this;
+    }
+
+    public CapabilitiesFilter withSignatureAlgorithm(String signatureAlgorithm) {
+        this.signatureAlgorithm = signatureAlgorithm;
+        return this;
+    }
+
+    public CapabilitiesFilter withSignatureAlgorithmParameters(String signatureParameters) {
+        this.signatureAlgorithmParameters = signatureParameters;
+        return this;
+    }
+
     public Criterion<WorkerCapabilities> build() {
         var andCriterion = new AndCriterion<WorkerCapabilities>();
         if (signatureQualifier != null) {
@@ -40,6 +58,20 @@ public class CapabilitiesFilter {
         if (conformanceLevel != null) {
             andCriterion.add(new ConformanceLevelCriterion(conformanceLevel));
         }
+
+        if (signaturePackaging != null) {
+            andCriterion.add(new SignaturePackagingCriterion(signaturePackaging));
+        }
+
+        if (signatureAlgorithm != null) {
+            andCriterion.add(new SignatureAlgorithmCriterion(signatureAlgorithm));
+        }
+
+        if (signatureAlgorithmParameters != null) {
+            andCriterion.add(new SignatureAlgorithmParametersCriterion(signatureAlgorithmParameters));
+        }
+
+
         return andCriterion;
     }
 }

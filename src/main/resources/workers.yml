@@ -12,6 +12,10 @@ signers:
         signatureFormat: X
         conformanceLevel: Ades-B-B
         signaturePackaging: Detached
+        signatureAlgorithms:
+          - SHA256withRSA
+          - SHA384withRSA
+          - SHA512withRSA
     - name: "XAdES-Baseline-LT"
       id: 1010
       cryptoToken: "EntrustSAMCryptoToken"
@@ -22,3 +26,7 @@ signers:
         signatureFormat: X
         conformanceLevel: Ades-B-LT
         signaturePackaging: Detached
+        signatureAlgorithms:
+          - SHA256withRSA
+          - SHA384withRSA
+          - SHA512withRSA
