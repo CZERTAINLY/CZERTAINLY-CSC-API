@@ -2,6 +2,7 @@ csc:
     workerConfigurationFile: /home/lukas/dev/customers/3key/SignServer-CSC-API/src/main/resources/workers.yml
 
 idp:
+    baseUrl: https://kcac.czertainly.online/realms/IDnow
     jwksUri: https://kcac.czertainly.online/realms/IDnow/protocol/openid-connect/certs
     userInfoUrl: https://kcac.czertainly.online/realms/IDnow/protocol/openid-connect/userinfo?schema=openid
     issuer: https://kcac.czertainly.online/realms/IDnow
