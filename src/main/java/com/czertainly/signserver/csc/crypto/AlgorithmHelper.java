@@ -73,10 +73,10 @@ public class AlgorithmHelper {
     public boolean isDigestAlgorithmCompatibleWithSignatureAlgorithm(String digestAlgorithmOID,
                                                                      String signatureAlgorithmOID
     ) {
-        if (!isSignatureAlgorithm(digestAlgorithmOID)) {
+        if (!isSignatureAlgorithm(signatureAlgorithmOID)) {
             return false;
         }
-        if (!isDigestAlgorithm(signatureAlgorithmOID)) {
+        if (!isDigestAlgorithm(digestAlgorithmOID)) {
             return false;
         }
         String signatureAlgorithmName = getSignatureAlgorithmName(signatureAlgorithmOID);
