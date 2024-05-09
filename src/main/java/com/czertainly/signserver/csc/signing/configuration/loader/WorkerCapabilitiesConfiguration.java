@@ -8,6 +8,7 @@ public class WorkerCapabilitiesConfiguration{
         private String conformanceLevel;
         private String signaturePackaging;
         private List<String> signatureAlgorithms;
+        private boolean returnsValidationInfo = false;
 
     public List<String> getSignatureQualifiers() {
         return signatureQualifiers;
@@ -47,5 +48,13 @@ public class WorkerCapabilitiesConfiguration{
 
     public void setSignatureAlgorithms(List<String> signatureAlgorithms) {
         this.signatureAlgorithms = signatureAlgorithms;
+    }
+
+    public boolean isReturnsValidationInfo() {
+        return returnsValidationInfo;
+    }
+
+    public void setReturnsValidationInfo(boolean returnsValidationInfo) {
+        this.returnsValidationInfo = returnsValidationInfo;
     }
 }

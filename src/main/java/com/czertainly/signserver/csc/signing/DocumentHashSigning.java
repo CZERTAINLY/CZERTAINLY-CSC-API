@@ -12,6 +12,7 @@ import com.czertainly.signserver.csc.model.DocumentDigestsToSign;
 import com.czertainly.signserver.csc.model.SignDocParameters;
 import com.czertainly.signserver.csc.model.SignedDocuments;
 import com.czertainly.signserver.csc.model.ejbca.EndEntity;
+import com.czertainly.signserver.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.signserver.csc.providers.DistinguishedNameProvider;
 import com.czertainly.signserver.csc.providers.PatternUsernameProvider;
 import com.czertainly.signserver.csc.providers.SubjectAlternativeNameProvider;
@@ -106,22 +107,7 @@ public class DocumentHashSigning {
                     byte[] certificateChain = ejbcaClient.signCertificateRequest(endEntity, csr);
                     signserverClient.importCertificateChain(key.cryptoTokenId(), key.keyAlias(), certificateChain);
 
-                    if (documentDigestsToSign.hashes().size() == 1) {
-                        Signature signature = signserverClient.signSingleHash(
-                                worker.worker().workerName(),
-                                documentDigestsToSign.hashes().getFirst().getBytes(),
-                                key.keyAlias(),
-                                documentDigestsToSign.digestAlgorithm()
-                        );
-                        allSignatures.add(signature);
-                    } else {
-                        List<Signature> signatures = signserverClient.signMultipleHashes(
-                                worker.worker().workerName(),
-                                documentDigestsToSign,
-                                key.keyAlias()
-                        );
-                        allSignatures.addAll(signatures);
-                    }
+                    signHashes(parameters, documentDigestsToSign, worker, key, allSignatures, crls, ocsps, certificates);
                     signserverClient.removeKey(key.cryptoTokenId(), key.keyAlias());
                 } catch (Exception e) {
                     logger.info(
@@ -146,6 +132,83 @@ public class DocumentHashSigning {
         return Result.ok(new SignedDocuments(allSignatures, crls, ocsps, certificates));
     }
 
+    private void signHashes(SignDocParameters parameters, DocumentDigestsToSign documentDigestsToSign,
+                            WorkerWithCapabilities worker, CryptoTokenKey key, ArrayList<Signature> allSignatures,
+                            HashSet<String> crls, HashSet<String> ocsps, HashSet<String> certificates
+    ) {
+        if (documentDigestsToSign.hashes().size() == 1) {
+            if (parameters.returnValidationInfo()) {
+                signSingleHashWithValidationInfo(documentDigestsToSign, worker, key, allSignatures, crls, ocsps,
+                                                 certificates
+                );
+            } else {
+                signSingleHash(documentDigestsToSign, worker, key, allSignatures);
+            }
+        } else {
+            if(parameters.returnValidationInfo()) {
+                signMultipleHashesWithValidationInfo(documentDigestsToSign, worker, key, allSignatures, crls, ocsps,
+                                                     certificates
+                );
+            }else {
+                signMultipleHashes(documentDigestsToSign, worker, key, allSignatures);
+            }
+        }
+    }
+
+    private void signSingleHash(DocumentDigestsToSign documentDigestsToSign, WorkerWithCapabilities worker,
+                           CryptoTokenKey key, ArrayList<Signature> allSignatures
+    ) {
+        Signature signature = signserverClient.signSingleHash(
+                worker.worker().workerName(),
+                documentDigestsToSign.hashes().getFirst().getBytes(),
+                key.keyAlias(),
+                documentDigestsToSign.digestAlgorithm()
+        );
+        allSignatures.add(signature);
+    }
+
+    private void signMultipleHashes(DocumentDigestsToSign documentDigestsToSign, WorkerWithCapabilities worker,
+                           CryptoTokenKey key, ArrayList<Signature> allSignatures
+    ) {
+        List<Signature> signatures = signserverClient.signMultipleHashes(
+                worker.worker().workerName(),
+                documentDigestsToSign,
+                key.keyAlias()
+        );
+        allSignatures.addAll(signatures);
+    }
+
+    private void signMultipleHashesWithValidationInfo(DocumentDigestsToSign documentDigestsToSign, WorkerWithCapabilities worker,
+                                                      CryptoTokenKey key, ArrayList<Signature> allSignatures, HashSet<String> crls,
+                                                      HashSet<String> ocsps, HashSet<String> certificates
+    ) {
+        SignedDocuments documents = signserverClient.signMultipleHashesWithValidationData(
+                worker.worker().workerName(),
+                documentDigestsToSign,
+                key.keyAlias()
+        );
+        allSignatures.addAll(documents.signatures());
+        crls.addAll(documents.crls());
+        ocsps.addAll(documents.ocsps());
+        certificates.addAll(documents.certs());
+    }
+
+    private void signSingleHashWithValidationInfo(DocumentDigestsToSign documentDigestsToSign, WorkerWithCapabilities worker,
+                           CryptoTokenKey key, ArrayList<Signature> allSignatures, HashSet<String> crls,
+                           HashSet<String> ocsps, HashSet<String> certificates
+    ) {
+        SignedDocuments documents = signserverClient.signSingleHashWithValidationData(
+                worker.worker().workerName(),
+                documentDigestsToSign.hashes().getFirst().getBytes(),
+                key.keyAlias(),
+                documentDigestsToSign.digestAlgorithm()
+            );
+        allSignatures.addAll(documents.signatures());
+        crls.addAll(documents.crls());
+        ocsps.addAll(documents.ocsps());
+        certificates.addAll(documents.certs());
+    }
+
     private WorkerWithCapabilities getCompatibleWorker(
             SignDocParameters parameters,
             DocumentDigestsToSign documentDigestsToSign
@@ -157,6 +220,7 @@ public class DocumentHashSigning {
                 .withConformanceLevel(documentDigestsToSign.conformanceLevel())
                 .withSignatureAlgorithm(documentDigestsToSign.getSignatureAlgorithm())
                 .withSignaturePackaging(documentDigestsToSign.signaturePackaging())
+                .withReturnValidationInfo(parameters.returnValidationInfo())
                 .build();
 
         return workerRepository.selectWorker(requiredWorkerCapabilities);

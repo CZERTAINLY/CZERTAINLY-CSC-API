@@ -10,6 +10,7 @@ public class CapabilitiesFilter {
     private SignaturePackaging signaturePackaging;
     private String signatureAlgorithm;
     private String signatureAlgorithmParameters;
+    private boolean returnValidationInfo;
 
     public static CapabilitiesFilter configure() {
         return new CapabilitiesFilter();
@@ -45,6 +46,11 @@ public class CapabilitiesFilter {
         return this;
     }
 
+    public CapabilitiesFilter withReturnValidationInfo(boolean returnValidationInfo) {
+        this.returnValidationInfo = returnValidationInfo;
+        return this;
+    }
+
     public Criterion<WorkerCapabilities> build() {
         var andCriterion = new AndCriterion<WorkerCapabilities>();
         if (signatureQualifier != null) {
@@ -70,6 +76,8 @@ public class CapabilitiesFilter {
         if (signatureAlgorithmParameters != null) {
             andCriterion.add(new SignatureAlgorithmParametersCriterion(signatureAlgorithmParameters));
         }
+
+        andCriterion.add(new ValidationInfoCriterion(returnValidationInfo));
 
 
         return andCriterion;

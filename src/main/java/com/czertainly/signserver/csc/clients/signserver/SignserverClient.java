@@ -4,14 +4,12 @@ import com.czertainly.signserver.csc.clients.signserver.rest.SignserverProcessEn
 import com.czertainly.signserver.csc.clients.signserver.rest.SignserverRestClient;
 import com.czertainly.signserver.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.signserver.csc.clients.signserver.ws.dto.CertReqData;
-import com.czertainly.signserver.csc.clients.signserver.ws.dto.GetPKCS10CertificateRequestForAlias2Response;
 import com.czertainly.signserver.csc.clients.signserver.ws.dto.TokenEntry;
 import com.czertainly.signserver.csc.clients.signserver.ws.dto.TokenSearchResults;
 import com.czertainly.signserver.csc.common.exceptions.RemoteSystemException;
-import com.czertainly.signserver.csc.common.result.ErrorWithDescription;
-import com.czertainly.signserver.csc.common.result.Result;
 import com.czertainly.signserver.csc.crypto.DigestAlgorithmJavaName;
 import com.czertainly.signserver.csc.model.DocumentDigestsToSign;
+import com.czertainly.signserver.csc.model.SignedDocuments;
 import com.czertainly.signserver.csc.model.builders.CryptoTokenKeyBuilder;
 import com.czertainly.signserver.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.signserver.csc.signing.Signature;
@@ -19,7 +17,6 @@ import com.czertainly.signserver.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.ws.soap.client.SoapFaultClientException;
 
 import java.io.IOException;
 import java.util.*;
@@ -41,18 +38,86 @@ public class SignserverClient {
         this.objectMapper = objectMapper;
     }
 
-
     public Signature signSingleHash(String workerName, byte[] data, String keyAlias, String digestAlgorithm) {
+        byte[] signatureBytes = singleSign(workerName, data, keyAlias, digestAlgorithm);
+        Base64.Decoder decoder = Base64.getDecoder();
+        return new Signature(decoder.decode(signatureBytes), SignaturePackaging.DETACHED);
+    }
+
+    public SignedDocuments signSingleHashWithValidationData(String workerName, byte[] data, String keyAlias, String digestAlgorithm) {
+        byte[] signatureWithValidationData = singleSign(workerName, data, keyAlias, digestAlgorithm);
+        Base64.Decoder decoder = Base64.getDecoder();
+
+        byte[] signatureData = decoder.decode(signatureWithValidationData);
+        EncodedValidationDataWrapper validationDataWrapper;
+        try {
+            validationDataWrapper = objectMapper.readValue(
+                    signatureData,
+                    EncodedValidationDataWrapper.class
+            );
+        } catch (IOException e) {
+            throw new RemoteSystemException("Signserver batch signature response could not be parsed.", e);
+        }
+        byte[] signatureBytes = decoder.decode(validationDataWrapper.signatureData().getBytes());
+
+        return new SignedDocuments(
+                List.of(new Signature(signatureBytes, SignaturePackaging.DETACHED)),
+                new HashSet<>(validationDataWrapper.validationData().crl()),
+                new HashSet<>(validationDataWrapper.validationData().ocsp()),
+                new HashSet<>(validationDataWrapper.validationData().certificates())
+        );
+    }
+
+    public List<Signature> signMultipleHashes(String workerName, DocumentDigestsToSign digests, String keyAlias) {
+        byte[] encodedSignatureData = multisign(workerName, digests, keyAlias);
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] signatureData = decoder.decode(encodedSignatureData);
+
+        BatchSignaturesResponse batchSignatures;
+        try {
+            batchSignatures = objectMapper.readValue(
+                    signatureData,
+                    BatchSignaturesResponse.class
+            );
+        } catch (IOException e) {
+            throw new RemoteSystemException("Signserver batch signature response could not be parsed.", e);
+        }
+        return mapToSignaturesList(batchSignatures, decoder);
+    }
+
+    public SignedDocuments signMultipleHashesWithValidationData(String workerName, DocumentDigestsToSign digests, String keyAlias) {
+        byte[] encodedSignatureData = multisign(workerName, digests, keyAlias);
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] signatureData = decoder.decode(encodedSignatureData);
+
+        BatchSignatureWithValidationData batchSignaturesWithValidationData;
+        try {
+            batchSignaturesWithValidationData = objectMapper.readValue(
+                    signatureData,
+                    BatchSignatureWithValidationData.class
+            );
+        } catch (IOException e) {
+            throw new RemoteSystemException("Signserver batch signature response could not be parsed.", e);
+        }
+        List<Signature> signatures = mapToSignaturesList(batchSignaturesWithValidationData.signatureData(), decoder);
+        return new SignedDocuments(
+                signatures,
+                new HashSet<>(batchSignaturesWithValidationData.validationData().crl()),
+                new HashSet<>(batchSignaturesWithValidationData.validationData().ocsp()),
+                new HashSet<>(batchSignaturesWithValidationData.validationData().certificates())
+        );
+    }
+
+    private byte[] singleSign(String workerName, byte[] data, String keyAlias, String digestAlgorithm) {
         var metadata = new HashMap<String, String>();
         metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
         metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
 
         // SignserverProcessEncoding.NONE is used as hash is already base64 encoded, so no need to encode it again
-        byte[] signatureBytes = sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
-        return new Signature(signatureBytes, SignaturePackaging.DETACHED);
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
     }
 
-    public List<Signature> signMultipleHashes(String workerName, DocumentDigestsToSign digests, String keyAlias) {
+    private byte[] multisign(String workerName, DocumentDigestsToSign digests, String keyAlias) {
         var signatureRequests = new ArrayList<BatchSignatureRequest>();
         int i = 0;
 
@@ -77,23 +142,15 @@ public class SignserverClient {
             throw new RuntimeException("Serialization of batch signature request has failed.", e);
         }
 
-        byte[] encodedSignatureData = sign(workerName, requestBytes, keyAlias, metadata,
-                                           SignserverProcessEncoding.NONE
+        return sign(workerName, requestBytes, keyAlias, metadata,
+                    SignserverProcessEncoding.NONE
         );
-        byte[] signatureData = Base64.getDecoder().decode(encodedSignatureData);
+    }
 
-        BatchSignaturesResponse batchSignatures;
-        try {
-            batchSignatures = objectMapper.readValue(
-                    signatureData,
-                    BatchSignaturesResponse.class
-            );
-        } catch (IOException e) {
-            throw new RemoteSystemException("Signserver batch signature response could not be parsed.", e);
-        }
+    private static List<Signature> mapToSignaturesList(BatchSignaturesResponse batchSignatures, Base64.Decoder decoder) {
         List<Signature> signatures = new ArrayList<>();
         for (BatchSignatureResponse response : batchSignatures.signatures()) {
-            signatures.add(new Signature(response.signature().getBytes(), SignaturePackaging.DETACHED));
+            signatures.add(new Signature(decoder.decode(response.signature()), SignaturePackaging.DETACHED));
         }
         return signatures;
     }

@@ -101,11 +101,13 @@ public class WorkerConfigurationLoader {
             );
         }
 
+        boolean returnsValidationInfo = capabilitiesConfiguration.isReturnsValidationInfo();
+
         try {
             return new WorkerCapabilities(signatureQualifiers, SignatureFormat.fromString(signatureFormat),
                                           ConformanceLevel.fromString(conformanceLevel),
                                           SignaturePackaging.fromString(signaturePackaging),
-                                          supportedSignatureAlgorithms
+                                          supportedSignatureAlgorithms, returnsValidationInfo
             );
         } catch (IllegalArgumentException e) {
             throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);

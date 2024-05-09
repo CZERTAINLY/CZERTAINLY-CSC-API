@@ -8,6 +8,7 @@ public record WorkerCapabilities(
         SignatureFormat signatureFormat,
         ConformanceLevel conformanceLevel,
         SignaturePackaging signaturePackaging,
-        List<String> supportedSignatureAlgorithms
+        List<String> supportedSignatureAlgorithms,
+        boolean returnsValidationInfo
         ) {
 }
