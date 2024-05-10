@@ -19,7 +19,6 @@ public class InfoService {
     String componentName;
     String logoUri;
     String region;
-
     String idbBaseUri;
     WorkerRepository workerRepository;
 
@@ -92,8 +91,9 @@ public class InfoService {
 
     private List<String> getSupportedSignatureAlgorithms() {
         return workerRepository.getAllWorkers().stream()
-                               .flatMap(worker -> worker.capabilities().supportedSignatureAlgorithms().stream().map(alg -> signatureAlgorithmIdentifierFinder.find(alg).getAlgorithm().toString()))
+                               .flatMap(worker -> worker.capabilities().supportedSignatureAlgorithms().stream())
                                .distinct()
+                               .map(alg -> signatureAlgorithmIdentifierFinder.find(alg).getAlgorithm().toString())
                                .toList();
     }
 
