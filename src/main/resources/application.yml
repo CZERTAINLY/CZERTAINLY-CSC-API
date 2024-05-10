@@ -92,6 +92,22 @@ caProvider:
             # Certificate profile name to use for the certificate
             certificateProfileName: DemoDocumentSigningEECertificateProfile
 
+# TLS/mTLS configuration
+server:
+    ssl:
+        enabled: true
+        # Configuration of the keystore with server certificate and private key
+        key-store-type: PKCS12
+        key-store: /opt/cscapi/keystore.p12
+        key-store-password: password
+        key-alias: server
+        key-password: keysecret
+        # Configuration of the truststore with trusted client certificates/CA certificates
+        client-auth: NEED # NEED = mandatory mTLS, WANT = optional mTLS, NONE = no mTLS
+        trust-store-type: PKCS12
+        trust-store: /opt/cscapi/truststore.p12
+        trust-store-password: password
+
 # Spring configuration
 spring:
     jackson:
