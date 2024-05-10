@@ -16,22 +16,33 @@ import java.util.List;
 @Component
 public class InfoService {
 
+    String componentName;
+    String logoUri;
+    String region;
+
     String idbBaseUri;
     WorkerRepository workerRepository;
 
     SignatureAlgorithmIdentifierFinder signatureAlgorithmIdentifierFinder = new DefaultSignatureAlgorithmIdentifierFinder();
 
-    public InfoService(@Value("${idp.baseUrl}") String idbBaseUri, WorkerRepository workerRepository) {
+    public InfoService(
+            @Value("${csc.name}") String componentName,
+            @Value("${csc.logo}") String logoUri,
+            @Value("${csc.region}") String region,
+            @Value("${idp.baseUrl}") String idbBaseUri,
+            WorkerRepository workerRepository) {
+        this.componentName = componentName;
+        this.logoUri = logoUri;
+        this.region = region;
         this.idbBaseUri = idbBaseUri;
         this.workerRepository = workerRepository;
     }
-
     public InfoDto getInfo() {
         return new InfoDto(
                 "2.0.0.0",
-                "CZertainly Signing CSC",
-                "https://www.czertainly.com/web/image/website/2/logo/CZERTAINLY?unique=847b5c1",
-                "CZ",
+                componentName,
+                logoUri,
+                region,
                 "en",
                 List.of("oauth2client"),
                 idbBaseUri,

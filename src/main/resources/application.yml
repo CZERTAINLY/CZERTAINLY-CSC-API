@@ -1,5 +1,13 @@
 # CSC API configuration
 csc:
+    # The name of the CSC component that will be provided by the Info endpoint
+    name: CSC API
+    # The URI of the image file containing the logo of the remote service which SHALL be published online.
+    # The image SHALL be in either JPEG or PNG format and not larger than 256x256 pixels.
+    logo: https://csc.example/logo.png
+    # The ISO 3166-1 [22] Alpha-2 code of the Country where the remote  service provider is established
+    # (e.g. ES for Spain).
+    region: CZ
     # SignServer workers configuration file
     workerConfigurationFile: /opt/cscapi/workers-dev.yml
     # Number of preloaded keys that are stored in memory for faster access
