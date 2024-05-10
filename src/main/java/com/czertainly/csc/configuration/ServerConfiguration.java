@@ -167,8 +167,8 @@ public class ServerConfiguration {
     @Bean
     public HttpComponentsClientHttpRequestFactory requestFactory(
             @Value("${signingProvider.signserver.client.authType}") SignApiAuthorization authzType,
-            @Value("${signingProvider.signserver.admin.keystore.path}") String storePath,
-            @Value("${signingProvider.signserver.admin.keystore.password}") String password
+            @Value("${signingProvider.signserver.client.certificate.keystore.path}") String storePath,
+            @Value("${signingProvider.signserver.client.certificate.keystore.password}") String password
     ) throws ApplicationConfigurationException {
         if (authzType != SignApiAuthorization.CERTIFICATE) {
             return new HttpComponentsClientHttpRequestFactory(HttpClients.createDefault());
