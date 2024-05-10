@@ -18,7 +18,7 @@ public class DocumentSigning {
     DistinguishedNameProvider distinguishedNameProvider;
 
 
-    public DocumentSigning(SignserverClient signserverClient, WorkerRepository workerRepository, NaiveKeySelector keySelector, DistinguishedNameProvider distinguishedNameProvider) {
+    public DocumentSigning(SignserverClient signserverClient, WorkerRepository workerRepository, PreloadingKeySelector keySelector, DistinguishedNameProvider distinguishedNameProvider) {
         this.signserverClient = signserverClient;
         this.workerRepository = workerRepository;
         this.keySelector = keySelector;

@@ -1,5 +1,6 @@
 csc:
     workerConfigurationFile: /home/lukas/dev/customers/3key/SignServer-CSC-API/src/main/resources/workers.yml
+    numberOfPreloadedKeys: 10
 
 idp:
     baseUrl: https://kcac.czertainly.online/realms/IDnow
