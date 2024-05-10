@@ -25,7 +25,7 @@ public class PreloadingKeySelector implements KeySelector {
     Map<Integer, ConcurrentLinkedQueue<CryptoTokenKey>> cryptoTokensKeys;
 
     public PreloadingKeySelector(SignserverClient signserverClient, WorkerRepository workerRepository,
-                                 @Value("${signserver.csc.numberOfPreloadedKeys}") int maxNumberOfPreloadedKeys
+                                 @Value("${csc.numberOfPreloadedKeys}") int maxNumberOfPreloadedKeys
     ) {
         this.signserverClient = signserverClient;
         this.workerRepository = workerRepository;

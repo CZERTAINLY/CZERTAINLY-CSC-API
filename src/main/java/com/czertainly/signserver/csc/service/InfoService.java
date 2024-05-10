@@ -19,7 +19,7 @@ public class InfoService {
     String idbBaseUri;
     WorkerRepository workerRepository;
 
-    public InfoService(@Value("idp.baseUrl") String idbBaseUri, WorkerRepository workerRepository) {
+    public InfoService(@Value("${idp.baseUrl}") String idbBaseUri, WorkerRepository workerRepository) {
         this.idbBaseUri = idbBaseUri;
         this.workerRepository = workerRepository;
     }
