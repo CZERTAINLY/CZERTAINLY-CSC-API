@@ -13,14 +13,10 @@ public class SignatureFacade {
 
     DocumentSigning documentSigning;
     DocumentHashSigning documentHashSigning;
-    ExtCMSSigning extCMSSigning;
 
-    public SignatureFacade(DocumentSigning documentSigning, DocumentHashSigning documentHashSigning,
-                           ExtCMSSigning extCMSSigning
-    ) {
+    public SignatureFacade(DocumentSigning documentSigning, DocumentHashSigning documentHashSigning) {
         this.documentSigning = documentSigning;
         this.documentHashSigning = documentHashSigning;
-        this.extCMSSigning = extCMSSigning;
     }
 
     public Result<SignedDocuments, ErrorWithDescription> signDocuments(SignDocParameters signDocParameters, String accessToken) {
