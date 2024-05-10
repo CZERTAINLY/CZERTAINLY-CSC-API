@@ -13,7 +13,6 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
@@ -78,7 +77,7 @@ public class ServerConfiguration {
                                                .build();
 
 
-            final var sslsf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+            final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
 
             final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
                                                              .register("https", sslsf)
@@ -167,9 +166,14 @@ public class ServerConfiguration {
 
     @Bean
     public HttpComponentsClientHttpRequestFactory requestFactory(
+            @Value("${signingProvider.signserver.authorization.type}") SignApiAuthorization authzType,
             @Value("${signingProvider.signserver.clientKeyStore.storePath}") String storePath,
             @Value("${signingProvider.signserver.clientKeyStore.password}") String password
     ) throws ApplicationConfigurationException {
+        if (authzType != SignApiAuthorization.CERTIFICATE) {
+            return new HttpComponentsClientHttpRequestFactory(HttpClients.createDefault());
+        }
+
         KeyStore keyStore;
         try {
             keyStore = KeyStore.getInstance("PKCS12");
@@ -182,7 +186,7 @@ public class ServerConfiguration {
                                                .build();
 
 
-            final var sslsf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+            final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
 
             final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
                                                              .register("https", sslsf)

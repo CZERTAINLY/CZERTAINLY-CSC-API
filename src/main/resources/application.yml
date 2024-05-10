@@ -11,9 +11,15 @@ idp:
 
 signingProvider:
     signserver:
-        url: https://localhost/signserver
+        url: https://signserver.3key.company/signserver
+        authorization:
+            type: CERTIFICATE  # BASIC OR CERTIFICATE; when using CERTIFICATE, the certificate from the clientKeyStore will be used
+            basic: # Only used when authorization type is BASIC
+                username: admin
+                password: admin
+
         clientKeyStore:
-            storePath: /home/lukas/dev/customers/3key/3Key-SignServer-Full-Docker/lukas-development/docker_data/signserver_management/lukas_czertainly.p12
+            storePath: /home/lukas/dev/customers/3key/lukas.najman.p12
             password: lukas.najman # The same password is used for keystore and private key
 
 caProvider:
@@ -27,7 +33,7 @@ caProvider:
         sanPattern: None
         ca: DemoClientSubCA_2307RSA
         endEntityProfile: DemoDocumentSigningEndEntityProfile
-        certificateProfile: DemoDocumentSigningLongEECertificateProfile
+        certificateProfile: DemoDocumentSigningEECertificateProfile
 
 spring:
     jackson:
