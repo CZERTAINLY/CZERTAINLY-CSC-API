@@ -34,6 +34,8 @@ signingProvider:
     signserver:
         # URL of the SignServer
         url: https://signserver.example.com/signserver
+        # Name of the truststore bundle containing trusted certificates; OPTIONAL
+#        truststoreBundle: trustedcertificates
         client:
             # Authorization type for the client signing operations
             # BASIC is used for basic authentication, and basic username and password are required
@@ -41,12 +43,7 @@ signingProvider:
             authType: CERTIFICATE
             # Only used when authorization type is CERTIFICATE
             certificate:
-                keystore:
-                    # Path to the PKCS#12 keystore file, containing the client certificate and private key,
-                    # password should be the same as the password for the private key
-                    path: /opt/cscapi/signserver/client-keystore.p12
-                    # Client keystore password
-                    password: password
+                keystoreBundle: signserverClient
             # Only used when authorization type is BASIC
             basic:
                 # Username for basic authentication
@@ -55,12 +52,8 @@ signingProvider:
                 password: admin
         # Client keystore configuration for admin operations
         admin:
-            keystore:
-                # Path to the PKCS#12 keystore file, containing the admin certificate and private key,
-                # password should be the same as the password for the private key
-                path: /opt/cscapi/signserver/admin-keystore.p12
-                # Admin keystore password
-                password: password
+            # Name of the keystore bundle containing the admin certificate and private key
+            keystoreBundle: signserverAdmin
 
 # CA provider configuration
 caProvider:
@@ -68,14 +61,13 @@ caProvider:
     ejbca:
         # URL of the EJBCA
         url: https://ejbca.example.com/ejbca
+        # Name of the truststore bundle containing trusted certificates; OPTIONAL
+#        truststoreBundle: trustedcertificates
         # Admin keystore configuration for RA operations
         admin:
-            keystore:
-                # Path to the PKCS#12 keystore file, containing the admin certificate and private key,
-                # password should be the same as the password for the private key
-                path: /opt/cscapi/ejbca/admin-keystore.p12
-                # Admin keystore password
-                password: password
+            # Name of the keystore bundle containing the admin certificate and private key
+            keystoreBundle: ejbcaAdmin
+
         # End entity configuration
         endEntity:
             # Username pattern to create username
@@ -112,6 +104,40 @@ server:
 spring:
     jackson:
         default-property-inclusion: NON_NULL
+    ssl:
+        bundle:
+            # Sample configuration of a truststore using PEM encoded certificate or certificate chain
+            # pem:
+                # trustedcertificates:
+                #    truststore:
+                #        certificate: /home/lukas/Downloads/signserver-3key-company.pem
+
+            jks:
+                # Sample configuration of a truststore using PKCS12 keystore
+                # trustedcertificates:
+                #   truststore:
+                #   type: "PKCS12"
+                #   location: /opt/cscapi/truststore.p12
+                #   password: password
+
+                ejbcaAdmin:
+                    keystore:
+                        type: "PKCS12"
+                        location: /opt/cscapi/ejbca/admin-keystore.p12
+                        password: password
+
+                signserverAdmin:
+                    keystore:
+                        type: "PKCS12"
+                        location: /opt/cscapi/signserver/admin-keystore.p12
+                        password: password
+
+                signserverClient:
+                    keystore:
+                        type: "PKCS12"
+                        location: /opt/cscapi/signserver/client-keystore.p12
+                        password: password
+
 
 # Logging configuration
 logging:

@@ -1,23 +1,29 @@
 package com.czertainly.csc.configuration;
 
 import com.czertainly.csc.api.auth.authn.CscJwtAuthenticationConverter;
-import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
-import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.csc.common.PatternReplacer;
+import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
+import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.loader.WorkerConfigurationLoader;
 import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.ssl.SslStoreBundle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -31,11 +37,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.ws.transport.http.HttpComponents5MessageSender;
 
 import javax.net.ssl.SSLContext;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -62,80 +64,20 @@ public class ServerConfiguration {
 
     @Bean("signserverMessageSender")
     public HttpComponents5MessageSender signserverHttpComponentsMessageSender(
-            @Value("${signingProvider.signserver.admin.keystore.path}") String keystorePath,
-            @Value("${signingProvider.signserver.admin.keystore.password}") String password
+            @Value("${signingProvider.signserver.admin.keystoreBundle:none}") String keystoreBundleName,
+            @Value("${signingProvider.signserver.truststoreBundle:none}") String truststoreBundleName,
+            SslBundles sslBundles
     ) throws ApplicationConfigurationException {
-        KeyStore keyStore;
-        try {
-            keyStore = KeyStore.getInstance("PKCS12");
-            try (InputStream keyStoreInputStream = new FileInputStream(keystorePath)) {
-                keyStore.load(keyStoreInputStream, password.toCharArray());
-            }
-
-            SSLContext sslContext = SSLContexts.custom()
-                                               .loadKeyMaterial(keyStore, password.toCharArray())
-                                               .build();
-
-
-            final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
-
-            final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-                                                             .register("https", sslsf)
-                                                             .build();
-
-
-            final var connectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
-
-            final HttpClient httpClient = HttpClients.custom()
-                                                     .setConnectionManager(connectionManager)
-                                                     .addRequestInterceptorFirst(
-                                                             new HttpComponents5MessageSender.RemoveSoapHeadersInterceptor())
-                                                     .build();
-
-            return new HttpComponents5MessageSender(httpClient);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException |
-                 UnrecoverableKeyException | KeyManagementException e) {
-            throw new ApplicationConfigurationException("Failed to configure application." + e.getMessage());
-        }
+        return getHttpComponentsMessageSender(keystoreBundleName, truststoreBundleName, sslBundles);
     }
 
     @Bean("ejbcaMessageSender")
     public HttpComponents5MessageSender ejbcaHttpComponentsMessageSender(
-            @Value("${caProvider.ejbca.admin.keystore.path}") String keystorePath,
-            @Value("${caProvider.ejbca.admin.keystore.password}") String password
+            @Value("${caProvider.ejbca.admin.keystoreBundle:none}") String keystoreBundleName,
+            @Value("${caProvider.ejbca.truststoreBundle:none}") String truststoreBundleName,
+            SslBundles sslBundles
     ) throws ApplicationConfigurationException {
-        KeyStore keyStore;
-        try {
-            keyStore = KeyStore.getInstance("PKCS12");
-            try (InputStream keyStoreInputStream = new FileInputStream(keystorePath)) {
-                keyStore.load(keyStoreInputStream, password.toCharArray());
-            }
-
-            SSLContext sslContext = SSLContexts.custom()
-                                               .loadKeyMaterial(keyStore, password.toCharArray())
-                                               .build();
-
-
-            final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
-
-            final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-                                                             .register("https", sslsf)
-                                                             .build();
-
-
-            final var connectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
-
-            final HttpClient httpClient = HttpClients.custom()
-                                                     .setConnectionManager(connectionManager)
-                                                     .addRequestInterceptorFirst(
-                                                             new HttpComponents5MessageSender.RemoveSoapHeadersInterceptor())
-                                                     .build();
-
-            return new HttpComponents5MessageSender(httpClient);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException |
-                 UnrecoverableKeyException | KeyManagementException e) {
-            throw new ApplicationConfigurationException("Failed to configure application." + e.getMessage());
-        }
+        return getHttpComponentsMessageSender(keystoreBundleName, truststoreBundleName, sslBundles);
     }
 
     @Bean(name = "signserverWsMarshaller")
@@ -167,41 +109,35 @@ public class ServerConfiguration {
     @Bean
     public HttpComponentsClientHttpRequestFactory requestFactory(
             @Value("${signingProvider.signserver.client.authType}") SignApiAuthorization authzType,
-            @Value("${signingProvider.signserver.client.certificate.keystore.path}") String storePath,
-            @Value("${signingProvider.signserver.client.certificate.keystore.password}") String password
+            @Value("${signingProvider.signserver.client.certificate.keystoreBundle:none}") String keystoreBundleName,
+            @Value("${signingProvider.signserver.truststoreBundle:none}") String truststoreBundleName,
+            SslBundles sslBundles
     ) throws ApplicationConfigurationException {
-        if (authzType != SignApiAuthorization.CERTIFICATE) {
-            return new HttpComponentsClientHttpRequestFactory(HttpClients.createDefault());
-        }
-
-        KeyStore keyStore;
         try {
-            keyStore = KeyStore.getInstance("PKCS12");
-            try (InputStream keyStoreInputStream = new FileInputStream(storePath)) {
-                keyStore.load(keyStoreInputStream, password.toCharArray());
+            SSLContextBuilder builder = SSLContexts.custom();
+
+            if (!truststoreBundleName.equals("none") && !truststoreBundleName.isBlank()) {
+                SslBundle truststoreBundle = sslBundles.getBundle(truststoreBundleName);
+                KeyStore truststore = truststoreBundle.getStores().getTrustStore();
+                builder.loadTrustMaterial(truststore, null);
             }
 
-            SSLContext sslContext = SSLContexts.custom()
-                                               .loadKeyMaterial(keyStore, password.toCharArray())
-                                               .build();
+            if (authzType != SignApiAuthorization.CERTIFICATE) {
+                if (keystoreBundleName.equals("none") || keystoreBundleName.isBlank()) {
+                    throw new ApplicationConfigurationException(
+                            "Keystore bundle name must be provided when using certificate authorization.");
+                }
+                SslStoreBundle keystoreBundle = sslBundles.getBundle(keystoreBundleName).getStores();
+                KeyStore keystore = keystoreBundle.getKeyStore();
+                builder.loadKeyMaterial(keystore, keystoreBundle.getKeyStorePassword().toCharArray());
+            }
 
+            SSLContext sslContext = builder.build();
 
-            final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
-
-            final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-                                                             .register("https", sslsf)
-                                                             .build();
-
-
-            final var connectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
-
-            final HttpClient httpClient = HttpClients.custom()
-                                                     .setConnectionManager(connectionManager)
-                                                     .build();
+            final HttpClient httpClient = getHttpClient(sslContext, null);
 
             return new HttpComponentsClientHttpRequestFactory(httpClient);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException |
-                 UnrecoverableKeyException | KeyManagementException e) {
+        } catch (Exception e) {
             throw new ApplicationConfigurationException("Failed to configure application." + e.getMessage());
         }
     }
@@ -231,5 +167,56 @@ public class ServerConfiguration {
     @Bean("dnProvider")
     public PatternReplacer usernameProvider(@Value("${caProvider.ejbca.endEntity.dnPattern}") String dnPattern) {
         return new PatternReplacer(dnPattern, "Distinguished Name Provider");
+    }
+
+    private HttpComponents5MessageSender getHttpComponentsMessageSender(
+            String keystoreBundleName,
+            String truststoreBundleName,
+            SslBundles sslBundles
+    ) {
+        try {
+            SSLContextBuilder builder = SSLContexts.custom();
+
+            if (!truststoreBundleName.equals("none") && !truststoreBundleName.isBlank()) {
+                SslBundle truststoreBundle = sslBundles.getBundle(truststoreBundleName);
+                KeyStore truststore = truststoreBundle.getStores().getTrustStore();
+                builder.loadTrustMaterial(truststore, null);
+            }
+
+            if (keystoreBundleName.equals("none") || keystoreBundleName.isBlank()) {
+                throw new ApplicationConfigurationException(
+                        "Keystore bundle name must be provided when using certificate authorization.");
+            }
+            SslStoreBundle keystoreBundle = sslBundles.getBundle(keystoreBundleName).getStores();
+            KeyStore keystore = keystoreBundle.getKeyStore();
+            builder.loadKeyMaterial(keystore, keystoreBundle.getKeyStorePassword().toCharArray());
+
+            SSLContext sslContext = builder.build();
+
+           final HttpClient httpClient = getHttpClient(sslContext, new HttpComponents5MessageSender.RemoveSoapHeadersInterceptor());
+
+            return new HttpComponents5MessageSender(httpClient);
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | KeyManagementException e) {
+            throw new ApplicationConfigurationException("Failed to configure application." + e.getMessage());
+        }
+    }
+
+    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor) {
+        final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
+
+        final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                                                         .register("https", sslsf)
+                                                         .build();
+
+        final var connectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
+
+        HttpClientBuilder builder = HttpClients.custom()
+                                               .setConnectionManager(connectionManager);
+
+        if (interceptor != null) {
+            builder.addRequestInterceptorFirst(interceptor);
+        }
+
+        return builder.build();
     }
 }
