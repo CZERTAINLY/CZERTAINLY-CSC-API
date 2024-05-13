@@ -1,9 +1,9 @@
 package com.czertainly.csc.signing;
 
-import com.czertainly.csc.model.signserver.CryptoToken;
-import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.exceptions.ApplicationException;
+import com.czertainly.csc.model.signserver.CryptoToken;
+import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ public class PreloadingKeySelector implements KeySelector {
     SignserverClient signserverClient;
     WorkerRepository workerRepository;
     Map<Integer, ConcurrentLinkedQueue<CryptoTokenKey>> cryptoTokensKeys;
+    Set<CryptoTokenKey> keysInUse;
 
     public PreloadingKeySelector(SignserverClient signserverClient, WorkerRepository workerRepository,
                                  @Value("${csc.numberOfPreloadedKeys}") int maxNumberOfPreloadedKeys
@@ -31,6 +33,7 @@ public class PreloadingKeySelector implements KeySelector {
         this.workerRepository = workerRepository;
         this.maxNumberOfPreloadedKeys = maxNumberOfPreloadedKeys;
         cryptoTokensKeys = new HashMap<>();
+        keysInUse = ConcurrentHashMap.newKeySet();
     }
 
     @Override
@@ -48,7 +51,12 @@ public class PreloadingKeySelector implements KeySelector {
                     "No pre-generated keys are available for signing for CryptoToken " + cryptoToken.name() + " used by worker "
                             + workerId);
         }
+        keysInUse.add(key);
         return key;
+    }
+
+    public void markKeyAsUsed(CryptoTokenKey key) {
+        keysInUse.remove(key);
     }
 
     public void preloadKeysForCryptoToken(CryptoToken cryptoToken) {
@@ -84,6 +92,7 @@ public class PreloadingKeySelector implements KeySelector {
             newKeys.stream()
                    .filter(k -> k.status() != null && !k.status().certified())
                    .filter(k -> !existingKeysAliases.contains(k.keyAlias()))
+                   .filter(k -> !keysInUse.contains(k))
                    .forEach(existingKeys::add);
         }
     }

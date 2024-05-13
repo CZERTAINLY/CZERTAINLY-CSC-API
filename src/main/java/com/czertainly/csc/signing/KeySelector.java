@@ -6,4 +6,6 @@ public interface KeySelector {
 
     CryptoTokenKey selectKey(int workerId);
 
+    void markKeyAsUsed(CryptoTokenKey key);
+
 }
