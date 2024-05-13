@@ -1,9 +1,12 @@
 package com.czertainly.csc.crypto;
 
+import com.czertainly.csc.providers.KeyValueSource;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureNameFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,6 +14,7 @@ import java.util.List;
 @Component
 public class AlgorithmHelper {
 
+    private static final Logger logger = LoggerFactory.getLogger(KeyValueSource.class);
     private final List<String> keyAlgorithms = List.of("RSA", "ECDSA");
 
     DefaultSignatureNameFinder defaultSignatureNameFinder = new DefaultSignatureNameFinder();
@@ -24,26 +28,42 @@ public class AlgorithmHelper {
     public boolean isSignatureAlgorithm(String algorithmOID) {
         ASN1ObjectIdentifier identifier = ASN1ObjectIdentifier.tryFromID(algorithmOID);
         if (identifier == null) {
+            logger.debug("Algorithm OID {} is not a valid OID and hence not valid signature algorithm.", algorithmOID);
             return false;
         }
-        return defaultSignatureNameFinder.hasAlgorithmName(identifier);
+
+        boolean isKnown =  defaultSignatureNameFinder.hasAlgorithmName(identifier);
+        if (!isKnown) {
+            logger.debug("Algorithm OID {} does not represent a known signature algorithm.", algorithmOID);
+        }
+        return isKnown;
     }
 
     public boolean isKeyAlgorithm(String algorithmOID) {
         ASN1ObjectIdentifier identifier = ASN1ObjectIdentifier.tryFromID(algorithmOID);
         if (identifier == null) {
+            logger.debug("Algorithm OID {} is not a valid OID and hence not valid key algorithm.", algorithmOID);
             return false;
         }
         String algorithmName = defaultAlgorithmNameFinder.getAlgorithmName(identifier);
-        return keyAlgorithms.contains(algorithmName);
+        boolean isKnown = keyAlgorithms.contains(algorithmName);
+        if (!isKnown) {
+            logger.debug("Algorithm OID {} does not represent a known key algorithm.", algorithmOID);
+        }
+        return isKnown;
     }
 
     public boolean isDigestAlgorithm(String algorithmOID) {
         ASN1ObjectIdentifier identifier = ASN1ObjectIdentifier.tryFromID(algorithmOID);
         if (identifier == null) {
+            logger.debug("Algorithm OID {} is not a valid OID and hence not valid digest algorithm.", algorithmOID);
             return false;
         }
-        return defaultDigestAlgorithmIdentifierFinder.find(getHumanReadableName(identifier)) != null;
+        boolean isKnown = defaultDigestAlgorithmIdentifierFinder.find(getHumanReadableName(identifier)) != null;
+        if (!isKnown) {
+            logger.debug("Algorithm OID {} does not represent a known digest algorithm.", algorithmOID);
+        }
+        return isKnown;
     }
 
     public String getSignatureAlgorithmName(String algorithmOID) {
@@ -57,6 +77,7 @@ public class AlgorithmHelper {
     public String getDigestAlgorithmName(String algorithmOID) {
         ASN1ObjectIdentifier identifier = ASN1ObjectIdentifier.tryFromID(algorithmOID);
         if (identifier == null) {
+            logger.debug("Algorithm OID {} is not a valid OID and hence not valid digest algorithm.", algorithmOID);
             return null;
         }
         return defaultAlgorithmNameFinder.getAlgorithmName(identifier);
@@ -65,6 +86,7 @@ public class AlgorithmHelper {
     public String getAlgorithmName(String algorithmOID) {
         ASN1ObjectIdentifier identifier = ASN1ObjectIdentifier.tryFromID(algorithmOID);
         if (identifier == null) {
+            logger.debug("Algorithm OID {} is not a valid OID and hence not valid algorithm.", algorithmOID);
             return null;
         }
         return defaultAlgorithmNameFinder.getAlgorithmName(identifier);
@@ -73,6 +95,9 @@ public class AlgorithmHelper {
     public boolean isDigestAlgorithmCompatibleWithSignatureAlgorithm(String digestAlgorithmOID,
                                                                      String signatureAlgorithmOID
     ) {
+        logger.debug("Checking if digest algorithm {} is compatible with signature algorithm {}", digestAlgorithmOID,
+                     signatureAlgorithmOID
+        );
         if (!isSignatureAlgorithm(signatureAlgorithmOID)) {
             return false;
         }
@@ -80,7 +105,13 @@ public class AlgorithmHelper {
             return false;
         }
         String signatureAlgorithmName = getSignatureAlgorithmName(signatureAlgorithmOID);
+        logger.debug("Signature algorithm with IOD {} was converted to name {}", signatureAlgorithmOID,
+                     signatureAlgorithmName
+        );
         String digestAlgorithmName = getDigestAlgorithmName(digestAlgorithmOID);
+        logger.debug("Digest algorithm with IOD {} was converted to name {}", digestAlgorithmOID,
+                     digestAlgorithmName
+        );
 
         return signatureAlgorithmName.contains(digestAlgorithmName);
     }

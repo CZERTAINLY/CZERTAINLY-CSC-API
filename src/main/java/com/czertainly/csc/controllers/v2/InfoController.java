@@ -66,6 +66,7 @@ public class InfoController {
     )
     public InfoDto getInfo() {
         try {
+            log.trace("Serving info request.");
             return service.getInfo();
         } catch (Exception e) {
             log.error("Error occurred while getting info.", e);

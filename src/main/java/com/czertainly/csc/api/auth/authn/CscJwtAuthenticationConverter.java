@@ -16,7 +16,6 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
     JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
     public static final String CREDENTIAL_SCOPE = "SCOPE_CREDENTIAL";
 
-
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
         AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(source);

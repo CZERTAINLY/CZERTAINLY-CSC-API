@@ -108,6 +108,7 @@ public class SignatureController {
     public SignHashResponseDto signHash(@RequestBody SignHashRequestDto signHashRequest,
                                         Authentication authentication
     ) {
+        log.trace("Serving signHash request.");
         try {
             return signHashValidationRequestMapper
                     .map(signHashRequest, getSadIfAvailable(authentication))
@@ -158,6 +159,7 @@ public class SignatureController {
     public SignDocResponseDto signDoc(@RequestBody SignDocRequestDto signDocRequest,
                                       Authentication authentication
     ) {
+        log.trace("Serving signDoc request.");
         try {
             return signDocValidatingRequestMapper
                     .map(signDocRequest, getSadIfAvailable(authentication))
