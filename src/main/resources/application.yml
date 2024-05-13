@@ -12,6 +12,8 @@ csc:
     workerConfigurationFile: /opt/cscapi/workers-dev.yml
     # Number of preloaded keys that are stored in memory for faster access
     numberOfPreloadedKeys: 10
+    # A filter pattern to identifies keys that can be used for signing in the short term use-case. Use % as a wildcard.
+    keyAliasFilterPattern: pregenerated___%
 
 # IDP configuration
 idp:

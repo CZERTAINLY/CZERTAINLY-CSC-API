@@ -2,7 +2,6 @@ package com.czertainly.csc.clients.signserver.ws;
 
 import com.czertainly.csc.clients.signserver.ws.dto.*;
 import com.czertainly.csc.common.exceptions.RemoteSystemException;
-import com.czertainly.csc.clients.signserver.ws.dto.*;
 import jakarta.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +13,12 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
 
     public static final String WEB_SERVICE_BASE_PATH = "/AdminWSService/AdminWS";
 
-    public SignserverWsClient(String signserverUrl) {
+    private final String keyAliasFilterPattern;
+
+    public SignserverWsClient(String signserverUrl, String keyAliasFilterPattern) {
         super();
         setDefaultUri(signserverUrl + WEB_SERVICE_BASE_PATH);
+        this.keyAliasFilterPattern = keyAliasFilterPattern;
     }
 
     public CertReqData generateCsr(
@@ -51,7 +53,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setIncludeData(includeData);
         request.setStartIndex(startIndex);
         request.setMax(startIndex + numOfItems);
-        request.addCondition(new QueryCondition("alias", RelationalOperator.LIKE, "pregenerated___%"));
+        request.addCondition(new QueryCondition("alias", RelationalOperator.LIKE, keyAliasFilterPattern));
 
 
         logger.debug("Querying token entries for worker: " + workerId);

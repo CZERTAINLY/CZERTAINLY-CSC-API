@@ -97,9 +97,10 @@ public class ServerConfiguration {
     @Bean
     public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
                                                  @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
-                                                 @Value("${signingProvider.signserver.url}") String signserverUrl
+                                                 @Value("${signingProvider.signserver.url}") String signserverUrl,
+                                                    @Value("${csc.keyAliasFilterPattern}") String keyAliasFilterPattern
     ) {
-        SignserverWsClient client = new SignserverWsClient(signserverUrl);
+        SignserverWsClient client = new SignserverWsClient(signserverUrl, keyAliasFilterPattern);
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);
         client.setMessageSender(httpComponentsMessageSender);
