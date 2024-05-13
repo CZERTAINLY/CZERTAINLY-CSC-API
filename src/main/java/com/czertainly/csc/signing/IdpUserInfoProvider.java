@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class IdpUserInfoProvider implements UserInfoProvider {
 
-    IdpClient idpClient;
+    private final IdpClient idpClient;
+
 
     public IdpUserInfoProvider(IdpClient idpClient) {
         this.idpClient = idpClient;
@@ -15,11 +16,9 @@ public class IdpUserInfoProvider implements UserInfoProvider {
 
     @Override
     public UserInfo getUserInfo(String token) {
-        try {
-            return idpClient.downloadUserInfo(token);
-        } catch (Exception e) {
+            if (idpClient.canDownloadUserInfo()) {
+                return idpClient.downloadUserInfo(token);
+            }
             return null;
-        }
     }
-
 }

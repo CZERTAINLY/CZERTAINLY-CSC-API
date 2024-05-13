@@ -1,5 +1,6 @@
 package com.czertainly.csc.signing;
 
+import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.common.result.ErrorWithDescription;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.model.SignDocParameters;
@@ -19,12 +20,14 @@ public class SignatureFacade {
         this.documentHashSigning = documentHashSigning;
     }
 
-    public Result<SignedDocuments, ErrorWithDescription> signDocuments(SignDocParameters signDocParameters, String accessToken) {
+    public Result<SignedDocuments, ErrorWithDescription> signDocuments(
+            SignDocParameters signDocParameters, CscAuthenticationToken cscAuthenticationToken
+    ) {
 
         if (!signDocParameters.documentsToSign().isEmpty()) {
             return documentSigning.sign(signDocParameters);
         } else if (!signDocParameters.documentDigestsToSign().isEmpty()) {
-            return documentHashSigning.sign(signDocParameters, accessToken);
+            return documentHashSigning.sign(signDocParameters, cscAuthenticationToken);
         } else {
             return Result.error(new ErrorWithDescription("Invalid input", "No documents to sign."));
         }

@@ -8,14 +8,14 @@ import com.czertainly.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.csc.api.signhash.SignHashResponseDto;
+import com.czertainly.csc.common.exceptions.InputDataException;
+import com.czertainly.csc.common.exceptions.RemoteSystemException;
 import com.czertainly.csc.controllers.exceptions.BadRequestException;
 import com.czertainly.csc.controllers.exceptions.ServerErrorException;
 import com.czertainly.csc.model.mappers.SignDocResponseMapper;
 import com.czertainly.csc.model.mappers.SignDocValidatingRequestMapper;
 import com.czertainly.csc.model.mappers.SignHashValidatingRequestMapper;
 import com.czertainly.csc.signing.SignatureFacade;
-import com.czertainly.csc.common.exceptions.InputDataException;
-import com.czertainly.csc.common.exceptions.RemoteSystemException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,7 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -90,8 +93,8 @@ public class SignatureController {
             produces = "application/json"
     )
     @Operation(summary = "Sign hash",
-               description = "Calculate a raw digital signature from one or more hash values. For more information, " +
-                       "see the CSC API specification, section `11.10 signatures/signHash`."
+            description = "Calculate a raw digital signature from one or more hash values. For more information, " +
+                    "see the CSC API specification, section `11.10 signatures/signHash`."
     )
     @ApiResponses(
             value = {
@@ -159,9 +162,9 @@ public class SignatureController {
             return signDocValidatingRequestMapper
                     .map(signDocRequest, getSadIfAvailable(authentication))
                     .with(
-                            parameters -> signatureFacade.signDocuments(parameters,
-                                                                        ((CscAuthenticationToken) authentication).getToken()
-                                                                                                                 .getTokenValue()
+                            parameters -> signatureFacade.signDocuments(
+                                    parameters,
+                                    ((CscAuthenticationToken) authentication)
                             ).with(
                                     signatures -> signDocResponseMapper.map(signatures).with(
                                             signDocResponseDto -> signDocResponseDto,

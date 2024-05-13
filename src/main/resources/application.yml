@@ -74,9 +74,9 @@ caProvider:
         endEntity:
             # Username pattern to create username
             # Variables can be used in the pattern, e.g. $[name] will be replaced with the claim value of the name
-            usernamePattern: $[name]
+            usernamePattern: $[UserInfo.name] $[Credential.id]
             # DN pattern to create subject DN of requested certificate
-            dnPattern: CN=$[name], UID=$[id]
+            dnPattern: CN=$[UserInfo.name], UID=$[UserInfo.id]
             # SAN pattern to create subject alternative name of requested certificate
             sanPattern: None
             # CA name to issue the certificate

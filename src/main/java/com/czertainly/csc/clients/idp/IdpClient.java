@@ -19,16 +19,24 @@ import java.util.Map;
 public class IdpClient {
 
     RestClient restClient;
+    boolean canDownloadUserInfo;
 
 
-    public IdpClient(@Value("${idp.userInfoUrl}") String signserverUrl) {
+    public IdpClient(@Value("${idp.userInfoUrl:none}") String userInfoUrl) {
+        canDownloadUserInfo = userInfoUrl != null && !userInfoUrl.equals("none");
+        if (!canDownloadUserInfo) {
+            return;
+        }
         restClient = RestClient.builder()
                                .requestFactory(new HttpComponentsClientHttpRequestFactory())
-                               .baseUrl(signserverUrl)
+                               .baseUrl(userInfoUrl)
                                .build();
     }
 
     public UserInfo downloadUserInfo(String token) {
+        if (!canDownloadUserInfo) {
+            throw new UnsupportedOperationException("Application is not configured to download user info.");
+        }
         ResponseEntity<String> response = restClient.get()
                                                     .header("Authorization", "Bearer " + token)
                                                     .accept(MediaType.APPLICATION_JSON)
@@ -47,5 +55,9 @@ public class IdpClient {
         } catch (JsonProcessingException e) {
             throw new RemoteSystemException("Failed to parse response from IDP into a JSON object.", e);
         }
+    }
+
+    public boolean canDownloadUserInfo() {
+        return canDownloadUserInfo;
     }
 }
