@@ -2,7 +2,6 @@ package com.czertainly.csc.clients.idp;
 
 import com.czertainly.csc.common.exceptions.RemoteSystemException;
 import com.czertainly.csc.model.UserInfo;
-import com.czertainly.csc.providers.KeyValueSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +21,7 @@ import java.util.Map;
 public class IdpClient {
 
 
-    private static final Logger logger = LoggerFactory.getLogger(KeyValueSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(IdpClient.class);
     RestClient restClient;
     boolean canDownloadUserInfo;
 

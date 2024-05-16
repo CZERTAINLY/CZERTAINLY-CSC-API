@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class AlgorithmHelper {
 
-    private static final Logger logger = LoggerFactory.getLogger(KeyValueSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(AlgorithmHelper.class);
     private final List<String> keyAlgorithms = List.of("RSA", "ECDSA");
 
     DefaultSignatureNameFinder defaultSignatureNameFinder = new DefaultSignatureNameFinder();
