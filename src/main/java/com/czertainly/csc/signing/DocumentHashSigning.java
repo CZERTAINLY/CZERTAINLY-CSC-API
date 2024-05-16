@@ -129,8 +129,8 @@ public class DocumentHashSigning {
                     throw e;
                 } finally {
                     try {
-                        keySelector.markKeyAsUsed(key);
                         signserverClient.removeKey(key.cryptoTokenId(), key.keyAlias());
+                        keySelector.markKeyAsUsed(key);
                     } catch (Exception ex) {
                         logger.error("Key " + key.keyAlias() + " was not removed and may be in inconsistent state!",
                                      ex
