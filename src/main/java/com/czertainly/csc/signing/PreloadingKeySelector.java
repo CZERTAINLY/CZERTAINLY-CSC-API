@@ -99,7 +99,7 @@ public class PreloadingKeySelector implements KeySelector {
             }
 
             newKeys.stream()
-                   .filter(k -> k.status() != null && !k.status().certified())
+                   .filter(k -> k.status() == null || !k.status().certified())
                    .filter(k -> {
                        boolean alreadyExists = existingKeysAliases.contains(k.keyAlias());
                        if (logger.isTraceEnabled() && alreadyExists) {
