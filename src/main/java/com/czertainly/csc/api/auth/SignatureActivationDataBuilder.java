@@ -1,5 +1,7 @@
 package com.czertainly.csc.api.auth;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class SignatureActivationDataBuilder {
@@ -11,8 +13,12 @@ public class SignatureActivationDataBuilder {
     private String hashAlgorithmOID;
     private String clientData;
 
+    private final Map<String, String> otherAttributes = new HashMap<>();
+
     public SignatureActivationData build() {
-        return new SignatureActivationData(credentialID, signatureQualifier, numSignatures, hashes, hashAlgorithmOID, clientData);
+        return new SignatureActivationData(credentialID, signatureQualifier, numSignatures, hashes, hashAlgorithmOID,
+                                           clientData, otherAttributes
+        );
     }
 
     public SignatureActivationDataBuilder withCredentialID(String credentialID) {
@@ -42,6 +48,11 @@ public class SignatureActivationDataBuilder {
 
     public SignatureActivationDataBuilder withClientData(String clientData) {
         this.clientData = clientData;
+        return this;
+    }
+
+    public SignatureActivationDataBuilder withOtherAttribute(String name, String value) {
+        this.otherAttributes.put(name, value);
         return this;
     }
 

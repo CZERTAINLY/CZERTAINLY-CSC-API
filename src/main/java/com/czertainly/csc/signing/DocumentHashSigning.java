@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 @Component
@@ -101,9 +102,11 @@ public class DocumentHashSigning {
                     var keyValueSource = new KeyValueSource(
                             key.keyAlias(), userInfo, cscAuthenticationToken, parameters.sad()
                     );
-                    var dn = distinguishedNameProvider.getDistinguishedName(keyValueSource::get);
-                    var san = subjectAlternativeNameProvider.getSan(keyValueSource::get);
-                    var username = patternUsernameProvider.getUsername(keyValueSource::get);
+
+                    Map<String, String> keyValuePairs = keyValueSource.get();
+                    var dn = distinguishedNameProvider.getDistinguishedName(() -> keyValuePairs);
+                    var san = subjectAlternativeNameProvider.getSan(() -> keyValuePairs);
+                    var username = patternUsernameProvider.getUsername(() -> keyValuePairs);
                     var password = passwordGenerator.generate();
 
                     EndEntity endEntity = new EndEntity(username, password, dn, san);
