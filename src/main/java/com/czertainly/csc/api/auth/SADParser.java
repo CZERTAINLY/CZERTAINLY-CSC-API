@@ -15,9 +15,7 @@ import java.util.Set;
 public class SADParser {
 
     public static final Logger logger = LogManager.getLogger(SADParser.class);
-    public static final Set<String> knownClaims = Set.of("credentialID", "signatureQualifier", "hashAlgorithmOID",
-                                                         "numSignatures", "clientData"
-    );
+
 
     TokenValidator validator;
 
@@ -47,7 +45,7 @@ public class SADParser {
                .withClientData(claims.get("clientData", String.class));
 
         claims.entrySet().stream()
-              .filter(entry -> !knownClaims.contains(entry.getKey()))
+              .filter(entry -> !SignatureActivationDataBuilder.knownClaims.contains(entry.getKey()))
               .forEach(entry -> {
                   try {
                       builder.withOtherAttribute(entry.getKey(), entry.getValue().toString());

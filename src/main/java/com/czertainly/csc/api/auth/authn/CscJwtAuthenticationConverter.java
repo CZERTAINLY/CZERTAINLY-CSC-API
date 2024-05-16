@@ -3,6 +3,8 @@ package com.czertainly.csc.api.auth.authn;
 import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.auth.SignatureActivationDataBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,13 +15,16 @@ import java.util.*;
 
 public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
+    public static final Logger logger = LogManager.getLogger(CscJwtAuthenticationConverter.class);
+
     JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
     public static final String CREDENTIAL_SCOPE = "SCOPE_CREDENTIAL";
 
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
         AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(source);
-        if (token.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(CREDENTIAL_SCOPE::equalsIgnoreCase)) {
+        if (token.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                 .anyMatch(CREDENTIAL_SCOPE::equalsIgnoreCase)) {
             SignatureActivationData signatureActivationData = getSignatureActivationData(source);
             return new CscAuthenticationToken(source, token.getAuthorities(), token.getName(), signatureActivationData);
         }
@@ -36,6 +41,16 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
         builder.withHashes(extractSetClaim(source, "hashes"));
         builder.withHashAlgorithmOID(extractStringClaim(source, "hashAlgorithmOID"));
         builder.withClientData(extractStringClaim(source, "clientData"));
+
+        source.getClaims().entrySet().stream()
+              .filter(entry -> !SignatureActivationDataBuilder.knownClaims.contains(entry.getKey()))
+              .forEach(entry -> {
+                  try {
+                      builder.withOtherAttribute(entry.getKey(), entry.getValue().toString());
+                  } catch (Exception e) {
+                      logger.warn("Error parsing SAD attribute {}. Attribute will be ignored.", entry.getKey());
+                  }
+              });
         return builder.build();
     }
 
@@ -46,7 +61,8 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
     private int extractIntegerClaim(Jwt jwt, String claimName) {
         String claim = jwt.getClaimAsString(claimName);
         if (claim == null) {
-            throw new IllegalArgumentException("Missing a required claim '" + claimName + "' in the credential access token.");
+            throw new IllegalArgumentException(
+                    "Missing a required claim '" + claimName + "' in the credential access token.");
         }
         try {
             return Integer.parseInt(claim);
@@ -57,7 +73,7 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
 
     private Set<String> extractSetClaim(Jwt jwt, String claimName) {
         List<String> claim = jwt.getClaimAsStringList(claimName);
-        return claim != null ? new HashSet<>(claim): Collections.emptySet();
+        return claim != null ? new HashSet<>(claim) : Collections.emptySet();
     }
 
 }

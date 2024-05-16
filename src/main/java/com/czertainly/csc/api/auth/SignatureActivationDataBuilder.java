@@ -6,6 +6,10 @@ import java.util.Set;
 
 public class SignatureActivationDataBuilder {
 
+    public static final Set<String> knownClaims = Set.of("credentialID", "signatureQualifier", "hashAlgorithmOID",
+                                                         "numSignatures", "clientData"
+    );
+
     private String credentialID;
     private String signatureQualifier;
     private int numSignatures;
