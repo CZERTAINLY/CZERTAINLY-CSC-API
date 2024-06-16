@@ -123,7 +123,7 @@ public class ServerConfiguration {
                 builder.loadTrustMaterial(truststore, null);
             }
 
-            if (authzType != SignApiAuthorization.CERTIFICATE) {
+            if (authzType == SignApiAuthorization.CERTIFICATE) {
                 if (keystoreBundleName.equals("none") || keystoreBundleName.isBlank()) {
                     throw new ApplicationConfigurationException(
                             "Keystore bundle name must be provided when using certificate authorization.");
