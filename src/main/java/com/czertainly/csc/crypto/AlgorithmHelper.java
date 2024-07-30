@@ -1,8 +1,6 @@
 package com.czertainly.csc.crypto;
 
-import com.czertainly.csc.providers.KeyValueSource;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureNameFinder;
 import org.slf4j.Logger;
@@ -18,7 +16,7 @@ public class AlgorithmHelper {
     private final List<String> keyAlgorithms = List.of("RSA", "ECDSA");
 
     DefaultSignatureNameFinder defaultSignatureNameFinder = new DefaultSignatureNameFinder();
-    DefaultAlgorithmNameFinder defaultAlgorithmNameFinder = new DefaultAlgorithmNameFinder();
+    CustomAlgorithmNameFinder algorithmNameFinder = new CustomAlgorithmNameFinder();
     DefaultDigestAlgorithmIdentifierFinder defaultDigestAlgorithmIdentifierFinder = new DefaultDigestAlgorithmIdentifierFinder();
 
     /*
@@ -45,7 +43,7 @@ public class AlgorithmHelper {
             logger.debug("Algorithm OID {} is not a valid OID and hence not valid key algorithm.", algorithmOID);
             return false;
         }
-        String algorithmName = defaultAlgorithmNameFinder.getAlgorithmName(identifier);
+        String algorithmName = algorithmNameFinder.getAlgorithmName(identifier);
         boolean isKnown = keyAlgorithms.contains(algorithmName);
         if (!isKnown) {
             logger.debug("Algorithm OID {} does not represent a known key algorithm.", algorithmOID);
@@ -80,7 +78,7 @@ public class AlgorithmHelper {
             logger.debug("Algorithm OID {} is not a valid OID and hence not valid digest algorithm.", algorithmOID);
             return null;
         }
-        return defaultAlgorithmNameFinder.getAlgorithmName(identifier);
+        return algorithmNameFinder.getAlgorithmName(identifier);
     }
 
     public String getAlgorithmName(String algorithmOID) {
@@ -89,7 +87,11 @@ public class AlgorithmHelper {
             logger.debug("Algorithm OID {} is not a valid OID and hence not valid algorithm.", algorithmOID);
             return null;
         }
-        return defaultAlgorithmNameFinder.getAlgorithmName(identifier);
+        return algorithmNameFinder.getAlgorithmName(identifier);
+    }
+
+    public ASN1ObjectIdentifier getKeyAlgorithmIdentifier(String algorithmName) {
+        return algorithmNameFinder.getKeyAlgorithmIdentifier(algorithmName);
     }
 
     public boolean isDigestAlgorithmCompatibleWithSignatureAlgorithm(String digestAlgorithmOID,
@@ -117,6 +119,6 @@ public class AlgorithmHelper {
     }
 
     private String getHumanReadableName(ASN1ObjectIdentifier identifier) {
-        return defaultAlgorithmNameFinder.getAlgorithmName(identifier);
+        return algorithmNameFinder.getAlgorithmName(identifier);
     }
 }

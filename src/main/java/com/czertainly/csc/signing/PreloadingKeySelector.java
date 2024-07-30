@@ -21,17 +21,20 @@ public class PreloadingKeySelector implements KeySelector {
     private static final Logger logger = LoggerFactory.getLogger(PreloadingKeySelector.class);
 
     private final int maxNumberOfPreloadedKeys;
+    private final String keyAliasFilterPattern;
     SignserverClient signserverClient;
     WorkerRepository workerRepository;
     Map<Integer, ConcurrentLinkedQueue<CryptoTokenKey>> cryptoTokensKeys;
     Set<CryptoTokenKey> keysInUse;
 
     public PreloadingKeySelector(SignserverClient signserverClient, WorkerRepository workerRepository,
-                                 @Value("${csc.numberOfPreloadedKeys}") int maxNumberOfPreloadedKeys
+                                 @Value("${csc.numberOfPreloadedKeys}") int maxNumberOfPreloadedKeys,
+                                 @Value("${csc.keyAliasFilterPattern}") String keyAliasFilterPattern
     ) {
         this.signserverClient = signserverClient;
         this.workerRepository = workerRepository;
         this.maxNumberOfPreloadedKeys = maxNumberOfPreloadedKeys;
+        this.keyAliasFilterPattern = keyAliasFilterPattern;
         cryptoTokensKeys = new HashMap<>();
         keysInUse = ConcurrentHashMap.newKeySet();
     }
@@ -87,7 +90,8 @@ public class PreloadingKeySelector implements KeySelector {
                     cryptoToken.id(),
                     true,
                     numberOfExistingKeys,
-                    numberOfNewKeys
+                    numberOfNewKeys,
+                    keyAliasFilterPattern
             );
             if (newKeys.isEmpty()) {
                 logger.warn("No more pre-generated keys are available in CryptoToken {}", cryptoToken.name());

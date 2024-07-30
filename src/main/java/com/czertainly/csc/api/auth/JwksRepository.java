@@ -47,7 +47,7 @@ public class JwksRepository {
             try {
                 refreshKeys();
             } catch (JwksDownloadException e) {
-                throw new JwkLookupException(e.getMessage());
+                throw new JwkLookupException("Failed to get key.", e);
             }
             return keyMap.getOrDefault(kid, null);
         }

@@ -25,7 +25,7 @@ public class KeyLocator extends LocatorAdapter<Key> {
         try {
             return repository.getKey(header.getKeyId(), "enc");
         } catch (JwkLookupException e) {
-            logger.warn("Failed to locate encryption key. {}", e.getMessage());
+            logger.warn("Failed to locate encryption key.", e);
             return null;
         }
     }
@@ -35,7 +35,7 @@ public class KeyLocator extends LocatorAdapter<Key> {
         try {
             return repository.getKey(header.getKeyId(), "sig");
         } catch (JwkLookupException e) {
-            logger.warn("Failed to locate encryption key. {}", e.getMessage());
+            logger.warn("Failed to locate encryption key.", e);
             return null;
         }
     }

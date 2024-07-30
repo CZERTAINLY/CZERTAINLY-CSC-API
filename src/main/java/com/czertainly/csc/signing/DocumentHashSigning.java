@@ -116,7 +116,9 @@ public class DocumentHashSigning {
                     );
 
                     byte[] certificateChain = ejbcaClient.signCertificateRequest(endEntity, csr);
-                    signserverClient.importCertificateChain(key.cryptoTokenId(), key.keyAlias(), certificateChain);
+                    signserverClient.importCertificateChain(key.cryptoTokenId(), key.keyAlias(),
+                                                            List.of(certificateChain)
+                    );
 
                     signHashes(parameters, documentDigestsToSign, worker, key, allSignatures, crls, ocsps,
                                certificates

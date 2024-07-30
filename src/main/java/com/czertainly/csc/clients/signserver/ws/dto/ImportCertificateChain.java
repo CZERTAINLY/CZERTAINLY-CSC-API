@@ -1,12 +1,12 @@
 
 package com.czertainly.csc.clients.signserver.ws.dto;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
+
+import java.util.List;
 
 
 /**
@@ -42,7 +42,7 @@ import jakarta.xml.bind.annotation.XmlType;
 public class ImportCertificateChain {
 
     protected int workerId;
-    protected String certificateChain;
+    protected List<String> certificateChain;
     protected String alias;
     protected String authenticationCode;
 
@@ -83,11 +83,11 @@ public class ImportCertificateChain {
      * byte[]
      * 
      */
-    public String getCertificateChain() {
+    public List<String> getCertificateChain() {
         return this.certificateChain;
     }
 
-    public void setCertificateChain(String chain) {
+    public void setCertificateChain(List<String> chain) {
         this.certificateChain = chain;
     }
 

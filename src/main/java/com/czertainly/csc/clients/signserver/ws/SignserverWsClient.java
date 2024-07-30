@@ -7,18 +7,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 
+import java.util.Base64;
+import java.util.List;
+
 public class SignserverWsClient extends WebServiceGatewaySupport {
 
     private static final Logger logger = LoggerFactory.getLogger(SignserverWsClient.class);
 
     public static final String WEB_SERVICE_BASE_PATH = "/AdminWSService/AdminWS";
 
-    private final String keyAliasFilterPattern;
 
-    public SignserverWsClient(String signserverUrl, String keyAliasFilterPattern) {
+    public SignserverWsClient(String signserverUrl) {
         super();
         setDefaultUri(signserverUrl + WEB_SERVICE_BASE_PATH);
-        this.keyAliasFilterPattern = keyAliasFilterPattern;
     }
 
     public CertReqData generateCsr(
@@ -46,14 +47,16 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
     }
 
     public TokenSearchResults queryTokenEntries(int workerId, boolean includeData, int startIndex,
-                                                int numOfItems
+                                                int numOfItems, String keyAliasFilterPattern
     ) {
         var request = new QueryTokenEntries();
         request.setWorkerId(workerId);
         request.setIncludeData(includeData);
         request.setStartIndex(startIndex);
         request.setMax(startIndex + numOfItems);
-        request.addCondition(new QueryCondition("alias", RelationalOperator.LIKE, keyAliasFilterPattern));
+        if (keyAliasFilterPattern != null) {
+            request.addCondition(new QueryCondition("alias", RelationalOperator.LIKE, keyAliasFilterPattern));
+        }
 
 
         logger.debug("Querying token entries for worker: " + workerId);
@@ -66,17 +69,39 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         }
     }
 
-    public void importCertificateChain(int workerId, String keyAlias, byte[] chain) {
+    public void importCertificateChain(int workerId, String keyAlias, List<byte[]> chain) {
         var request = new ImportCertificateChain();
         request.setWorkerId(workerId);
         request.setAlias(keyAlias);
-        request.setCertificateChain(new String(chain));
+        request.setCertificateChain(
+                chain.stream().map(data -> Base64.getEncoder().encode(data)).map(String::new).toList());
 
         logger.debug("Importing certificate chain to crypto token " + workerId + " and key alias: " + keyAlias);
         try {
             getWebServiceTemplate().marshalSendAndReceive(request);
         } catch (Exception e) {
             throw new RemoteSystemException("Failed to import certificate chain for key " + keyAlias, e);
+        }
+    }
+
+    public String generateKey(int workerId, String keyAlias, String keyAlgorithm, String keySpec) {
+        var request = new GenerateSignerKey();
+        request.setSignerId(workerId);
+        request.setAlias(keyAlias);
+        request.setKeyAlgorithm(keyAlgorithm);
+        request.setKeySpec(keySpec);
+
+        logger.debug("Generating new key " + keyAlias + " for crypto token " + workerId);
+        try {
+            var response = (JAXBElement<GenerateSignerKeyResponse>) getWebServiceTemplate().marshalSendAndReceive(
+                    request);
+            keyAlias = response.getValue().getReturn();
+            logger.info("Generated key " + keyAlias + " for crypto token " + workerId);
+            return keyAlias;
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to generate new key " + keyAlias + " from crypto token " + workerId,
+                                            e
+            );
         }
     }
 

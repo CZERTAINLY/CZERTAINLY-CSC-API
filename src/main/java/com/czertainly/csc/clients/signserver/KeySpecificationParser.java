@@ -37,7 +37,7 @@ public class KeySpecificationParser {
                             throw new IllegalArgumentException("Unknown status element: " + statusElement);
                     }
                 }
-                status = new CryptoTokenKeyStatus(assigned, certified, enabled);
+                status = new CryptoTokenKeyStatus(certified);
 
             } else {
                 keySpec = line;

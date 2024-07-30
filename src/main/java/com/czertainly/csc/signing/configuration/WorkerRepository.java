@@ -1,6 +1,8 @@
 package com.czertainly.csc.signing.configuration;
 
+import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.signing.filter.Criterion;
+import com.czertainly.csc.signing.filter.Worker;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +37,15 @@ public class WorkerRepository {
 
     public List<WorkerWithCapabilities> getAllWorkers() {
         return workersWithCapabilities;
+    }
+
+    public CryptoToken getCryptoToken(String tokenName) {
+        return workersWithCapabilities.stream()
+                                      .map(WorkerWithCapabilities::worker)
+                                      .map(Worker::cryptoToken)
+                                      .filter(token -> Objects.equals(token.name(), tokenName))
+                                      .findFirst()
+                                      .orElse(null);
     }
 
 }

@@ -1,5 +1,6 @@
-package com.czertainly.csc.model.mappers;
+package com.czertainly.csc.api.mappers.signatures;
 
+import com.czertainly.csc.api.mappers.ResponseMapper;
 import com.czertainly.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.csc.api.signdoc.ValidationInfo;
 import com.czertainly.csc.common.result.ErrorWithDescription;
@@ -12,7 +13,7 @@ import java.util.Base64;
 import java.util.List;
 
 @Component
-public class SignDocResponseMapper implements SignatureResponseMapper<SignedDocuments, SignDocResponseDto> {
+public class SignDocResponseMapper implements ResponseMapper<SignedDocuments, SignDocResponseDto> {
 
     Base64.Encoder encoder = Base64.getEncoder();
 

@@ -11,8 +11,9 @@ import com.czertainly.csc.signing.configuration.loader.WorkerConfigurationLoader
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
@@ -94,17 +95,23 @@ public class ServerConfiguration {
         return marshaller;
     }
 
-    @Bean
-    public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
-                                                 @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
-                                                 @Value("${signingProvider.signserver.url}") String signserverUrl,
-                                                    @Value("${csc.keyAliasFilterPattern}") String keyAliasFilterPattern
-    ) {
-        SignserverWsClient client = new SignserverWsClient(signserverUrl, keyAliasFilterPattern);
-        client.setMarshaller(marshaller);
-        client.setUnmarshaller(marshaller);
-        client.setMessageSender(httpComponentsMessageSender);
-        return client;
+    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor) {
+        final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
+
+        final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                                                         .register("https", sslsf)
+                                                         .build();
+
+        final var connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+
+        HttpClientBuilder builder = HttpClients.custom()
+                                               .setConnectionManager(connectionManager);
+
+        if (interceptor != null) {
+            builder.addRequestInterceptorFirst(interceptor);
+        }
+
+        return builder.build();
     }
 
     @Bean
@@ -202,22 +209,46 @@ public class ServerConfiguration {
         }
     }
 
-    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor) {
+    @Bean
+    public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
+                                                 @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
+                                                 @Value("${signingProvider.signserver.url}") String signserverUrl
+    ) {
+        SignserverWsClient client = new SignserverWsClient(signserverUrl);
+        client.setMarshaller(marshaller);
+        client.setUnmarshaller(marshaller);
+        client.setMessageSender(httpComponentsMessageSender);
+        return client;
+    }
+
+    @Bean
+    public HttpClient getHttpClient(
+            @Value("${signingProvider.signserver.truststoreBundle:none}") String truststoreBundleName,
+            SslBundles sslBundles
+    ) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+
+        SSLContextBuilder builder = SSLContexts.custom();
+
+        if (!truststoreBundleName.equals("none") && !truststoreBundleName.isBlank()) {
+            SslBundle truststoreBundle = sslBundles.getBundle(truststoreBundleName);
+            KeyStore truststore = truststoreBundle.getStores().getTrustStore();
+            builder.loadTrustMaterial(truststore, null);
+        }
+
+        SSLContext sslContext = builder.build();
+
         final var sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
 
         final var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
                                                          .register("https", sslsf)
+                                                         .register("http", new PlainConnectionSocketFactory())
                                                          .build();
 
-        final var connectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
+        final var connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 
-        HttpClientBuilder builder = HttpClients.custom()
-                                               .setConnectionManager(connectionManager);
+        HttpClientBuilder httpBuilder = HttpClients.custom()
+                                                   .setConnectionManager(connectionManager);
 
-        if (interceptor != null) {
-            builder.addRequestInterceptorFirst(interceptor);
-        }
-
-        return builder.build();
+        return httpBuilder.build();
     }
 }

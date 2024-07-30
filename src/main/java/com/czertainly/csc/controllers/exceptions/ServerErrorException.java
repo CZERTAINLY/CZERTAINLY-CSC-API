@@ -11,6 +11,13 @@ public class ServerErrorException extends RuntimeException {
         this.errorDescription = errorDescription;
     }
 
+    public ServerErrorException(String error, String errorDescription, Throwable cause) {
+        super(error + ": " + errorDescription, cause);
+        this.error = error;
+        this.errorDescription = errorDescription;
+    }
+
+
     public String getError() {
         return error;
     }

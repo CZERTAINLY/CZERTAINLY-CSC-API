@@ -1,9 +1,7 @@
 package com.czertainly.csc.clients.ejbca.ws;
 
 import com.czertainly.csc.clients.ejbca.ws.dto.*;
-import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.csc.common.exceptions.RemoteSystemException;
-import com.czertainly.csc.clients.ejbca.ws.dto.*;
 import jakarta.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +10,12 @@ import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 
 public class EjbcaWsClient extends WebServiceGatewaySupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(SignserverWsClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(EjbcaWsClient.class);
 
     public static final String WEB_SERVICE_BASE_PATH = "/ejbcaws/ejbcaws";
 
@@ -37,6 +36,8 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
     }
 
     public void editUser(String username, String password, String subjectDn, String san) {
+        logger.info("Editing EJBCA user '" + username + " '.");
+        logger.trace("Subject DN: {}, SAN {}", subjectDn, san);
         var request = new EditUser();
         var userDataVOWS = new UserDataVOWS();
         userDataVOWS.setUsername(username);
@@ -50,8 +51,6 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         userDataVOWS.setTokenType("USERGENERATED");
         request.setArg0(userDataVOWS);
 
-
-        logger.info("Editing EJBCA user '" + username + " '.");
         try {
             getWebServiceTemplate().marshalSendAndReceive(request);
         } catch (Exception e) {
@@ -85,10 +84,52 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
 
         logger.info("Requesting certificate for EJBCA user '" + username);
         try {
-            var response = (JAXBElement<CertificateRequestResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
+            var response = (JAXBElement<CertificateRequestResponse>) getWebServiceTemplate().marshalSendAndReceive(
+                    request);
             return response.getValue().getReturn();
         } catch (Exception e) {
             throw new RemoteSystemException("Failed to sign certificate request with DN " + subjectDn, e);
+        }
+    }
+
+    public RevokeStatus checkRevocationStatus(String issuerDn, String serialNumberHex) {
+        var request = new CheckRevokationStatus();
+        request.setArg0(issuerDn);
+        request.setArg1(serialNumberHex);
+
+        logger.info(
+                "Checking revocation status for certificate with serial number " + serialNumberHex + " issued by " + issuerDn);
+        try {
+            var response = (JAXBElement<CheckRevokationStatusResponse>) getWebServiceTemplate().marshalSendAndReceive(
+                    request);
+            return response.getValue().getReturn();
+        } catch (Exception e) {
+            throw new RemoteSystemException(
+                    "Failed to check revocation status for certificate with serial number " + serialNumberHex, e);
+        }
+    }
+
+    public UserDataVOWS getUserData(String username) {
+        var request = new FindUser();
+        var userMatch = new UserMatch();
+        userMatch.setMatchwith(0); // 0 = username
+        userMatch.setMatchtype(0); // 0 = exact match
+        userMatch.setMatchvalue(username);
+        request.setArg0(userMatch);
+
+        logger.info("Fetching user data for EJBCA user '" + username + "'.");
+        try {
+            var response = (JAXBElement<FindUserResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
+            List<UserDataVOWS> data = response.getValue().getReturn();
+            if (data.isEmpty()) {
+                return null;
+            } else if (data.size() > 1) {
+                throw new RemoteSystemException("Found multiple users with username " + username);
+            } else {
+                return data.getFirst();
+            }
+        } catch (Exception e) {
+            throw new RemoteSystemException("Failed to fetch user data for EJBCA user " + username, e);
         }
     }
 }

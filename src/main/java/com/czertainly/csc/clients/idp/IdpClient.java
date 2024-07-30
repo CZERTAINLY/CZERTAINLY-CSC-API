@@ -26,13 +26,16 @@ public class IdpClient {
     boolean canDownloadUserInfo;
 
 
-    public IdpClient(@Value("${idp.userInfoUrl:none}") String userInfoUrl) {
+    public IdpClient(@Value("${idp.userInfoUrl:none}") String userInfoUrl,
+                     HttpComponentsClientHttpRequestFactory requestFactory
+    ) {
         canDownloadUserInfo = userInfoUrl != null && !userInfoUrl.equals("none");
         if (!canDownloadUserInfo) {
+            logger.info("Application is not configured to download user info.");
             return;
         }
         restClient = RestClient.builder()
-                               .requestFactory(new HttpComponentsClientHttpRequestFactory())
+                               .requestFactory(requestFactory)
                                .baseUrl(userInfoUrl)
                                .build();
     }
@@ -62,6 +65,7 @@ public class IdpClient {
             throw new RemoteSystemException("Failed to parse response from IDP into a JSON object.", e);
         }
     }
+
 
     public boolean canDownloadUserInfo() {
         return canDownloadUserInfo;

@@ -1,10 +1,11 @@
 
 package com.czertainly.csc.clients.signserver.ws.dto;
 
-import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlElementDecl;
 import jakarta.xml.bind.annotation.XmlRegistry;
+
+import javax.xml.namespace.QName;
 
 
 /**
@@ -266,22 +267,21 @@ public class ObjectFactory {
 //        return new DestroyKeyResponse();
 //    }
 //
-//    /**
-//     * Create an instance of {@link GenerateSignerKey }
-//     *
-//     */
-//    public GenerateSignerKey createGenerateSignerKey() {
-//        return new GenerateSignerKey();
-//    }
-//
-//    /**
-//     * Create an instance of {@link GenerateSignerKeyResponse }
-//     *
-//     */
-//    public GenerateSignerKeyResponse createGenerateSignerKeyResponse() {
-//        return new GenerateSignerKeyResponse();
-//    }
-//
+
+    /**
+     * Create an instance of {@link GenerateSignerKey }
+     */
+    public GenerateSignerKey createGenerateSignerKey() {
+        return new GenerateSignerKey();
+    }
+
+    /**
+     * Create an instance of {@link GenerateSignerKeyResponse }
+     */
+    public GenerateSignerKeyResponse createGenerateSignerKeyResponse() {
+        return new GenerateSignerKeyResponse();
+    }
+
 //    /**
 //     * Create an instance of {@link GetAuthorizedClients }
 //     *
@@ -1137,33 +1137,33 @@ public class ObjectFactory {
 //    public JAXBElement<DestroyKeyResponse> createDestroyKeyResponse(DestroyKeyResponse value) {
 //        return new JAXBElement<DestroyKeyResponse>(_DestroyKeyResponse_QNAME, DestroyKeyResponse.class, null, value);
 //    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateSignerKey }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link GenerateSignerKey }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "generateSignerKey")
-//    public JAXBElement<GenerateSignerKey> createGenerateSignerKey(GenerateSignerKey value) {
-//        return new JAXBElement<GenerateSignerKey>(_GenerateSignerKey_QNAME, GenerateSignerKey.class, null, value);
-//    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateSignerKeyResponse }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link GenerateSignerKeyResponse }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "generateSignerKeyResponse")
-//    public JAXBElement<GenerateSignerKeyResponse> createGenerateSignerKeyResponse(GenerateSignerKeyResponse value) {
-//        return new JAXBElement<GenerateSignerKeyResponse>(_GenerateSignerKeyResponse_QNAME, GenerateSignerKeyResponse.class, null, value);
-//    }
-//
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateSignerKey }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GenerateSignerKey }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "generateSignerKey")
+    public JAXBElement<GenerateSignerKey> createGenerateSignerKey(GenerateSignerKey value) {
+        return new JAXBElement<GenerateSignerKey>(_GenerateSignerKey_QNAME, GenerateSignerKey.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateSignerKeyResponse }{@code >}
+     *
+     * @param value Java instance representing xml element's value.
+     * @return the new instance of {@link JAXBElement }{@code <}{@link GenerateSignerKeyResponse }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://adminws.signserver.org/", name = "generateSignerKeyResponse")
+    public JAXBElement<GenerateSignerKeyResponse> createGenerateSignerKeyResponse(GenerateSignerKeyResponse value) {
+        return new JAXBElement<GenerateSignerKeyResponse>(_GenerateSignerKeyResponse_QNAME,
+                                                          GenerateSignerKeyResponse.class, null, value
+        );
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link GetAuthorizedClients }{@code >}
 //     *

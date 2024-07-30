@@ -276,22 +276,20 @@ public class ObjectFactory {
         return new CertificateRequestResponse();
     }
 
-//    /**
-//     * Create an instance of {@link CheckRevokationStatus }
-//     *
-//     */
-//    public CheckRevokationStatus createCheckRevokationStatus() {
-//        return new CheckRevokationStatus();
-//    }
-//
-//    /**
-//     * Create an instance of {@link CheckRevokationStatusResponse }
-//     *
-//     */
-//    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
-//        return new CheckRevokationStatusResponse();
-//    }
-//
+    /**
+     * Create an instance of {@link CheckRevokationStatus }
+     */
+    public CheckRevokationStatus createCheckRevokationStatus() {
+        return new CheckRevokationStatus();
+    }
+
+    /**
+     * Create an instance of {@link CheckRevokationStatusResponse }
+     */
+    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
+        return new CheckRevokationStatusResponse();
+    }
+
 //    /**
 //     * Create an instance of {@link CreateCA }
 //     *
@@ -499,23 +497,22 @@ public class ObjectFactory {
 //    public FindCertsResponse createFindCertsResponse() {
 //        return new FindCertsResponse();
 //    }
-//
-//    /**
-//     * Create an instance of {@link FindUser }
-//     *
-//     */
-//    public FindUser createFindUser() {
-//        return new FindUser();
-//    }
-//
-//    /**
-//     * Create an instance of {@link FindUserResponse }
-//     *
-//     */
-//    public FindUserResponse createFindUserResponse() {
-//        return new FindUserResponse();
-//    }
-//
+
+    /**
+     * Create an instance of {@link FindUser }
+     *
+     */
+    public FindUser createFindUser() {
+        return new FindUser();
+    }
+
+    /**
+     * Create an instance of {@link FindUserResponse }
+     */
+    public FindUserResponse createFindUserResponse() {
+        return new FindUserResponse();
+    }
+
 //    /**
 //     * Create an instance of {@link GenTokenCertificates }
 //     *
@@ -1371,16 +1368,16 @@ public class ObjectFactory {
 //    public CertificateResponse createCertificateResponse() {
 //        return new CertificateResponse();
 //    }
-//
-//    /**
-//     * Create an instance of {@link UserMatch }
-//     *
-//     */
-//    public UserMatch createUserMatch() {
-//        return new UserMatch();
-//    }
-//
-//    /**
+
+    /**
+     * Create an instance of {@link UserMatch }
+     *
+     */
+    public UserMatch createUserMatch() {
+        return new UserMatch();
+    }
+
+    //    /**
 //     * Create an instance of {@link UserDataVOWS }
 //     *
 //     */
@@ -1574,32 +1571,36 @@ public class ObjectFactory {
         return new JAXBElement<CertificateRequestResponse>(_CertificateRequestResponse_QNAME, CertificateRequestResponse.class, null, value);
     }
 
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatus")
-//    public JAXBElement<CheckRevokationStatus> createCheckRevokationStatus(CheckRevokationStatus value) {
-//        return new JAXBElement<CheckRevokationStatus>(_CheckRevokationStatus_QNAME, CheckRevokationStatus.class, null, value);
-//    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatusResponse }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatusResponse }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatusResponse")
-//    public JAXBElement<CheckRevokationStatusResponse> createCheckRevokationStatusResponse(CheckRevokationStatusResponse value) {
-//        return new JAXBElement<CheckRevokationStatusResponse>(_CheckRevokationStatusResponse_QNAME, CheckRevokationStatusResponse.class, null, value);
-//    }
-//
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatus")
+    public JAXBElement<CheckRevokationStatus> createCheckRevokationStatus(CheckRevokationStatus value) {
+        return new JAXBElement<CheckRevokationStatus>(_CheckRevokationStatus_QNAME, CheckRevokationStatus.class, null,
+                                                      value
+        );
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatusResponse }{@code >}
+     *
+     * @param value Java instance representing xml element's value.
+     * @return the new instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatusResponse }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatusResponse")
+    public JAXBElement<CheckRevokationStatusResponse> createCheckRevokationStatusResponse(
+            CheckRevokationStatusResponse value
+    ) {
+        return new JAXBElement<CheckRevokationStatusResponse>(_CheckRevokationStatusResponse_QNAME,
+                                                              CheckRevokationStatusResponse.class, null, value
+        );
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCA }{@code >}
 //     *
@@ -1937,33 +1938,31 @@ public class ObjectFactory {
 //    public JAXBElement<FindCertsResponse> createFindCertsResponse(FindCertsResponse value) {
 //        return new JAXBElement<FindCertsResponse>(_FindCertsResponse_QNAME, FindCertsResponse.class, null, value);
 //    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link FindUser }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link FindUser }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUser")
-//    public JAXBElement<FindUser> createFindUser(FindUser value) {
-//        return new JAXBElement<FindUser>(_FindUser_QNAME, FindUser.class, null, value);
-//    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link FindUserResponse }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link FindUserResponse }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUserResponse")
-//    public JAXBElement<FindUserResponse> createFindUserResponse(FindUserResponse value) {
-//        return new JAXBElement<FindUserResponse>(_FindUserResponse_QNAME, FindUserResponse.class, null, value);
-//    }
-//
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FindUser }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link FindUser }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUser")
+    public JAXBElement<FindUser> createFindUser(FindUser value) {
+        return new JAXBElement<FindUser>(_FindUser_QNAME, FindUser.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FindUserResponse }{@code >}
+     *
+     * @param value Java instance representing xml element's value.
+     * @return the new instance of {@link JAXBElement }{@code <}{@link FindUserResponse }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUserResponse")
+    public JAXBElement<FindUserResponse> createFindUserResponse(FindUserResponse value) {
+        return new JAXBElement<FindUserResponse>(_FindUserResponse_QNAME, FindUserResponse.class, null, value);
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link GenTokenCertificates }{@code >}
 //     *

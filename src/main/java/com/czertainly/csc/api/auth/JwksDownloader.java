@@ -4,55 +4,38 @@ import com.czertainly.csc.api.auth.exceptions.JwksDownloadException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
-
-import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import org.springframework.web.client.RestClient;
 
 @Component
 public class JwksDownloader {
 
     private final Logger logger = LogManager.getLogger(JwksDownloader.class);
 
-    private final URL jwksUrl;
+    private final RestClient restClient;
 
-    public JwksDownloader(@Value("${idp.jwksUri}") String jwksUri) {
+    public JwksDownloader(@Value("${idp.jwksUri}") String jwksUri,
+                          HttpComponentsClientHttpRequestFactory requestFactory
+    ) {
         try {
-            this.jwksUrl = new URI(jwksUri).toURL();
+            restClient = RestClient.builder()
+                                   .requestFactory(requestFactory)
+                                   .baseUrl(jwksUri)
+                                   .build();
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid JWKS URI", e);
+            throw new IllegalArgumentException("Failed to configure JWKSDownloader", e);
         }
     }
 
     public String download() throws JwksDownloadException {
-        HttpsURLConnection con = null;
-        BufferedInputStream br = null;
-        try {
-            con = (HttpsURLConnection) jwksUrl.openConnection();
-            br = new BufferedInputStream(con.getInputStream());
-            return new String(br.readAllBytes(), StandardCharsets.UTF_8);
+        logger.debug("Downloading JWKS from the IDP.");
 
-        } catch (IOException e) {
-            throw new JwksDownloadException("Failed to download certificates from jwks url.", e);
-        } catch (ClassCastException e) {
-            throw new JwksDownloadException("The connection created is not an HTTPS connection." +
-                                                    " The JWKS URL must use HTTPS.");
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    logger.error("Error closing BufferedReader", e);
-                }
-            }
-            if (con != null) {
-                con.disconnect();
-            }
-        }
+        return restClient.get()
+                         .accept(MediaType.APPLICATION_JSON)
+                         .retrieve()
+                         .body(String.class);
     }
 }
 

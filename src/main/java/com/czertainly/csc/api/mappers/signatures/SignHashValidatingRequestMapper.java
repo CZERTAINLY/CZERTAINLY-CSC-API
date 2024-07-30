@@ -1,9 +1,10 @@
-package com.czertainly.csc.model.mappers;
+package com.czertainly.csc.api.mappers.signatures;
 
+import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.api.auth.SADParser;
 import com.czertainly.csc.api.auth.SignatureActivationData;
+import com.czertainly.csc.api.mappers.RequestMapper;
 import com.czertainly.csc.api.signhash.SignHashRequestDto;
-import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.common.result.ErrorWithDescription;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.crypto.AlgorithmPair;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class SignHashValidatingRequestMapper implements SignatureRequestMapper<SignHashRequestDto, SignHashParameters> {
+public class SignHashValidatingRequestMapper implements RequestMapper<SignHashRequestDto, SignHashParameters> {
 
     AlgorithmUnifier algorithmUnifier;
     SADParser sadParser;

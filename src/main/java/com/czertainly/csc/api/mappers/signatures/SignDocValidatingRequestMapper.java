@@ -1,13 +1,13 @@
-package com.czertainly.csc.model.mappers;
+package com.czertainly.csc.api.mappers.signatures;
 
+import com.czertainly.csc.api.ErrorCode;
+import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.api.auth.SADParser;
 import com.czertainly.csc.api.auth.SignatureActivationData;
+import com.czertainly.csc.api.mappers.RequestMapper;
 import com.czertainly.csc.api.signdoc.DocumentDigestsDto;
 import com.czertainly.csc.api.signdoc.DocumentDto;
 import com.czertainly.csc.api.signdoc.SignDocRequestDto;
-import com.czertainly.csc.signing.configuration.SignatureFormat;
-import com.czertainly.csc.api.ErrorCode;
-import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.common.result.ErrorWithDescription;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.crypto.AlgorithmPair;
@@ -16,6 +16,7 @@ import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.DocumentToSign;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
+import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-public class SignDocValidatingRequestMapper implements SignatureRequestMapper<SignDocRequestDto, SignDocParameters> {
+public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequestDto, SignDocParameters> {
 
     AlgorithmUnifier algorithmUnifier;
     SADParser sadParser;

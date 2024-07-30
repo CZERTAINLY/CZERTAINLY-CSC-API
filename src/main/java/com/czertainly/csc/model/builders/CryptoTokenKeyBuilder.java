@@ -3,6 +3,8 @@ package com.czertainly.csc.model.builders;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.model.signserver.CryptoTokenKeyStatus;
 
+import java.util.List;
+
 public class CryptoTokenKeyBuilder {
 
     private int cryptoTokenId;
@@ -10,6 +12,7 @@ public class CryptoTokenKeyBuilder {
     private String keyAlgorithm;
     private String keySpecification;
     private CryptoTokenKeyStatus status;
+    private List<byte[]> chain;
 
     public CryptoTokenKeyBuilder withCryptoTokenId(int cryptoTokenId) {
         this.cryptoTokenId = cryptoTokenId;
@@ -36,8 +39,13 @@ public class CryptoTokenKeyBuilder {
         return this;
     }
 
+    public CryptoTokenKeyBuilder withChain(List<byte[]> chain) {
+        this.chain = chain;
+        return this;
+    }
+
     public CryptoTokenKey build() {
-        return new CryptoTokenKey(cryptoTokenId, keyAlias, keyAlgorithm, keySpecification, status);
+        return new CryptoTokenKey(cryptoTokenId, keyAlias, keyAlgorithm, keySpecification, chain, status);
     }
 
 }

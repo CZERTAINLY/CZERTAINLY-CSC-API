@@ -66,7 +66,7 @@ public class TokenEntry {
 
     protected String alias;
     @XmlElement(nillable = true)
-    protected byte[] chain;
+    protected List<byte[]> chain;
     @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar creationDate;
     @XmlElement(required = true)
@@ -119,7 +119,7 @@ public class TokenEntry {
      * byte[]
      * 
      */
-    public byte[] getChain() {
+    public List<byte[]> getChain() {
         return this.chain;
     }
 
