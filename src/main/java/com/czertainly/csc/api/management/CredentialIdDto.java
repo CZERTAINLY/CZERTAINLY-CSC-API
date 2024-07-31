@@ -2,10 +2,11 @@ package com.czertainly.csc.api.management;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record SelectCredentialDto(
+public record CredentialIdDto(
+
         @Schema(
                 description = """
-                    The ID of the credential.
+                    The ID uniquely identifying the credential.
                     """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )

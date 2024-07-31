@@ -2,12 +2,18 @@ package com.czertainly.csc.controllers.v2;
 
 import com.czertainly.csc.api.credentials.*;
 import com.czertainly.csc.api.mappers.credentials.CredentialInfoRequestMapper;
+import com.czertainly.csc.api.signhash.SignHashResponseDto;
 import com.czertainly.csc.components.DateConverter;
 import com.czertainly.csc.controllers.exceptions.BadRequestException;
 import com.czertainly.csc.controllers.exceptions.ServerErrorException;
 import com.czertainly.csc.model.csc.Credential;
 import com.czertainly.csc.model.csc.requests.CredentialInfoRequest;
 import com.czertainly.csc.service.CredentialsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +40,19 @@ public class CredentialsController {
     }
 
     @RequestMapping(path = "list", method = RequestMethod.POST, produces = "application/json")
-    @PreAuthorize("hasAuthority('SCOPE_createCredential')")
+    @Operation(summary = "List Credentials",
+            description = "Returns the list of credentials associated with a user identifier. For more information, " +
+                    "see the CSC API specification, section `11.4 credentials/list`."
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CredentialsListDto.class))
+                    )
+            }
+    )
     public CredentialsListDto listCredentials() {
 
         return new CredentialsListDto(
@@ -67,9 +85,22 @@ public class CredentialsController {
     }
 
     @RequestMapping(path = "info", method = RequestMethod.POST, produces = "application/json")
-    public CredentialDto credentialInfo(@RequestBody CredentialInfoDto credentialInfoDto) {
+    @Operation(summary = "Credentials Info",
+            description = "Retrieves the credential. For more information, see the CSC API specification, " +
+                    "section `11.5 credentials/info`."
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CredentialDto.class))
+                    )
+            }
+    )
+    public CredentialDto credentialInfo(@RequestBody GetCredentialInfoDto getCredentialInfoDto) {
         return credentialInfoRequestMapper
-                .map(credentialInfoDto, null)
+                .map(getCredentialInfoDto, null)
                 .with(
                         (CredentialInfoRequest request) -> {
                             try {

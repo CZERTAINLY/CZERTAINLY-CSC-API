@@ -1,7 +1,7 @@
 package com.czertainly.csc.api.mappers.credentials;
 
 import com.czertainly.csc.api.auth.SignatureActivationData;
-import com.czertainly.csc.api.credentials.CredentialInfoDto;
+import com.czertainly.csc.api.credentials.GetCredentialInfoDto;
 import com.czertainly.csc.api.mappers.ApiRequestResult;
 import com.czertainly.csc.api.mappers.RequestMapper;
 import com.czertainly.csc.common.result.ErrorWithDescription;
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class CredentialInfoRequestMapper implements RequestMapper<CredentialInfoDto, CredentialInfoRequest> {
+public class CredentialInfoRequestMapper implements RequestMapper<GetCredentialInfoDto, CredentialInfoRequest> {
 
     @Override
-    public Result<CredentialInfoRequest, ErrorWithDescription> map(CredentialInfoDto dto, SignatureActivationData sad) {
+    public Result<CredentialInfoRequest, ErrorWithDescription> map(GetCredentialInfoDto dto, SignatureActivationData sad) {
 
         if (dto.credentialID() == null) {
             return ApiRequestResult.invalidRequest("Missing (or invalid type) string parameter credentialID.");
