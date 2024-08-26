@@ -1,5 +1,6 @@
 package com.czertainly.csc.controllers.v2;
 
+import com.czertainly.csc.api.common.ErrorDto;
 import com.czertainly.csc.api.credentials.*;
 import com.czertainly.csc.api.mappers.credentials.CredentialInfoRequestMapper;
 import com.czertainly.csc.api.signhash.SignHashResponseDto;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +26,32 @@ import java.util.List;
 
 @RestController
 @RequestMapping("csc/v2/credentials")
+@Tag(name = "Credentials", description = "Credentials API as defined in the CSC API v2.0.0.2 specification. " +
+        "This API is used to retrieve information about the credentials associated to user.")
+@ApiResponses(
+        value = {
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Bad Request",
+                        content = @Content(schema = @Schema(implementation = ErrorDto.class))
+                ),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Unauthorized",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "Internal Server Error",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "501",
+                        description = "Not Implemented",
+                        content = @Content
+                ),
+        }
+)
 public class CredentialsController {
 
     private final CredentialsService credentialsService;
@@ -86,7 +114,8 @@ public class CredentialsController {
 
     @RequestMapping(path = "info", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Credentials Info",
-            description = "Retrieves the credential. For more information, see the CSC API specification, " +
+            description = "Returns information on a signing credential, its associated certificate and a description of " +
+                    "the supported authorization mechanism. For more information, see the CSC API specification, " +
                     "section `11.5 credentials/info`."
     )
     @ApiResponses(

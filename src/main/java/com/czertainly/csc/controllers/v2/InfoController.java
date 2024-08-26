@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("csc/v2/info")
-@Tag(name = "Info", description = "Indo API as defined in the CSC API v2.0.0.2 specification. " +
+@Tag(name = "Info", description = "Info API as defined in the CSC API v2.0.0.2 specification. " +
         "This API is used to retrieve information about the remote serivce.")
 @ApiResponses(
         value = {
