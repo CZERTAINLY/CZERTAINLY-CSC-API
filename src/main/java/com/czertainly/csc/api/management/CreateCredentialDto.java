@@ -68,7 +68,7 @@ public record CreateCredentialDto(
                     Maximum number of signatures that can be created with this credential with a single
                     authorization request.
                     """,
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         Integer numberOfSignaturesPerAuthorization,
 
