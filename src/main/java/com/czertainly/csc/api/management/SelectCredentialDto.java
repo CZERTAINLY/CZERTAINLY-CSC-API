@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record SelectCredentialDto(
         @Schema(
                 description = """
-                    The ID of the credential.
+                    Unique identifier of the credential.
                     """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )

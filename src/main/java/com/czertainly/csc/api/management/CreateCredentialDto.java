@@ -6,7 +6,7 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    A name of the SignServer crypto token which will hold the generated private key for the credential.
+                    A name of the crypto token which will hold the generated private key for the credential.
                     """,
                 example = "EntrustSAMCryptoToken",
                 requiredMode = Schema.RequiredMode.REQUIRED
@@ -46,8 +46,8 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    An ID of the user the credential will belong to.
-                    This ID must be unique within the identity provider.
+                    Identifier of the user the credential will belong to.
+                    This identifier must be unique within the identity provider.
                     """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )

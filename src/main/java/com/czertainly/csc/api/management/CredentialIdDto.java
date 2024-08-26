@@ -6,7 +6,7 @@ public record CredentialIdDto(
 
         @Schema(
                 description = """
-                    The ID uniquely identifying the credential.
+                    Unique identifier of the credential.
                     """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
