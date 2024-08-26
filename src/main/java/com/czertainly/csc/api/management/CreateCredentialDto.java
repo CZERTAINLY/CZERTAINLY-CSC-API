@@ -6,33 +6,40 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    A name of the crypto token which will hold the new key.
+                    A name of the SignServer crypto token which will hold the generated private key for the credential.
                     """,
+                example = "EntrustSAMCryptoToken",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String cryptoTokenName,
 
         @Schema(
                 description = """
-                    An algorithm of the new key, eg. `RSA` or `ECDSA`.
+                    Key algorithm to use when generating new private key. The key algorithm must be supported by the
+                    crypto token. See the documentation of the crypto token for supported key algorithms.
                     """,
+                example = "RSA",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String keyAlgorithm,
 
         @Schema(
                 description = """
-                    A key specification of the new key.
-                    For RSA keys, it is the key size in bits. For ECDSA keys, it is the curve name.
+                    Key specification to use when generating new private keys. The key specification must be supported
+                    by the crypto token. See the documentation of the crypto token for supported key specifications.
                     """,
+                example = "2048",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String keySpecification,
 
         @Schema(
                 description = """
-                    Signature Algorithm the CSR will be signed with, eg. `SHA256withRSA`.
+                    Signature algorithm the CSR will be signed with to request the certificate. The signature algorithm
+                    must be supported by the crypto token. See the documentation of the crypto token for supported
+                    signature algorithms.
                     """,
+                example = "SHA256withRSA",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String csrSignatureAlgorithm,
@@ -40,6 +47,7 @@ public record CreateCredentialDto(
         @Schema(
                 description = """
                     An ID of the user the credential will belong to.
+                    This ID must be unique within the identity provider.
                     """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
@@ -47,15 +55,18 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    A qualifier of the signature, eg. `eu_eidas_aes`.
+                    Identifier qualifying the type of signature this credential is suitable for.
+                    See the list of supported signature qualifiers in the CSC API specification.
                     """,
+                example = "eu_eidas_qes",
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         String signatureQualifier,
 
         @Schema(
                 description = """
-                    The number of signatures that can be made with the credential during a single authorization.
+                    Maximum number of signatures that can be created with this credential with a single
+                    authorization request.
                     """,
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
@@ -63,31 +74,41 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    A signature creation and verification level (SCAL) of the credential.
+                    Specifies if the credential should generate a signature activation data (SAD) or an access token
+                    with scope `credential` that contains a link to the hash to-be-signed:
+                    - `1`: The hash to-be-signed is not linked to the signature activation data.
+                    - `2`: The hash to-be-signed is linked to the signature activation data.
+                    This value is OPTIONAL and the default value is `1`.
                     """,
+                defaultValue = "1",
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         String scal,
 
         @Schema(
                 description = """
-                    A distinguished name (DN) of the credential. Will be used DN of the certificate.
+                    A subject distinguished name (DN) of the credential for the certificate.
+                    The format of the DN must be according to the X.500 standard.
                     """,
+                example = "CN=John Doe, OU=IT, O=Company",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String dn,
 
         @Schema(
                 description = """
-                    A subject alternative name (SAN) of the credential. Will be used SAN of the certificate.
+                    A subject alternative name (SAN) of the credential for the certificate.
+                    The format of the SAN must be according to the X.500 standard.
                     """,
+                example = "DNS:example.com, DNS:example.org",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String san,
 
         @Schema(
                 description = """
-                    A free text description of the credential.
+                    A free form description of the credential in the lang language. The maximum size of the string
+                    is 255 characters.
                     """,
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
