@@ -169,6 +169,9 @@ spring:
         password: 'your-strong-password'
         # Driver class name of the database
         driver-class-name: 'org.postgresql.Driver'
+    flyway:
+        table: "csc_schema_history"
+        schemas: "csc"
 
 # Logging configuration
 logging:
