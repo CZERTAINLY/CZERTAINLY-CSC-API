@@ -42,16 +42,24 @@ public class CreateCredentialRequestMapper implements RequestMapper<CreateCreden
             return ApiRequestResult.invalidRequest("Missing string parameter userId.");
         }
 
-        if (dto.numberOfSignaturesPerAuthorization() == null) {
-            return ApiRequestResult.invalidRequest("Missing int parameter numberOfSignaturesPerAuthorization.");
-        }
-
         if (dto.dn() == null) {
             return ApiRequestResult.invalidRequest("Missing string parameter dn.");
         }
 
         if (dto.san() == null) {
             return ApiRequestResult.invalidRequest("Missing string parameter san.");
+        }
+
+        // Check if numberOfSignaturesPerAuthorization is null, and if so, set it to 1.
+        // Also, if it is lower than 1, we set it to 1.
+        Integer numberOfSignaturesPerAuthorization = dto.numberOfSignaturesPerAuthorization();
+        if (numberOfSignaturesPerAuthorization == null || numberOfSignaturesPerAuthorization < 1) {
+            numberOfSignaturesPerAuthorization = 1;
+        }
+
+        // The description field, if present, must be at most 255 characters long.
+        if (dto.description() != null && dto.description().length() > 255) {
+            return ApiRequestResult.invalidRequest("The description field must be at most 255 characters long.");
         }
 
         return Result.ok(
@@ -62,7 +70,7 @@ public class CreateCredentialRequestMapper implements RequestMapper<CreateCreden
                         dto.keySpecification(),
                         dto.userId(),
                         dto.signatureQualifier(),
-                        dto.numberOfSignaturesPerAuthorization(),
+                        numberOfSignaturesPerAuthorization,
                         dto.scal(),
                         dto.dn(),
                         dto.san(),
