@@ -1,0 +1,180 @@
+# CSC API configuration
+csc:
+    # The name of the CSC component that will be provided in the Info endpoint
+    name: CSC API
+    # The URI of the image file containing the logo of the remote service which SHALL be published online.
+    # The image SHALL be in either JPEG or PNG format and not larger than 256x256 pixels.
+    logo: https://csc.example/logo.png
+    # The ISO 3166-1 [22] Alpha-2 code of the Country where the remote  service provider is established
+    # (e.g. ES for Spain).
+    region: CZ
+    # SignServer workers configuration file
+    workerConfigurationFile: /opt/cscapi/workers.yml
+    # Number of preloaded keys that are stored in memory for faster access
+    numberOfPreloadedKeys: 10
+    # A filter pattern to identifies keys that can be used for signing in the short term use-case. Use % as a wildcard.
+    keyAliasFilterPattern: pregenerated%
+
+# IDP configuration
+idp:
+    # Base URL of the IDP OpenID Connect endpoint
+    baseUrl: https://idp.example.com/realms/CSC
+    # URL of the JWKS endpoint to retrieve and update the public keys
+    jwksUri: https://idp.example.com/realms/CSC/protocol/openid-connect/certs
+    # URL of the UserInfo endpoint to retrieve user information in exchange for an access token
+    # optional, if not provided, the UserInfo endpoint will not be used
+    userInfoUrl: https://idp.example.com/realms/CSC/protocol/openid-connect/userinfo
+    # Issuer of the IDP token, used for token validation
+    issuer: https://idp.example.com/realms/CSC
+    # Audience of the IDP token, used for token validation
+    audience: cscapi
+    # Clock skew in seconds for token validation
+    clockSkewSeconds: 5
+
+# Signing provider configuration
+signingProvider:
+    # SignServer configuration
+    signserver:
+        # URL of the SignServer
+        url: https://signserver.example.com/signserver
+        # Name of the truststore bundle containing trusted certificates; OPTIONAL
+        # truststoreBundle: trustedcertificates
+        client:
+            # Authorization type for the client signing operations
+            # BASIC is used for basic authentication, and basic username and password are required
+            # CERTIFICATE is used for mutual TLS authentication and requires a client certificate
+            authType: CERTIFICATE
+            # Only used when authorization type is CERTIFICATE
+            certificate:
+                keystoreBundle: signserverClient
+            # Only used when authorization type is BASIC
+            basic:
+                # Username for basic authentication
+                username: admin
+                # Password for basic authentication
+                password: admin
+        # Client keystore configuration for admin operations
+        admin:
+            # Name of the keystore bundle containing the admin certificate and private key
+            keystoreBundle: signserverAdmin
+
+# CA provider configuration
+caProvider:
+    # EJBCA configuration
+    ejbca:
+        # URL of the EJBCA
+        url: https://ejbca.example.com/ejbca
+        # Name of the truststore bundle containing trusted certificates; OPTIONAL
+        # truststoreBundle: trustedcertificates
+        # Admin keystore configuration for RA operations
+        admin:
+            # Name of the keystore bundle containing the admin certificate and private key
+            keystoreBundle: ejbcaAdmin
+
+        # End entity configuration
+        endEntity:
+            # Username pattern to create username
+            # You can use placeholders in the patterns, e.g. $[AccessToken.name] will be replaced with the
+            # claim value of the `name` attribute in the access token
+            # The claim values and other placeholder information is taken from:
+            # - the access token that is provided in the Authorization header, in this case the placeholder
+            #   has to be in the form $[AccessToken.<claim>]
+            # - the user info that is retrieved from the IDP UserInfo endpoint, in this case the placeholder
+            #   has to be in the form $[UserInfo.<claim>]
+            # - the Signature Activation Data (SAD) token that is provided in the request body or
+            #   Authorization header, in this case the placeholder has to be in the form $[Sad.<claim>]
+            # - the Credential that is representing the credential of the user, currently only the id is available,
+            #   in this case the placeholder has to be in the form $[Credential.id] and it will be replaced with the
+            #   alias of the key pair that is used for signing
+            usernamePattern: $[UserInfo.name]-$[Credential.id]
+            # DN pattern to create subject DN of requested certificate
+            dnPattern: CN=$[AccessToken.name], UID=$[UserInfo.id]
+            # SAN pattern to create subject alternative name of requested certificate
+            sanPattern: None
+            # CA name to issue the certificate
+            caName: DemoClientSubCA_2307RSA
+            # End entity profile name to use for the certificate
+            endEntityProfileName: DemoDocumentSigningEndEntityProfile
+            # Certificate profile name to use for the certificate
+            certificateProfileName: DemoDocumentSigningEECertificateProfile
+
+# TLS/mTLS configuration, disabled by default
+server:
+    # Configuration of the keystore with server certificate and private key
+    ssl:
+        # Enable or disable TLS
+        enabled: false
+        # Key store type, allowed values: JKS, PKCS12, recommended: PKCS12
+        key-store-type: PKCS12
+        # Absolute path to the keystore file, containing the server certificate and private key
+        key-store: /opt/cscapi/keystore.p12
+        # Key store password
+        key-store-password: password
+        # Alias of the server certificate with private key in the keystore
+        key-alias: server
+        # Private key password, if different from the keystore password
+        # key-password: password
+        # Client authentication mode, allowed values: NONE, WANT, NEED
+        # NEED = mandatory mTLS, WANT = optional mTLS, NONE = no mTLS
+        client-auth: WANT
+        # Trust store type, allowed values: JKS, PKCS12, recommended: PKCS12
+        trust-store-type: PKCS12
+        # Absolute path to the truststore file, containing trusted certificates
+        trust-store: /opt/cscapi/truststore.p12
+        # Trust store password
+        trust-store-password: password
+
+# Spring configuration
+spring:
+    datasource:
+        url: jdbc:postgresql://dbserverurl:5432/databaseName
+        username: usrname
+        password: password
+    # Jackson configuration, DO NOT CHANGE if you are not familiar with Jackson
+    jackson:
+        default-property-inclusion: NON_NULL
+    # Configuration of SSL context for the REST and Web Services clients
+    ssl:
+        bundle:
+            # Sample configuration of a truststore using PEM encoded certificate or certificate chain
+            # pem:
+                # trustedcertificates:
+                #    truststore:
+                #        certificate: /opt/cscapi/trusted-ca-certs.pem
+            jks:
+                # Sample configuration of keystore using PKCS12 keystore
+                # ejbcaAdmin: # Name of the keystore bundle
+                #     keystore:
+                #         type: "PKCS12" # Keystore type, allowed values: JKS, PKCS12
+                #         location: /opt/cscapi/admin-keystore.p12 # Absolute path to the keystore file
+                #         password: password # Keystore password
+                ejbcaAdmin:
+                    keystore:
+                        type: "PKCS12"
+                        location: /opt/cscapi/ejbca/admin-keystore.p12
+                        password: password
+                signserverAdmin:
+                    keystore:
+                        type: "PKCS12"
+                        location: /opt/cscapi/signserver/admin-keystore.p12
+                        password: password
+                signserverClient:
+                    keystore:
+                        type: "PKCS12"
+                        location: /opt/cscapi/signserver/client-keystore.p12
+                        password: password
+
+# Logging configuration
+logging:
+    level:
+        # Logging level for the CSC API, allowed values: TRACE, DEBUG, INFO, WARN, ERROR
+        com.czertainly.csc: INFO
+
+# Springdoc configuration, DO NOT CHANGE if you are not familiar with Springdoc
+springdoc:
+    swagger-ui:
+        disable-swagger-default-url: true
+        configUrl: /openapi/swagger-config
+        url: /openapi
+    api-docs:
+        path: /openapi
