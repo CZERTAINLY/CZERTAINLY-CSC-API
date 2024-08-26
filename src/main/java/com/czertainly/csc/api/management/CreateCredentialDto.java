@@ -78,7 +78,6 @@ public record CreateCredentialDto(
                     with scope `credential` that contains a link to the hash to-be-signed:
                     - `1`: The hash to-be-signed is not linked to the signature activation data.
                     - `2`: The hash to-be-signed is linked to the signature activation data.
-                    This value is OPTIONAL and the default value is `1`.
                     """,
                 example = "1",
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
