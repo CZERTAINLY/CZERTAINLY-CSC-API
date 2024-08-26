@@ -80,7 +80,7 @@ public record CreateCredentialDto(
                     - `2`: The hash to-be-signed is linked to the signature activation data.
                     This value is OPTIONAL and the default value is `1`.
                     """,
-                defaultValue = "1",
+                example = "1",
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         String scal,
@@ -88,9 +88,11 @@ public record CreateCredentialDto(
         @Schema(
                 description = """
                     A subject distinguished name (DN) of the credential for the certificate.
-                    The format of the DN must be according to the X.500 standard.
+                    The format of the DN must be according to the X.500 standard. This field should contain
+                    comma-separated key-value pairs, where the key is the type of the DN and the value is the
+                    value of the DN.
                     """,
-                example = "CN=John Doe, OU=IT, O=Company",
+                example = "CN=John Doe,OU=IT,O=Company",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String dn,
@@ -98,9 +100,11 @@ public record CreateCredentialDto(
         @Schema(
                 description = """
                     A subject alternative name (SAN) of the credential for the certificate.
-                    The format of the SAN must be according to the X.500 standard.
+                    The format of the SAN must be according to the X.500 standard. This field should contain
+                    comma-separated key-value pairs, where the key is the type of the SAN and the value is the
+                    value of the SAN.
                     """,
-                example = "DNS:example.com, DNS:example.org",
+                example = "rfc822Name=your.name@email.com",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String san,
