@@ -159,6 +159,16 @@ spring:
                         type: "PKCS12"
                         location: /opt/cscapi/signserver/client-keystore.p12
                         password: password
+    # Datasource configuration
+    datasource:
+        # JDBC URL of the database
+        url: jdbc:postgresql://localhost:5432/cscdb
+        # Username to connect to the database
+        username: 'cscuser'
+        # Password to connect to the database
+        password: 'your-strong-password'
+        # Driver class name of the database
+        driver-class-name: 'org.postgresql.Driver'
 
 # Logging configuration
 logging:
