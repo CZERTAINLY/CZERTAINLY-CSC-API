@@ -8,14 +8,19 @@ import com.czertainly.csc.api.management.SelectCredentialDto;
 import com.czertainly.csc.api.mappers.credentials.CreateCredentialRequestMapper;
 import com.czertainly.csc.api.mappers.credentials.CredentialUUIDMapper;
 import com.czertainly.csc.api.mappers.credentials.RekeyCertificateRequestMapper;
-import com.czertainly.csc.controllers.exceptions.BadRequestException;
-import com.czertainly.csc.service.CredentialsService;
+import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.controllers.exceptions.InternalErrorException;
+import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
+import com.czertainly.csc.model.csc.requests.RekeyCredentialRequest;
+import com.czertainly.csc.service.credentials.CredentialsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +55,8 @@ import java.util.UUID;
         })
 public class CredentialManagementController {
 
+    private static final Logger logger = LoggerFactory.getLogger(CredentialManagementController.class);
+
     private final CredentialsService credentialsService;
     private final CreateCredentialRequestMapper createCredentialRequestMapper;
     private final CredentialUUIDMapper credentialUUIDMapper;
@@ -80,16 +87,14 @@ public class CredentialManagementController {
             }
     )
     public CredentialIdDto createCredential(@RequestBody CreateCredentialDto createCredentialDto) {
-        return createCredentialRequestMapper
-                .map(createCredentialDto, null)
-                .with(request -> {
-                          UUID credentialId = this.credentialsService.createCredential(request);
-                          return new CredentialIdDto(credentialId.toString());
-                      },
-                      error -> {
-                          throw new BadRequestException(error.error(), error.description());
-                      }
-                );
+        CreateCredentialRequest request = createCredentialRequestMapper.map(createCredentialDto);
+        return this.credentialsService.createCredential(request)
+                                      .map(CredentialIdDto::from)
+                                      .mapError(e -> e.extend("Failed to create credential for user %s",
+                                                              createCredentialDto.userId()
+                                      ))
+                                      .consumeError(this::logAndThrowError)
+                                      .unwrap();
     }
 
     @RequestMapping(path = "/remove", method = RequestMethod.POST, produces = "application/json")
@@ -105,9 +110,13 @@ public class CredentialManagementController {
             }
     )
     public void deleteCredential(@RequestBody SelectCredentialDto selectCredentialDto) {
-        credentialUUIDMapper.map(selectCredentialDto, null).doWith(this.credentialsService::deleteCredential, error -> {
-            throw new BadRequestException(error.error(), error.description());
-        });
+        UUID credentialId = credentialUUIDMapper.map(selectCredentialDto, null);
+        this.credentialsService.deleteCredential(credentialId)
+                               .mapError(e -> e.extend("Failed to delete credential %s",
+                                                       selectCredentialDto.credentialID()
+                               ))
+                               .consumeError(this::logAndThrowError);
+
     }
 
     @RequestMapping(path = "/disable", method = RequestMethod.POST, produces = "application/json")
@@ -123,10 +132,12 @@ public class CredentialManagementController {
             }
     )
     public void disableCredential(@RequestBody SelectCredentialDto selectCredentialDto) {
-        credentialUUIDMapper.map(selectCredentialDto, null)
-                            .doWith(this.credentialsService::disableCredential, error -> {
-                                throw new BadRequestException(error.error(), error.description());
-                            });
+        UUID credentialId = credentialUUIDMapper.map(selectCredentialDto, null);
+        this.credentialsService.disableCredential(credentialId)
+                               .mapError(e -> e.extend("Failed to disable credential %s",
+                                                       selectCredentialDto.credentialID()
+                               ))
+                               .consumeError(this::logAndThrowError);
 
     }
 
@@ -143,9 +154,13 @@ public class CredentialManagementController {
             }
     )
     public void enableCredential(@RequestBody SelectCredentialDto selectCredentialDto) {
-        credentialUUIDMapper.map(selectCredentialDto, null).doWith(this.credentialsService::enableCredential, error -> {
-            throw new BadRequestException(error.error(), error.description());
-        });
+        UUID credentialId = credentialUUIDMapper.map(selectCredentialDto, null);
+
+        this.credentialsService.enableCredential(credentialId)
+                               .mapError(e -> e.extend("Failed to enable credential %s",
+                                                       selectCredentialDto.credentialID()
+                               ))
+                               .consumeError(this::logAndThrowError);
 
     }
 
@@ -162,8 +177,17 @@ public class CredentialManagementController {
             }
     )
     public void rekeyCredential(@RequestBody RekeyCredentialDto rekeyCredentialDto) {
-        rekeyCertificateRequestMapper.map(rekeyCredentialDto, null).doWith(this.credentialsService::rekey, error -> {
-            throw new BadRequestException(error.error(), error.description());
-        });
+        RekeyCredentialRequest rekeyRequest = rekeyCertificateRequestMapper.map(rekeyCredentialDto);
+
+        this.credentialsService.rekey(rekeyRequest)
+                               .mapError(e -> e.extend("Failed to rekey credential %s",
+                                                       rekeyCredentialDto.credentialID()
+                               ))
+                               .consumeError(this::logAndThrowError);
+    }
+
+    private void logAndThrowError(TextError error) {
+        logger.error(error.toString());
+        throw new InternalErrorException(error.toString());
     }
 }

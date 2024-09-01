@@ -5,8 +5,9 @@ import com.czertainly.csc.clients.signserver.rest.SignserverRestClient;
 import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.csc.clients.signserver.ws.dto.CertReqData;
 import com.czertainly.csc.clients.signserver.ws.dto.TokenEntry;
-import com.czertainly.csc.clients.signserver.ws.dto.TokenSearchResults;
 import com.czertainly.csc.common.exceptions.RemoteSystemException;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.DigestAlgorithmJavaName;
 import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignedDocuments;
@@ -176,96 +177,116 @@ public class SignserverClient {
     }
 
 
-    public byte[] generateCSR(int signerId, String keyAlias, String distinguishedName, String signatureAlgorithm) {
-        CertReqData response = signserverWSClient
-                .generateCsr(signerId, keyAlias, signatureAlgorithm, distinguishedName);
-
-        return response.getBinary();
-    }
-
-    public List<CryptoTokenKey> queryCryptoTokenKeys(int cryptoTokenId, boolean includeData, int startIndex,
-                                                     int numOfItems, String keyAliasFilterPattern
+    public Result<byte[], TextError> generateCSR(int signerId, String keyAlias,
+                                                 String distinguishedName,
+                                                 String signatureAlgorithm
     ) {
-        TokenSearchResults searchResult = signserverWSClient.queryTokenEntries(
-                cryptoTokenId, includeData,
-                startIndex, numOfItems, keyAliasFilterPattern
-        );
+        return signserverWSClient.generateCsr(signerId, keyAlias, signatureAlgorithm, distinguishedName)
+                                 .map(CertReqData::getBinary);
 
-        ArrayList<CryptoTokenKey> keys = new ArrayList<>();
-        for (TokenEntry key : searchResult.getEntries()) {
-            var info = key.getInfo();
-            var builder = new CryptoTokenKeyBuilder()
-                    .withCryptoTokenId(cryptoTokenId)
-                    .withKeyAlias(key.getAlias());
+    }
 
-            if (key.getChain() != null || key.getTrustedCertificate() != null) {
-                builder.withStatus(new CryptoTokenKeyStatus(true));
-            }
-            if (key.getChain() != null) {
-                builder.withChain(key.getChain());
-            }
-            if (includeData) {
-                info.getEntries().forEach(entry -> {
-                    switch (entry.getKey()) {
-                        case "Key specification" -> {
-                            var keySpec = keySpecificationParser.parse(entry.getValue());
-                            builder.withKeySpecification(keySpec.keySpecification());
-                            if (keySpec.keyStatus() != null) {
-                                builder.withStatus(keySpec.keyStatus());
-                            }
+    public Result<List<CryptoTokenKey>, TextError> queryCryptoTokenKeys(int cryptoTokenId,
+                                                                        boolean includeData,
+                                                                        int startIndex,
+                                                                        int numOfItems,
+                                                                        String keyAliasFilterPattern
+    ) {
+        return signserverWSClient
+                .queryTokenEntries(cryptoTokenId, includeData, startIndex, numOfItems, keyAliasFilterPattern)
+                .map(searchResult -> {
+                    ArrayList<CryptoTokenKey> keys = new ArrayList<>();
+                    for (TokenEntry key : searchResult.getEntries()) {
+                        var info = key.getInfo();
+                        var builder = new CryptoTokenKeyBuilder().withCryptoTokenId(cryptoTokenId)
+                                                                 .withKeyAlias(key.getAlias());
+
+                        if (key.getChain() != null || key.getTrustedCertificate() != null) {
+                            builder.withStatus(new CryptoTokenKeyStatus(true));
                         }
-                        case "Key algorithm" -> builder.withKeyAlgorithm(entry.getValue());
+                        if (key.getChain() != null) {
+                            builder.withChain(key.getChain());
+                        }
+                        if (includeData) {
+                            info.getEntries().forEach(entry -> {
+                                switch (entry.getKey()) {
+                                    case "Key specification" -> {
+                                        var keySpec = keySpecificationParser.parse(entry.getValue());
+                                        builder.withKeySpecification(keySpec.keySpecification());
+                                        if (keySpec.keyStatus() != null) {
+                                            builder.withStatus(keySpec.keyStatus());
+                                        }
+                                    }
+                                    case "Key algorithm" -> builder.withKeyAlgorithm(entry.getValue());
+                                }
+                            });
+                        }
+
+                        keys.add(builder.build());
                     }
+                    return keys;
                 });
-            }
-
-            keys.add(builder.build());
-        }
-        return keys;
     }
 
-    public CryptoTokenKey getCryptoTokenKey(int cryptoTokenId, String keyAlias) {
-        List<CryptoTokenKey> keys = queryCryptoTokenKeys(cryptoTokenId, true, 0, 2, keyAlias);
+    public Result<CryptoTokenKey, TextError> getCryptoTokenKey(int cryptoTokenId, String keyAlias
+    ) {
+        return queryCryptoTokenKeys(cryptoTokenId, true, 0, 2, keyAlias)
+                .flatMap(keys -> {
+                    if (keys.isEmpty()) {
+                        return Result.error(
+                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias, cryptoTokenId)
+                        );
+                    }
+                    if (keys.size() > 1) {
+                        return Result.error(
+                                TextError.of("Multiple keys with the same alias found: " +
+                                                     keys.stream()
+                                                         .map(CryptoTokenKey::keyAlias)
+                                                         .collect(Collectors.joining())
+                                )
+                        );
+                    }
+                    return Result.success(keys.getFirst());
+                });
+    }
+
+    public Result<Void, TextError> importCertificateChain(int workerId, String keyAlias,
+                                                          List<byte[]> chain
+    ) {
+        return signserverWSClient.importCertificateChain(workerId, keyAlias, chain);
+    }
+
+    public Result<String, TextError> generateKey(int workerId, String keyAlias,
+                                                 String keyAlgorithm, String keySpec
+    ) {
+        return signserverWSClient.generateKey(workerId, keyAlias, keyAlgorithm, keySpec)
+                                 .flatMap(partialAlias -> queryCryptoTokenKeys(workerId, false, 0, 2,
+                                                                               partialAlias + "%"
+                                 ))
+                                 .flatMap(this::extractKeyAlias);
+
+    }
+
+    public Result<Void, TextError> removeKey(int workerId, String keyAlias) {
+        return signserverWSClient.removeKey(workerId, keyAlias);
+    }
+
+    private Result<String, TextError> extractKeyAlias(List<CryptoTokenKey> keys) {
         if (keys.isEmpty()) {
-            throw new RemoteSystemException(
-                    "Key with alias " + keyAlias + " not found in crypto token " + cryptoTokenId);
+            return Result.error(TextError.of("Newly generated key not found."));
         }
         if (keys.size() > 1) {
-            throw new RemoteSystemException(
-                    "Multiple keys with the same alias found: " + keys.stream().map(CryptoTokenKey::keyAlias).collect(
-                            Collectors.joining()));
-        }
-        return keys.getFirst();
-    }
+            return Result.error(
+                    TextError.of("Multiple keys with the same alias found: " +
+                                         keys.stream()
+                                             .map(CryptoTokenKey::keyAlias)
+                                             .collect(Collectors.joining())
+                    ));
 
-    public void importCertificateChain(int workerId, String keyAlias, List<byte[]> chain) {
-        signserverWSClient.importCertificateChain(workerId, keyAlias, chain);
-    }
-
-    public String generateKey(int workerId, String keyAlias, String keyAlgorithm, String keySpec) {
-        String partial_alias = signserverWSClient.generateKey(workerId, keyAlias, keyAlgorithm, keySpec);
-        List<CryptoTokenKey> keys = queryCryptoTokenKeys(workerId, false, 0, 2, partial_alias + "%");
-        if (keys.isEmpty()) {
-            throw new RemoteSystemException(
-                    "Key generation failed. Newly generated key not found in the list of keys.");
         }
-        if (keys.size() > 1) {
-            throw new RemoteSystemException(
-                    "Key generation failed. Multiple keys with the same alias found: " + keys.stream().map(
-                            CryptoTokenKey::keyAlias).collect(
-                            Collectors.joining()));
-        }
-
         String alias = keys.getFirst().keyAlias();
-        logger.debug("Successfully generated key with alias '{}'.", alias);
-        return alias;
+        return Result.success(alias);
     }
-
-    public void removeKey(int workerId, String keyAlias) {
-        boolean removed = signserverWSClient.removeKey(workerId, keyAlias);
-        if (!removed) {
-            throw new RemoteSystemException("Failed to remove key " + keyAlias + " from crypto token " + workerId);
-        }
-    }
-
 }
+
+

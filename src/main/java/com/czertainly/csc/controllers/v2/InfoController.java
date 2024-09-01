@@ -2,8 +2,7 @@ package com.czertainly.csc.controllers.v2;
 
 import com.czertainly.csc.api.common.ErrorDto;
 import com.czertainly.csc.api.info.InfoDto;
-import com.czertainly.csc.api.signhash.SignHashResponseDto;
-import com.czertainly.csc.controllers.exceptions.ServerErrorException;
+import com.czertainly.csc.controllers.exceptions.InternalErrorException;
 import com.czertainly.csc.service.InfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("csc/v2/info")
-@Tag(name = "Info", description = "Info API as defined in the CSC API v2.0.0.2 specification. " +
+@Tag(name = "Info", description = "Indo API as defined in the CSC API v2.0.0.2 specification. " +
         "This API is used to retrieve information about the remote serivce.")
 @ApiResponses(
         value = {
@@ -70,8 +69,7 @@ public class InfoController {
             return service.getInfo();
         } catch (Exception e) {
             log.error("Error occurred while getting info.", e);
-            throw new ServerErrorException("server_error",
-                                           "Unknown error occurred. See the server logs for more information."
+            throw new InternalErrorException("Unknown error occurred. See the server logs for more information."
             );
         }
     }

@@ -2,6 +2,8 @@ package com.czertainly.csc.signing;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.exceptions.ApplicationException;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
@@ -64,7 +66,7 @@ public class PreloadingKeySelector implements KeySelector {
         keysInUse.remove(key);
     }
 
-    public void preloadKeysForCryptoToken(CryptoToken cryptoToken) {
+    public Result<Void, TextError> preloadKeysForCryptoToken(CryptoToken cryptoToken) {
         logger.debug("Preloading keys for CryptoToken {}", cryptoToken.name());
         Queue<CryptoTokenKey> existingKeys = cryptoTokensKeys.computeIfAbsent(
                 cryptoToken.id(),
@@ -76,7 +78,7 @@ public class PreloadingKeySelector implements KeySelector {
                         "Has reached or exceeded max number of preloaded keys {}/{} for CryptoToken {}. No more will be preloaded.",
                         existingKeys.size(), maxNumberOfPreloadedKeys, cryptoToken.name()
                 );
-                return;
+                return Result.emptySuccess();
             }
 
             Set<String> existingKeysAliases = existingKeys.stream()
@@ -86,49 +88,54 @@ public class PreloadingKeySelector implements KeySelector {
             int numberOfExistingKeys = existingKeys.size();
             int numberOfNewKeys = maxNumberOfPreloadedKeys - numberOfExistingKeys;
 
-            List<CryptoTokenKey> newKeys = signserverClient.queryCryptoTokenKeys(
-                    cryptoToken.id(),
-                    true,
-                    numberOfExistingKeys,
-                    numberOfNewKeys,
-                    keyAliasFilterPattern
-            );
-            if (newKeys.isEmpty()) {
-                logger.warn("No more pre-generated keys are available in CryptoToken {}", cryptoToken.name());
-            } else if (newKeys.size() < numberOfNewKeys) {
-                logger.warn("Only {} pre-generated keys are available in CryptoToken {} instead of requested {}." +
-                                    " SignServer key generation service may not be keeping up with the key consumption.",
-                            newKeys.size(), cryptoToken.name(), numberOfNewKeys
-                );
-            }
-
-            newKeys.stream()
-                   .filter(k -> k.status() == null || !k.status().certified())
-                   .filter(k -> {
-                       boolean alreadyExists = existingKeysAliases.contains(k.keyAlias());
-                       if (logger.isTraceEnabled() && alreadyExists) {
-                           logger.trace("Key {} already exists in preloaded keys for CryptoToken {}", k.keyAlias(),
-                                        cryptoToken.name()
-                           );
-                       }
-                       return !alreadyExists;
-                   })
-                   .filter(k -> {
-                       boolean alreadyInUse = keysInUse.contains(k);
-                       if (logger.isTraceEnabled() && alreadyInUse) {
-                           logger.trace("Key {} is already in use", k.keyAlias());
-                       }
-                       return !alreadyInUse;
-                   })
-                   .forEach(keys -> {
-                       if (logger.isTraceEnabled()) {
-                           logger.trace("Adding key {} to preloaded keys for CryptoToken {}", keys.keyAlias(),
-                                        cryptoToken.name()
-                           );
-                       }
-                       existingKeys.add(keys);
-                   });
-
+            return signserverClient
+                    .queryCryptoTokenKeys(cryptoToken.id(), true, numberOfExistingKeys, numberOfNewKeys,
+                                          keyAliasFilterPattern
+                    )
+                    .runIf(List::isEmpty,
+                           () -> logger.warn("No more pre-generated keys is available in CryptoToken {}",
+                                             cryptoToken.name()
+                           )
+                    )
+                    .runIf(
+                            keys -> keys.size() < numberOfNewKeys,
+                            (keys) -> logger.warn(
+                                    "Only {} of pre-generated keys is available in CryptoToken {} instead of requested {}." +
+                                            " SignServer key generation service may not be keeping up with the key consumption.",
+                                    keys.size(), cryptoToken.name(), numberOfNewKeys
+                            )
+                    )
+                    .consume(newKeys -> {
+                        newKeys.stream()
+                               .filter(k -> k.status() == null || !k.status().certified())
+                               .filter(k -> {
+                                   boolean alreadyExists = existingKeysAliases.contains(k.keyAlias());
+                                   if (logger.isTraceEnabled() && alreadyExists) {
+                                       logger.trace("Key {} already exists in preloaded keys for CryptoToken {}",
+                                                    k.keyAlias(),
+                                                    cryptoToken.name()
+                                       );
+                                   }
+                                   return !alreadyExists;
+                               })
+                               .filter(k -> {
+                                   boolean alreadyInUse = keysInUse.contains(k);
+                                   if (logger.isTraceEnabled() && alreadyInUse) {
+                                       logger.trace("Key {} is already in use", k.keyAlias());
+                                   }
+                                   return !alreadyInUse;
+                               })
+                               .forEach(keys -> {
+                                   if (logger.isTraceEnabled()) {
+                                       logger.trace("Adding key {} to preloaded keys for CryptoToken {}",
+                                                    keys.keyAlias(),
+                                                    cryptoToken.name()
+                                       );
+                                   }
+                                   existingKeys.add(keys);
+                               });
+                    })
+                    .flatMap((v) -> Result.emptySuccess());
         }
     }
 }

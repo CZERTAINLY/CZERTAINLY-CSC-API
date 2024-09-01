@@ -1,17 +1,17 @@
 package com.czertainly.csc.controllers.exceptions;
 
-public class ServerErrorException extends RuntimeException {
+public class RemoteServerException extends RuntimeException {
 
     String error;
     String errorDescription;
 
-    public ServerErrorException(String error, String errorDescription) {
+    public RemoteServerException(String error, String errorDescription) {
         super(error + ": " + errorDescription);
         this.error = error;
         this.errorDescription = errorDescription;
     }
 
-    public ServerErrorException(String error, String errorDescription, Throwable cause) {
+    public RemoteServerException(String error, String errorDescription, Throwable cause) {
         super(error + ": " + errorDescription, cause);
         this.error = error;
         this.errorDescription = errorDescription;

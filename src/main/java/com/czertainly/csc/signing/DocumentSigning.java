@@ -1,8 +1,8 @@
 package com.czertainly.csc.signing;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
-import com.czertainly.csc.common.result.ErrorWithDescription;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.model.SignedDocuments;
 import com.czertainly.csc.providers.DistinguishedNameProvider;
@@ -26,8 +26,8 @@ public class DocumentSigning {
 
     }
 
-    public Result<SignedDocuments, ErrorWithDescription> sign(SignDocParameters parameters) {
-        return Result.error(new ErrorWithDescription("Not implemented", "This method is not implemented yet"));
+    public Result<SignedDocuments, TextError> sign(SignDocParameters parameters) {
+        return Result.error(TextError.of("Not implemented", "This method is not implemented yet"));
 
     }
 

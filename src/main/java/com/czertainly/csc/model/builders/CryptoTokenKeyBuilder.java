@@ -45,7 +45,9 @@ public class CryptoTokenKeyBuilder {
     }
 
     public CryptoTokenKey build() {
-        return new CryptoTokenKey(cryptoTokenId, keyAlias, keyAlgorithm, keySpecification, chain, status);
+        return new CryptoTokenKey(cryptoTokenId, keyAlias, keyAlgorithm, keySpecification,
+                                  chain == null ? List.of() : chain, status
+        );
     }
 
 }

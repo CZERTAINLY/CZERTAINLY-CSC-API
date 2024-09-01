@@ -3,74 +3,46 @@ package com.czertainly.csc.common.result;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class Result <TValue, TError extends ErrorValue> {
-
-    private final TValue value;
-    private final TError error;
-    private final boolean isOk;
-
-    public static <T, E extends ErrorValue> Result<T, E> ok(T result) {
-        return new Result<>(result);
+public sealed interface Result<V, E extends ErrorValue> permits Error, Success {
+    static <V, E extends ErrorValue> Result<V, E> success(V value) {
+        return new Success<>(value);
     }
 
-    public static <T, E extends ErrorValue> Result<T, E> error(E error) {
-        return new Result<>(error);
+    static <E extends ErrorValue> Result<Void, E> emptySuccess() {
+        return new Success<>(null);
     }
 
-    private Result(TValue value) {
-        this.value = value;
-        this.error = null;
-        this.isOk = true;
+    static <V, E extends ErrorValue> Result<V, E> error(E error) {
+        return new Error<>(error);
     }
 
-    private Result(TError error) {
-        this.error = error;
-        this.value = null;
-        this.isOk = false;
-    }
+    <V2> Result<V2, E> repack();
 
-    public <U, E extends Throwable> U with(Function<TValue, U> okConsumer, Function<TError, U> errorConsumer) throws E {
-        if (isOk) {
-            return okConsumer.apply(value);
-        } else {
-            return errorConsumer.apply(error);
-        }
-    }
+    <U> Result<U, E> map(Function<V, U> mapper);
 
-    public <E extends Throwable> void doWith(Consumer<TValue> okConsumer, Consumer<TError> errorConsumer) throws E {
-        if (isOk) {
-            okConsumer.accept(value);
-        } else {
-            errorConsumer.accept(error);
-        }
-    }
+    <U> Result<U, E> flatMap(Function<V, Result<U, E>> mapper);
 
-    public void withValue(Function<TValue, Void> okConsumer) {
-        if (isOk) {
-            okConsumer.apply(value);
-        }
-    }
+    <E2 extends ErrorValue> Result<V, E2> mapError(Function<E, E2> mapper);
 
-    public void withError(Function<TError, Void> errorConsumer) {
-        if (!isOk) {
-            errorConsumer.apply(error);
-        }
-    }
+    <E2 extends ErrorValue> Result<V, E2> flatMapError(Function<E, Result<V, E2>> mapper);
 
-    public TValue getValue() {
-        return value;
-    }
+    Result<V, E> consume(Consumer<V> consumer);
 
-    public TError getError() {
-        return error;
-    }
+    Result<V, E> consumeError(Consumer<E> consumer);
 
-    public boolean isSuccess() {
-        return isOk;
-    }
+    Result<V, E> ifSuccess(Runnable runnable);
 
-    public boolean isError() {
-        return !isOk;
-    }
+    Result<V, E> ifError(Runnable runnable);
 
+    Result<V, E> validate(Function<V, Boolean> validator, E error);
+
+    Result<V, E> validate(Function<V, Boolean> validator, Function<V,E> errorSupplier);
+
+    Result<V,E> runIf(Function<V,Boolean> condition, Runnable runnable);
+
+    Result<V,E> runIf(Function<V,Boolean> condition, Consumer<V> runnable);
+
+    V unwrap();
+
+    E unwrapError();
 }

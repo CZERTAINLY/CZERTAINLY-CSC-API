@@ -19,7 +19,6 @@ public class DateConverter {
     public ZonedDateTime dateToZonedDateTime(Date date, ZoneId zoneId) {
         return date.toInstant()
                    .atZone(zoneId);
-
     }
 
 }

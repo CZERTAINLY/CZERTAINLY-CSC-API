@@ -2,52 +2,46 @@ package com.czertainly.csc.api.mappers.credentials;
 
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.management.CreateCredentialDto;
-import com.czertainly.csc.api.mappers.ApiRequestResult;
-import com.czertainly.csc.api.mappers.RequestMapper;
-import com.czertainly.csc.common.result.ErrorWithDescription;
-import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CreateCredentialRequestMapper implements RequestMapper<CreateCredentialDto, CreateCredentialRequest> {
+public class CreateCredentialRequestMapper {
 
-
-    @Override
-    public Result<CreateCredentialRequest, ErrorWithDescription> map(CreateCredentialDto dto,
-                                                                     SignatureActivationData sad
+    public CreateCredentialRequest map(CreateCredentialDto dto
     ) {
 
         if (dto == null) {
-            return ApiRequestResult.invalidRequest("Missing request body.");
+            throw InvalidInputDataException.of("Missing request body.");
         }
 
         if (dto.cryptoTokenName() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter cryptoTokenName.");
+            throw InvalidInputDataException.of("Missing string parameter cryptoTokenName.");
         }
 
         if (dto.keyAlgorithm() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter keyAlgorithm.");
+            throw InvalidInputDataException.of("Missing string parameter keyAlgorithm.");
         }
 
         if (dto.csrSignatureAlgorithm() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter csrSignatureAlgorithm.");
+            throw InvalidInputDataException.of("Missing string parameter csrSignatureAlgorithm.");
         }
 
         if (dto.keySpecification() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter keySpecification.");
+            throw InvalidInputDataException.of("Missing string parameter keySpecification.");
         }
 
         if (dto.userId() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter userId.");
+            throw InvalidInputDataException.of("Missing string parameter userId.");
         }
 
         if (dto.dn() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter dn.");
+            throw InvalidInputDataException.of("Missing string parameter dn.");
         }
 
         if (dto.san() == null) {
-            return ApiRequestResult.invalidRequest("Missing string parameter san.");
+            throw InvalidInputDataException.of("Missing string parameter san.");
         }
 
         // Check if numberOfSignaturesPerAuthorization is null, and if so, set it to 1.
@@ -59,11 +53,10 @@ public class CreateCredentialRequestMapper implements RequestMapper<CreateCreden
 
         // The description field, if present, must be at most 255 characters long.
         if (dto.description() != null && dto.description().length() > 255) {
-            return ApiRequestResult.invalidRequest("The description field must be at most 255 characters long.");
+            throw InvalidInputDataException.of("The description field must be at most 255 characters long.");
         }
 
-        return Result.ok(
-                new CreateCredentialRequest(
+        return new CreateCredentialRequest(
                         dto.cryptoTokenName(),
                         dto.keyAlgorithm(),
                         dto.csrSignatureAlgorithm(),
@@ -75,7 +68,6 @@ public class CreateCredentialRequestMapper implements RequestMapper<CreateCreden
                         dto.dn(),
                         dto.san(),
                         dto.description()
-                )
         );
     }
 }

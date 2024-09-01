@@ -27,17 +27,14 @@ public class KeyLoadingService {
     @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
     public void loadKeys() {
         logger.info("Starting periodical preloading of Crypto Token Keys.");
-        try {
-            List<CryptoToken> cryptoTokens = workerRepository.getAllWorkers().stream()
-                                                             .map(worker -> worker.worker().cryptoToken())
-                                                             .distinct()
-                                                             .toList();
-            cryptoTokens.forEach(token -> {
-                logger.debug("Preloading keys for Crypto Token {} ({})", token.name(), token.id());
-                keySelector.preloadKeysForCryptoToken(token);
-            });
-        } catch (Exception e) {
-            logger.error("Error during preloading of Crypto Token Keys", e);
-        }
+            workerRepository
+                    .getAllCryptoTokens()
+                    .mapError(error -> error.extend("Failed to get list of all available crypto tokens."))
+                    .consume(cryptoTokens -> cryptoTokens.forEach(token -> {
+                        logger.debug("Preloading keys for Crypto Token {} ({})", token.name(), token.id());
+                        keySelector.preloadKeysForCryptoToken(token)
+                                .consumeError(error -> logger.error("Failed to preload keys for Crypto Token {}({}). {}", token.name(), token.id(), error));
+                    }))
+                    .consumeError(error -> logger.error("Failed to preload Sign server keys. {}", error));
     }
 }

@@ -1,12 +1,12 @@
 package com.czertainly.csc.signing;
 
-import com.czertainly.csc.api.ErrorCode;
 import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.clients.ejbca.EjbcaClient;
 import com.czertainly.csc.clients.signserver.SignserverClient;
-import com.czertainly.csc.common.result.ErrorWithDescription;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.Error;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.NaivePasswordGenerator;
 import com.czertainly.csc.crypto.PasswordGenerator;
 import com.czertainly.csc.model.DocumentDigestsToSign;
@@ -65,7 +65,7 @@ public class DocumentHashSigning {
     }
 
 
-    public Result<SignedDocuments, ErrorWithDescription> sign(
+    public Result<SignedDocuments, TextError> sign(
             SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken
     ) {
         List<String> allHashes = parameters.documentDigestsToSign().stream()
@@ -75,15 +75,11 @@ public class DocumentHashSigning {
         return ifAuthorized(
                 allHashes, parameters.sad(),
                 () -> generateKeyAndSign(parameters, cscAuthenticationToken),
-                () -> Result.error(
-                        new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(),
-                                                 "Some of documentDigests not authorized by the SAD."
-                        )
-                )
+                () -> Result.error(TextError.of("Some of documentDigests not authorized by the SAD."))
         );
     }
 
-    private Result<SignedDocuments, ErrorWithDescription> generateKeyAndSign(
+    private Result<SignedDocuments, TextError> generateKeyAndSign(
             SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken
     ) {
         var allSignatures = new ArrayList<Signature>();
@@ -111,22 +107,24 @@ public class DocumentHashSigning {
 
                     EndEntity endEntity = new EndEntity(username, password, dn, san);
                     ejbcaClient.createEndEntity(endEntity);
-                    byte[] csr = signserverClient.generateCSR(
-                            key.cryptoTokenId(), key.keyAlias(), dn, documentDigestsToSign.getSignatureAlgorithm()
-                    );
-
-                    byte[] certificateChain = ejbcaClient.signCertificateRequest(endEntity, csr);
-                    signserverClient.importCertificateChain(key.cryptoTokenId(), key.keyAlias(),
-                                                            List.of(certificateChain)
-                    );
+                    var result = signserverClient.generateCSR(
+                                            key.cryptoTokenId(), key.keyAlias(), dn,
+                                            documentDigestsToSign.getSignatureAlgorithm()
+                                    )
+                                    .flatMap(csr -> ejbcaClient.signCertificateRequest(endEntity, csr))
+                                    .flatMap(certificateChain -> signserverClient.importCertificateChain(
+                                            key.cryptoTokenId(), key.keyAlias(), List.of(certificateChain)
+                                    ));
+                    if (result instanceof Error(var err)) {
+                        return Result.error(err);
+                    }
 
                     signHashes(parameters, documentDigestsToSign, worker, key, allSignatures, crls, ocsps,
                                certificates
                     );
                 } catch (Exception e) {
-                    logger.info(
-                            "An error occurred during the signing process. Pre-generated "
-                                    + key.keyAlias() + " key will be removed.", e
+                    logger.info("An error occurred during the signing process. Pre-generated {} key will be removed.",
+                                key.keyAlias(), e
                     );
                     throw e;
                 } finally {
@@ -134,20 +132,15 @@ public class DocumentHashSigning {
                         signserverClient.removeKey(key.cryptoTokenId(), key.keyAlias());
                         keySelector.markKeyAsUsed(key);
                     } catch (Exception ex) {
-                        logger.error("Key " + key.keyAlias() + " was not removed and may be in inconsistent state!",
-                                     ex
-                        );
+                        logger.error("Key {} was not removed and may be in inconsistent state!", key.keyAlias(), ex);
                     }
                 }
             } else {
-                return Result.error(
-                        new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(),
-                                                 "No suitable signer found for the signature parameters specified."
-                        ));
+                return Result.error(TextError.of("No suitable signer found for the signature parameters specified."));
             }
 
         }
-        return Result.ok(new SignedDocuments(allSignatures, crls, ocsps, certificates));
+        return Result.success(new SignedDocuments(allSignatures, crls, ocsps, certificates));
     }
 
     private void signHashes(SignDocParameters parameters, DocumentDigestsToSign documentDigestsToSign,
@@ -248,11 +241,11 @@ public class DocumentHashSigning {
         return workerRepository.selectWorker(requiredWorkerCapabilities);
     }
 
-    public Result<SignedDocuments, ErrorWithDescription> ifAuthorized(
+    public Result<SignedDocuments, TextError> ifAuthorized(
             List<String> hashes,
             SignatureActivationData sad,
-            Supplier<Result<SignedDocuments, ErrorWithDescription>> authorized,
-            Supplier<Result<SignedDocuments, ErrorWithDescription>> unauthorized
+            Supplier<Result<SignedDocuments, TextError>> authorized,
+            Supplier<Result<SignedDocuments, TextError>> unauthorized
     ) {
         if (sad.getHashes().isPresent() && sad.getHashes().get().containsAll(hashes)) {
             return authorized.get();

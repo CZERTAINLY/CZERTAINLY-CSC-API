@@ -2,6 +2,8 @@ package com.czertainly.csc.api.management;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.UUID;
+
 public record CredentialIdDto(
 
         @Schema(
@@ -12,4 +14,7 @@ public record CredentialIdDto(
         )
         String credentialID
 ) {
+        public static CredentialIdDto from(UUID credentialID) {
+                return new CredentialIdDto(credentialID.toString());
+        }
 }

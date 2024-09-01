@@ -11,10 +11,11 @@ import com.czertainly.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.csc.api.signhash.SignHashResponseDto;
-import com.czertainly.csc.common.exceptions.InputDataException;
-import com.czertainly.csc.common.exceptions.RemoteSystemException;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.controllers.exceptions.BadRequestException;
-import com.czertainly.csc.controllers.exceptions.ServerErrorException;
+import com.czertainly.csc.controllers.exceptions.InternalErrorException;
+import com.czertainly.csc.model.SignDocParameters;
+import com.czertainly.csc.model.SignHashParameters;
 import com.czertainly.csc.signing.SignatureFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -63,7 +64,7 @@ import java.util.List;
         })
 public class SignatureController {
 
-    private static final Logger log = LoggerFactory.getLogger(SignatureController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SignatureController.class);
 
     final SignatureFacade signatureFacade;
 
@@ -108,28 +109,14 @@ public class SignatureController {
     public SignHashResponseDto signHash(@RequestBody SignHashRequestDto signHashRequest,
                                         Authentication authentication
     ) {
-        log.trace("Serving signHash request.");
-        try {
-            return signHashValidationRequestMapper
-                    .map(signHashRequest, getSadIfAvailable(authentication))
-                    .with(
-                            parameters -> new SignHashResponseDto(
-                                    List.of("signature1", "signature2"), null),
-                            error -> {
-                                throw new BadRequestException(error.error(),
-                                                              error.description()
-                                );
-                            }
-                    );
-        } catch (RemoteSystemException e) {
-            log.error("An error occurred when communicating with a remote system.", e);
-            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
-        } catch (BadRequestException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("An unexpected error occurred.", e);
-            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
-        }
+        logger.trace("Serving signHash request.");
+        SignHashParameters parameters = signHashValidationRequestMapper
+                    .map(signHashRequest, getSadIfAvailable(authentication));
+
+                    return new SignHashResponseDto(
+                                    List.of("signature1", "signature2"), null);
+
+
     }
 
     @RequestMapping(
@@ -159,45 +146,14 @@ public class SignatureController {
     public SignDocResponseDto signDoc(@RequestBody SignDocRequestDto signDocRequest,
                                       Authentication authentication
     ) {
-        log.trace("Serving signDoc request.");
-        try {
-            return signDocValidatingRequestMapper
-                    .map(signDocRequest, getSadIfAvailable(authentication))
-                    .with(
-                            parameters -> signatureFacade.signDocuments(
-                                    parameters,
-                                    ((CscAuthenticationToken) authentication)
-                            ).with(
-                                    signatures -> signDocResponseMapper.map(signatures).with(
-                                            signDocResponseDto -> signDocResponseDto,
-                                            error -> {
-                                                throw new ServerErrorException(error.error(), error.description());
-                                            }
-
-                                    ),
-                                    error -> {
-                                        throw new ServerErrorException(error.error(), error.description());
-                                    }
-                            ),
-                            error -> {
-                                throw new BadRequestException(error.error(),
-                                                              error.description()
-                                );
-                            }
-                    );
-        } catch (InputDataException e) {
-            log.error("Invalid input data provided.", e);
-            throw new BadRequestException("invalid_request", e.getMessage());
-        } catch (RemoteSystemException e) {
-            log.error("An error occurred when communicating with a remote system.", e);
-            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
-        } catch (BadRequestException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("An unexpected error occurred.", e);
-            throw new ServerErrorException("Unexpected error occurred.", e.getMessage());
-        }
-
+        logger.trace("Serving signDoc request.");
+        SignDocParameters request = signDocValidatingRequestMapper
+                .map(signDocRequest, getSadIfAvailable(authentication));
+        return signatureFacade.signDocuments(request, ((CscAuthenticationToken) authentication))
+                              .flatMap(signDocResponseMapper::map)
+                              .mapError(e -> e.extend("Failed to sign the document."))
+                              .consumeError(this::logAndThrowError)
+                              .unwrap();
     }
 
     private SignatureActivationData getSadIfAvailable(Authentication authentication) {
@@ -205,5 +161,10 @@ public class SignatureController {
             return ((CscAuthenticationToken) authentication).getSignatureActivationData();
         }
         return null;
+    }
+
+    private void logAndThrowError(TextError error) {
+        logger.error(error.toString());
+        throw new InternalErrorException(error.toString());
     }
 }

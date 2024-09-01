@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.StringJoiner;
 import java.util.UUID;
 
 @Entity
@@ -119,5 +120,23 @@ public class CredentialMetadataEntity {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", CredentialMetadataEntity.class.getSimpleName() + "[", "]")
+                .add("id=" + id)
+                .add("userId='" + userId + "'")
+                .add("keyAlias='" + keyAlias + "'")
+                .add("endEntityName='" + endEntityName + "'")
+                .add("currentCertificateSn='" + currentCertificateSn + "'")
+                .add("currentCertificateIssuer='" + currentCertificateIssuer + "'")
+                .add("signatureQualifier='" + signatureQualifier + "'")
+                .add("multisign=" + multisign)
+                .add("scal='" + scal + "'")
+                .add("cryptoTokenName='" + cryptoTokenName + "'")
+                .add("description='" + description + "'")
+                .add("disabled=" + disabled)
+                .toString();
     }
 }

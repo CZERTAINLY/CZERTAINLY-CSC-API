@@ -1,70 +1,50 @@
 package com.czertainly.csc.controllers.v2;
 
-import com.czertainly.csc.api.common.ErrorDto;
-import com.czertainly.csc.api.credentials.*;
+import com.czertainly.csc.api.credentials.CredentialDto;
+import com.czertainly.csc.api.credentials.CredentialsListDto;
+import com.czertainly.csc.api.credentials.GetCredentialInfoDto;
+import com.czertainly.csc.api.credentials.ListCredentialsRequestDto;
 import com.czertainly.csc.api.mappers.credentials.CredentialInfoRequestMapper;
-import com.czertainly.csc.api.signhash.SignHashResponseDto;
+import com.czertainly.csc.api.mappers.credentials.CredentialsListRequestMapper;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.components.DateConverter;
-import com.czertainly.csc.controllers.exceptions.BadRequestException;
-import com.czertainly.csc.controllers.exceptions.ServerErrorException;
-import com.czertainly.csc.model.csc.Credential;
+import com.czertainly.csc.controllers.exceptions.InternalErrorException;
 import com.czertainly.csc.model.csc.requests.CredentialInfoRequest;
-import com.czertainly.csc.service.CredentialsService;
+import com.czertainly.csc.model.csc.requests.ListCredentialsRequest;
+import com.czertainly.csc.service.credentials.CredentialsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("csc/v2/credentials")
-@Tag(name = "Credentials", description = "Credentials API as defined in the CSC API v2.0.0.2 specification. " +
-        "This API is used to retrieve information about the credentials associated to user.")
-@ApiResponses(
-        value = {
-                @ApiResponse(
-                        responseCode = "400",
-                        description = "Bad Request",
-                        content = @Content(schema = @Schema(implementation = ErrorDto.class))
-                ),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Unauthorized",
-                        content = @Content
-                ),
-                @ApiResponse(
-                        responseCode = "500",
-                        description = "Internal Server Error",
-                        content = @Content
-                ),
-                @ApiResponse(
-                        responseCode = "501",
-                        description = "Not Implemented",
-                        content = @Content
-                ),
-        }
-)
 public class CredentialsController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CredentialsController.class);
 
     private final CredentialsService credentialsService;
     private final DateConverter dateConverter;
 
     private final CredentialInfoRequestMapper credentialInfoRequestMapper;
+    private final CredentialsListRequestMapper credentialsListRequestMapper;
 
     public CredentialsController(CredentialsService credentialsService, DateConverter dateConverter,
-                                 CredentialInfoRequestMapper credentialInfoRequestMapper
+                                 CredentialInfoRequestMapper credentialInfoRequestMapper,
+                                 CredentialsListRequestMapper credentialsListRequestMapper
     ) {
         this.credentialsService = credentialsService;
         this.dateConverter = dateConverter;
         this.credentialInfoRequestMapper = credentialInfoRequestMapper;
+        this.credentialsListRequestMapper = credentialsListRequestMapper;
     }
 
     @RequestMapping(path = "list", method = RequestMethod.POST, produces = "application/json")
@@ -81,41 +61,19 @@ public class CredentialsController {
                     )
             }
     )
-    public CredentialsListDto listCredentials() {
-
-        return new CredentialsListDto(
-                List.of("credential1"),
-                List.of(
-                        new CredentialDto(
-                                "credential1",
-                                "enabled",
-                                "ue_eidas",
-                                new KeyDto(
-                                        "enabled",
-                                        List.of("1.2.840.113549.1.1.1"),
-                                        2048,
-                                        null
-                                ),
-                                new CertificateDto(
-                                        "valid",
-                                        List.of("asfikjhasfkj"),
-                                        "FIRST CERT AUTHORITY",
-                                        "123",
-                                        "My Signing Certificate",
-                                        "2022-01-01T00:00:00Z",
-                                        "2023-01-01T00:00:00Z"
-                                ),
-                                3
-                        )
-                ),
-                true
-        );
+    public CredentialsListDto listCredentials(@RequestBody ListCredentialsRequestDto requestDto) {
+        ListCredentialsRequest request = credentialsListRequestMapper.map(requestDto);
+        return credentialsService
+                .listUserCredentials(request)
+                .map(credentials -> CredentialsListDto.from(credentials, dateConverter))
+                .mapError(e -> e.extend("Failed to list credentials of the user %s", requestDto.userID()))
+                .consumeError(this::logAndThrowError)
+                .unwrap();
     }
 
     @RequestMapping(path = "info", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Credentials Info",
-            description = "Returns information on a signing credential, its associated certificate and a description of " +
-                    "the supported authorization mechanism. For more information, see the CSC API specification, " +
+            description = "Retrieves the credential. For more information, see the CSC API specification, " +
                     "section `11.5 credentials/info`."
     )
     @ApiResponses(
@@ -128,20 +86,19 @@ public class CredentialsController {
             }
     )
     public CredentialDto credentialInfo(@RequestBody GetCredentialInfoDto getCredentialInfoDto) {
-        return credentialInfoRequestMapper
-                .map(getCredentialInfoDto, null)
-                .with(
-                        (CredentialInfoRequest request) -> {
-                            try {
-                                Credential credential = credentialsService.getCredential(request);
-                                return CredentialDto.fromModel(credential, dateConverter);
-                            } catch (Exception e) {
-                                throw new ServerErrorException("Server error", e.getMessage());
-                            }
-                        },
-                        (error) -> {
-                            throw new BadRequestException(error.error(), error.description());
-                        }
-                );
+        CredentialInfoRequest request = credentialInfoRequestMapper.map(getCredentialInfoDto);
+        return credentialsService
+                .getCredential(request)
+                .map(credential -> CredentialDto.fromModel(credential, dateConverter))
+                .mapError(e -> e.extend("Failed to obtain credential info for credential %s",
+                                        getCredentialInfoDto.credentialID()
+                ))
+                .consumeError(this::logAndThrowError)
+                .unwrap();
+    }
+
+    private void logAndThrowError(TextError error) {
+        logger.error(error.toString());
+        throw new InternalErrorException(error.toString());
     }
 }

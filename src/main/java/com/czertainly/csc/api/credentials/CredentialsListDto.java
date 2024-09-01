@@ -1,5 +1,7 @@
 package com.czertainly.csc.api.credentials;
 
+import com.czertainly.csc.components.DateConverter;
+import com.czertainly.csc.model.csc.Credential;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -36,5 +38,13 @@ public record CredentialsListDto(
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         boolean onlyValid
+
 ) {
+        static public CredentialsListDto from(List<Credential> credentials, DateConverter dateConverter) {
+                return new CredentialsListDto(
+                        credentials.stream().map(Credential::credentialID).toList(),
+                        credentials.stream().map(c -> CredentialDto.fromModel(c, dateConverter)).toList(),
+                        false
+                );
+        }
 }

@@ -1,6 +1,6 @@
 package com.czertainly.csc.common;
 
-import com.czertainly.csc.common.exceptions.InputDataException;
+import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import org.apache.commons.text.StringSubstitutor;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class PatternReplacer {
             while (matcher.find()) {
                 notReplacedVariables.add(matcher.group(1));
             }
-            throw new InputDataException(
+            throw new InvalidInputDataException(
                     "Not all variables could be replaced in the pattern provided to " + replacerName +
                             ". Unknown variables: [" + String.join(", ", notReplacedVariables) + "]");
         }

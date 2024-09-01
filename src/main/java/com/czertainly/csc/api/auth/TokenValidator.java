@@ -1,7 +1,7 @@
 package com.czertainly.csc.api.auth;
 
-import com.czertainly.csc.common.result.ErrorWithDescription;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,12 +23,12 @@ public class TokenValidator {
                         .build();
     }
 
-    public Result<Jws<Claims>, ErrorWithDescription> validate(String token) {
+    public Result<Jws<Claims>, TextError> validate(String token) {
         try {
             Jws<Claims> jwt = jwtParser.parseSignedClaims(token);
-            return Result.ok(jwt);
+            return Result.success(jwt);
         } catch (JwtException | IllegalArgumentException e) {
-            return Result.error(new ErrorWithDescription("JWTValidationError", e.getMessage()));
+            return Result.error(TextError.of(e));
         }
     }
 

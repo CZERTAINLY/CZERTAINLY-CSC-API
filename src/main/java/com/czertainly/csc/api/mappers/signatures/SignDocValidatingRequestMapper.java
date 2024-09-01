@@ -1,15 +1,12 @@
 package com.czertainly.csc.api.mappers.signatures;
 
-import com.czertainly.csc.api.ErrorCode;
 import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.api.auth.SADParser;
 import com.czertainly.csc.api.auth.SignatureActivationData;
-import com.czertainly.csc.api.mappers.RequestMapper;
 import com.czertainly.csc.api.signdoc.DocumentDigestsDto;
 import com.czertainly.csc.api.signdoc.DocumentDto;
 import com.czertainly.csc.api.signdoc.SignDocRequestDto;
-import com.czertainly.csc.common.result.ErrorWithDescription;
-import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.crypto.AlgorithmPair;
 import com.czertainly.csc.crypto.AlgorithmUnifier;
 import com.czertainly.csc.model.DocumentDigestsToSign;
@@ -24,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequestDto, SignDocParameters> {
+public class SignDocValidatingRequestMapper {
 
     AlgorithmUnifier algorithmUnifier;
     SADParser sadParser;
@@ -35,12 +32,11 @@ public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequ
         this.sadParser = sadParser;
     }
 
-    @Override
-    public Result<SignDocParameters, ErrorWithDescription> map(SignDocRequestDto dto, SignatureActivationData sad) {
-        if (dto == null) return toInvalidRequestError("Missing request parameters.");
+    public SignDocParameters map(SignDocRequestDto dto, SignatureActivationData sad) {
+        if (dto == null) throw InvalidInputDataException.of("Missing request parameters.");
 
         if (dto.getCredentialID().isEmpty() && dto.getSignatureQualifier().isEmpty()) {
-            return toInvalidRequestError(
+            throw InvalidInputDataException.of(
                     "Empty credentialID and signatureQualifier. At least one of them must be provided.");
         }
 
@@ -48,9 +44,9 @@ public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequ
         final String signatureQualifier = dto.getSignatureQualifier().orElse(null);
 
         if (dto.getSAD().isEmpty() && sad == null) {
-            return toInvalidRequestError("Missing (or invalid type) string parameter SAD");
+            throw InvalidInputDataException.of("Missing (or invalid type) string parameter SAD");
         } else if (dto.getSAD().isPresent() && sad != null) {
-            return toInvalidRequestError("Signature activation data was provided in both the request" +
+            throw InvalidInputDataException.of("Signature activation data was provided in both the request" +
                                                  " and the access token. Please provide it in only one place.");
         } else if (dto.getSAD().isPresent()) {
             String sadString = dto.getSAD().get();
@@ -60,43 +56,34 @@ public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequ
         final List<DocumentToSign> documentsToSign;
         final List<DocumentDigestsToSign> documentDigestsToSign;
         if (dto.getDocuments().isEmpty() && dto.getDocumentDigests().isEmpty()) {
-            return toInvalidRequestError("Empty documentDigests and documents objects");
+            throw InvalidInputDataException.of("Empty documentDigests and documents objects");
         } else if (!dto.getDocuments().isEmpty() && !dto.getDocumentDigests().isEmpty()) {
-            return toInvalidRequestError("Both documentDigests and documents parameters passed");
+            throw InvalidInputDataException.of("Both documentDigests and documents parameters passed");
         }
 
-        try {
             documentsToSign = dto.getDocuments().stream()
                                  .map(this::mapDocument)
                                  .toList();
-        } catch (IllegalArgumentException e) {
-            return toInvalidRequestError(e.getMessage());
-        }
-        try {
             documentDigestsToSign = dto.getDocumentDigests().stream()
                                  .map(this::mapDocumentDigests)
                                  .toList();
-        } catch (IllegalArgumentException e) {
-            return toInvalidRequestError(e.getMessage());
-        }
 
         final String operationModeString = dto.getOperationMode().orElse("S");
         final OperationMode operationMode;
         if (operationModeString.equals("S")) {
             operationMode = OperationMode.SYNCHRONOUS;
         } else if (operationModeString.equals("A")) {
-            return toInvalidRequestError("Asynchronous operation mode is not yet supported.");
+            throw InvalidInputDataException.of("Asynchronous operation mode is not yet supported.");
 //            operationMode = OperationMode.ASYNCHRONOUS;
         } else {
-            return toInvalidRequestError("Invalid parameter operationMode.");
+            throw InvalidInputDataException.of("Invalid parameter operationMode.");
         }
 
         final String clientData = dto.getClientData().orElse("");
         final boolean returnValidationInfo = dto.getReturnValidationInfo().orElse(false);
 
 
-        return Result.ok(
-                new SignDocParameters(
+        return new SignDocParameters(
                         operationMode,
                         documentsToSign,
                         documentDigestsToSign,
@@ -105,40 +92,34 @@ public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequ
                         sad,
                         clientData,
                         returnValidationInfo
-                )
         );
     }
 
     private DocumentToSign mapDocument(DocumentDto dto) {
         final String document;
         if (dto.getDocument().isEmpty()) {
-            throw new IllegalArgumentException("Invalid Base64 documents string parameter");
+            throw new InvalidInputDataException("Invalid Base64 documents string parameter");
         }
         document = dto.getDocument().get();
 
         final SignatureFormat signatureFormat;
         if (dto.getSignatureFormat().isEmpty()) {
-            throw new IllegalArgumentException("Missing (or invalid type) string parameter signature_format");
+            throw new InvalidInputDataException("Missing (or invalid type) string parameter signature_format");
         }
         signatureFormat = SignatureFormat.fromString(dto.getSignatureFormat().get());
 
         ConformanceLevel conformanceLevel = ConformanceLevel.fromString(dto.getConformanceLevel().orElse("Ades-B-B"));
 
         if (dto.getSignAlgo().isEmpty()) {
-            throw new IllegalArgumentException("Missing (or invalid type) string parameter signAlgo");
+            throw new InvalidInputDataException("Missing (or invalid type) string parameter signAlgo");
         }
 
-        final String keyAlgo;
-        final String digestAlgo;
-        Result<AlgorithmPair, ErrorWithDescription> result = algorithmUnifier.unify(dto.getSignAlgo().get(), null);
-
-        if (result.isError()) {
-            throw new IllegalArgumentException(result.getError().description());
-        } else {
-            AlgorithmPair algorithmPair = result.getValue();
-            keyAlgo = algorithmPair.keyAlgo();
-            digestAlgo = algorithmPair.digestAlgo();
-        }
+        AlgorithmPair algorithmPair = algorithmUnifier
+                .unify(dto.getSignAlgo().get(), null)
+                .consumeError(e -> {throw new InvalidInputDataException(e.toString());})
+                .unwrap();
+        final String keyAlgo = algorithmPair.keyAlgo();
+        final String digestAlgo = algorithmPair.digestAlgo();
 
         final String signAlgoParams = dto.getSignAlgoParams().orElse(null);
 
@@ -179,18 +160,12 @@ public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequ
             throw new IllegalArgumentException("Missing (or invalid type) string parameter signAlgo");
         }
 
-        final String keyAlgo;
-        final String digestAlgo;
-        Result<AlgorithmPair, ErrorWithDescription> result = algorithmUnifier
-                .unify(dto.getSignAlgo().get(), dto.getHashAlgorithmOID().orElse(null));
-
-        if (result.isError()) {
-            throw new IllegalArgumentException(result.getError().description());
-        } else {
-            AlgorithmPair algorithmPair = result.getValue();
-            keyAlgo = algorithmPair.keyAlgo();
-            digestAlgo = algorithmPair.digestAlgo();
-        }
+        AlgorithmPair algorithmPair = algorithmUnifier
+                .unify(dto.getSignAlgo().get(), null)
+                .consumeError(e -> {throw new InvalidInputDataException(e.toString());})
+                .unwrap();
+        final String keyAlgo = algorithmPair.keyAlgo();
+        final String digestAlgo = algorithmPair.digestAlgo();
 
         final String signAlgoParams = dto.getSignAlgoParams().orElse(null);
 
@@ -210,9 +185,4 @@ public class SignDocValidatingRequestMapper implements RequestMapper<SignDocRequ
                                   new HashMap<>(), signaturePackaging
         );
     }
-
-    private Result<SignDocParameters, ErrorWithDescription> toInvalidRequestError(String errorMessage) {
-        return Result.error(new ErrorWithDescription(ErrorCode.INVALID_REQUEST.toString(), errorMessage));
-    }
-
 }

@@ -1,6 +1,7 @@
 package com.czertainly.csc.api.auth;
 
 
+import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.controllers.exceptions.BadRequestException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -25,13 +26,13 @@ public class SADParser {
 
     public SignatureActivationData parse(String sad) {
         return validator.validate(sad)
-                        .with(
-                                this::extractSadFromToken,
+                        .mapError(error -> error.extend("Failed to validate SAD"))
+                        .map(this::extractSadFromToken)
+                        .consumeError(
                                 error -> {
-                                    logger.debug("The SAD is not valid. {}", error.description());
-                                    throw new BadRequestException("invalid_request", "The SAD is not valid");
+                                    throw new InvalidInputDataException(error.toString());
                                 }
-                        );
+                        ).unwrap();
     }
 
     private SignatureActivationData extractSadFromToken(Jws<Claims> token) {

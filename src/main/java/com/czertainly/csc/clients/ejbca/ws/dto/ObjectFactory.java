@@ -1008,15 +1008,15 @@ public class ObjectFactory {
 //    public RepublishCertificateResponse createRepublishCertificateResponse() {
 //        return new RepublishCertificateResponse();
 //    }
-//
-//    /**
-//     * Create an instance of {@link RevokeCert }
-//     *
-//     */
-//    public RevokeCert createRevokeCert() {
-//        return new RevokeCert();
-//    }
-//
+
+    /**
+     * Create an instance of {@link RevokeCert }
+     *
+     */
+    public RevokeCert createRevokeCert() {
+        return new RevokeCert();
+    }
+
 //    /**
 //     * Create an instance of {@link RevokeCertBackdated }
 //     *
@@ -1032,15 +1032,15 @@ public class ObjectFactory {
 //    public RevokeCertBackdatedResponse createRevokeCertBackdatedResponse() {
 //        return new RevokeCertBackdatedResponse();
 //    }
-//
-//    /**
-//     * Create an instance of {@link RevokeCertResponse }
-//     *
-//     */
-//    public RevokeCertResponse createRevokeCertResponse() {
-//        return new RevokeCertResponse();
-//    }
-//
+
+    /**
+     * Create an instance of {@link RevokeCertResponse }
+     *
+     */
+    public RevokeCertResponse createRevokeCertResponse() {
+        return new RevokeCertResponse();
+    }
+
 //    /**
 //     * Create an instance of {@link RevokeCertWithMetadata }
 //     *
@@ -2768,20 +2768,20 @@ public class ObjectFactory {
 //    public JAXBElement<RepublishCertificateResponse> createRepublishCertificateResponse(RepublishCertificateResponse value) {
 //        return new JAXBElement<RepublishCertificateResponse>(_RepublishCertificateResponse_QNAME, RepublishCertificateResponse.class, null, value);
 //    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCert")
-//    public JAXBElement<RevokeCert> createRevokeCert(RevokeCert value) {
-//        return new JAXBElement<RevokeCert>(_RevokeCert_QNAME, RevokeCert.class, null, value);
-//    }
-//
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCert")
+    public JAXBElement<RevokeCert> createRevokeCert(RevokeCert value) {
+        return new JAXBElement<RevokeCert>(_RevokeCert_QNAME, RevokeCert.class, null, value);
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertBackdated }{@code >}
 //     *
@@ -2807,20 +2807,20 @@ public class ObjectFactory {
 //    public JAXBElement<RevokeCertBackdatedResponse> createRevokeCertBackdatedResponse(RevokeCertBackdatedResponse value) {
 //        return new JAXBElement<RevokeCertBackdatedResponse>(_RevokeCertBackdatedResponse_QNAME, RevokeCertBackdatedResponse.class, null, value);
 //    }
-//
-//    /**
-//     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertResponse }{@code >}
-//     *
-//     * @param value
-//     *     Java instance representing xml element's value.
-//     * @return
-//     *     the new instance of {@link JAXBElement }{@code <}{@link RevokeCertResponse }{@code >}
-//     */
-//    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertResponse")
-//    public JAXBElement<RevokeCertResponse> createRevokeCertResponse(RevokeCertResponse value) {
-//        return new JAXBElement<RevokeCertResponse>(_RevokeCertResponse_QNAME, RevokeCertResponse.class, null, value);
-//    }
-//
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertResponse }{@code >}
+     *
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link RevokeCertResponse }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertResponse")
+    public JAXBElement<RevokeCertResponse> createRevokeCertResponse(RevokeCertResponse value) {
+        return new JAXBElement<RevokeCertResponse>(_RevokeCertResponse_QNAME, RevokeCertResponse.class, null, value);
+    }
+
 //    /**
 //     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertWithMetadata }{@code >}
 //     *
