@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -159,7 +160,7 @@ public class CredentialsService {
 
     public Result<Void, TextError> deleteCredential(UUID credentialId) {
         logger.info("Deleting credential with ID '{}'.", credentialId);
-        return getCredentialMetadata(credentialId)
+        return getCredentialMetadataEntity(credentialId)
                 .mapError(e -> e.extend("Failed to obtain credential metadata."))
                 .flatMap(credentialMetadata ->
                                  workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
@@ -186,7 +187,7 @@ public class CredentialsService {
         logger.debug("Re keying credential '{}'.", request.credentialID());
         logger.trace(request.toString());
 
-        var getCredentialMetadataResult = getCredentialMetadata(request.credentialID());
+        var getCredentialMetadataResult = getCredentialMetadataEntity(request.credentialID());
 
         if (getCredentialMetadataResult instanceof Error(var err)) return Result.error(err);
         CredentialMetadataEntity currentCredentialMetadata = getCredentialMetadataResult.unwrap();
@@ -303,7 +304,7 @@ public class CredentialsService {
     public Result<Credential, TextError> getCredential(CredentialInfoRequest request) {
         logger.debug("Retrieving credential '{}'.", request.credentialID());
         logger.trace(request.toString());
-        return getCredentialMetadata(request.credentialID())
+        return getCredentialMetadataEntity(request.credentialID())
                 .mapError(e -> e.extend("Failed to retrieve credential metadata."))
                 .flatMap(metadata -> getCredential(metadata, request.certificateReturnType()));
     }
@@ -339,7 +340,7 @@ public class CredentialsService {
 
     private Result<Void, TextError> updateCredentialStatus(UUID credentialId, boolean disabled) {
         logger.debug("Updating credential '{}', setting disabled={}.", credentialId, disabled);
-        return getCredentialMetadata(credentialId)
+        return getCredentialMetadataEntity(credentialId)
                 .consume(metadata -> metadata.setDisabled(disabled))
                 .flatMap(metadata -> {
                     try {
@@ -357,7 +358,21 @@ public class CredentialsService {
 
     }
 
-    private Result<CredentialMetadataEntity, TextError> getCredentialMetadata(UUID credentialId
+    public Result<CredentialMetadata, TextError> getCredentialMetadata(UUID credentialId) {
+        return getCredentialMetadataEntity(credentialId)
+                .map(metadata -> new CredentialMetadata(
+                        metadata.getId(),
+                        metadata.getUserId(),
+                        metadata.getKeyAlias(),
+                        Optional.of(metadata.getSignatureQualifier()),
+                        metadata.getMultisign(),
+                        Optional.of(metadata.getScal()),
+                        metadata.getCryptoTokenName(),
+                        metadata.isDisabled()
+                ));
+    }
+
+    private Result<CredentialMetadataEntity, TextError> getCredentialMetadataEntity(UUID credentialId
     ) {
         try {
             return credentialsRepository.findById(credentialId)
@@ -435,7 +450,7 @@ public class CredentialsService {
                                              return new Credential(
                                                      credentialMetadata.getId().toString(),
                                                      credentialMetadata.getDescription(),
-                                                     credentialMetadata.getSignatureQualifier(),
+                                                     Optional.of(credentialMetadata.getSignatureQualifier()),
                                                      keyInfo,
                                                      new CertificateInfo(
                                                              certificateStatus,

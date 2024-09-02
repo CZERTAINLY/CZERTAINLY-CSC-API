@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class SignDocValidatingRequestMapper {
@@ -41,13 +42,26 @@ public class SignDocValidatingRequestMapper {
         }
 
         final String credentialId = dto.getCredentialID().orElse(null);
+
+        final UUID credentialIdUUID;
+        try {
+            if (credentialId != null) {
+                credentialIdUUID = UUID.fromString(credentialId);
+            }
+            else {
+                credentialIdUUID = null;
+            }
+        } catch (IllegalArgumentException e) {
+            throw InvalidInputDataException.of("Invalid string parameter SAD");
+        }
+
         final String signatureQualifier = dto.getSignatureQualifier().orElse(null);
 
         if (dto.getSAD().isEmpty() && sad == null) {
             throw InvalidInputDataException.of("Missing (or invalid type) string parameter SAD");
         } else if (dto.getSAD().isPresent() && sad != null) {
             throw InvalidInputDataException.of("Signature activation data was provided in both the request" +
-                                                 " and the access token. Please provide it in only one place.");
+                                                 " and the access token. Please provide it only at one place.");
         } else if (dto.getSAD().isPresent()) {
             String sadString = dto.getSAD().get();
             sad = sadParser.parse(sadString);
@@ -87,7 +101,7 @@ public class SignDocValidatingRequestMapper {
                         operationMode,
                         documentsToSign,
                         documentDigestsToSign,
-                        credentialId,
+                        credentialIdUUID,
                         signatureQualifier,
                         sad,
                         clientData,
@@ -161,7 +175,7 @@ public class SignDocValidatingRequestMapper {
         }
 
         AlgorithmPair algorithmPair = algorithmUnifier
-                .unify(dto.getSignAlgo().get(), null)
+                .unify(dto.getSignAlgo().get(), dto.getHashAlgorithmOID().orElse(null))
                 .consumeError(e -> {throw new InvalidInputDataException(e.toString());})
                 .unwrap();
         final String keyAlgo = algorithmPair.keyAlgo();
