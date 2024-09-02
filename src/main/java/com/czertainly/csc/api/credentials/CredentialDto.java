@@ -64,7 +64,16 @@ public record CredentialDto(
                 implementation = KeyDto.class,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
-        int multisign
+        int multisign,
+
+        @Schema(
+                description = """
+                       Authorization details.
+                       """,
+                implementation = KeyDto.class,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        AuthDto authDto
 
         // TODO: l.najman - add lang param when it is clear, what the value should be
 ) {
@@ -73,10 +82,11 @@ public record CredentialDto(
         return new CredentialDto(
                 credential.credentialID(),
                 credential.description(),
-                credential.signatureQualifier(),
+                credential.signatureQualifier().orElse(null),
                 KeyDto.fromModel(credential.key()),
                 CertificateDto.fromModel(credential.cert(), dateConverter),
-                credential.multisign()
+                credential.multisign(),
+                AuthDto.oauth2()
         );
     }
 
