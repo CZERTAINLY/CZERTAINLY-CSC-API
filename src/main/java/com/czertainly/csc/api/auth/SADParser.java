@@ -2,7 +2,6 @@ package com.czertainly.csc.api.auth;
 
 
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
-import com.czertainly.csc.controllers.exceptions.BadRequestException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class SADParser {
@@ -69,6 +70,9 @@ public class SADParser {
                 logger.warn("The 'hashes' claim is not a list of strings. The claim will be ignored.");
                 return Set.of();
             }
+        } else if (hashes instanceof String s) {
+            var parts = s.split(",");
+            return Stream.of(parts).map(String::strip).collect(Collectors.toSet());
         } else {
             logger.warn("The 'hashes' claim is not a list. The claim will be ignored.");
             return Set.of();

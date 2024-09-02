@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
@@ -72,8 +74,9 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
     }
 
     private Set<String> extractSetClaim(Jwt jwt, String claimName) {
-        List<String> claim = jwt.getClaimAsStringList(claimName);
-        return claim != null ? new HashSet<>(claim) : Collections.emptySet();
+        String claimsString = jwt.getClaimAsString(claimName);
+        var parts = claimsString.split(",");
+        return Stream.of(parts).map(String::strip).collect(Collectors.toSet());
     }
 
 }
