@@ -107,11 +107,11 @@ public class AlgorithmHelper {
             return false;
         }
         String signatureAlgorithmName = getSignatureAlgorithmName(signatureAlgorithmOID);
-        logger.debug("Signature algorithm with IOD {} was converted to name {}", signatureAlgorithmOID,
+        logger.debug("Signature algorithm with OID {} was converted to name {}", signatureAlgorithmOID,
                      signatureAlgorithmName
         );
         String digestAlgorithmName = getDigestAlgorithmName(digestAlgorithmOID);
-        logger.debug("Digest algorithm with IOD {} was converted to name {}", digestAlgorithmOID,
+        logger.debug("Digest algorithm with OID {} was converted to name {}", digestAlgorithmOID,
                      digestAlgorithmName
         );
 
