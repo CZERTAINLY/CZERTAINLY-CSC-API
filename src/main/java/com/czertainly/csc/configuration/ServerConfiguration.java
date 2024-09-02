@@ -27,6 +27,8 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.ssl.SslStoreBundle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -170,11 +172,6 @@ public class ServerConfiguration {
         List<WorkerWithCapabilities> workers = workerConfigurationLoader.getWorkers();
 
         return new WorkerRepository(workers);
-    }
-
-    @Bean("dnProvider")
-    public PatternReplacer usernameProvider(@Value("${caProvider.ejbca.endEntity.dnPattern}") String dnPattern) {
-        return new PatternReplacer(dnPattern, "Distinguished Name Provider");
     }
 
     private HttpComponents5MessageSender getHttpComponentsMessageSender(

@@ -87,10 +87,14 @@ caProvider:
             #   in this case the placeholder has to be in the form $[Credential.id] and it will be replaced with the
             #   alias of the key pair that is used for signing
             usernamePattern: $[UserInfo.name]-$[Credential.id]
-            # DN pattern to create subject DN of requested certificate
-            dnPattern: CN=$[AccessToken.name], UID=$[UserInfo.id]
+            # DN pattern to create subject DN of requested certificate.
+            dn:
+                pattern: CN=$[AccessToken.name], UID=$[UserInfo.id]
+                required: CN, UID
             # SAN pattern to create subject alternative name of requested certificate
-            sanPattern: None
+            san:
+                pattern: None
+                required: None
             # CA name to issue the certificate
             caName: DemoClientSubCA_2307RSA
             # End entity profile name to use for the certificate
