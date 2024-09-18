@@ -158,7 +158,7 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
             }
         } catch (Exception e) {
             logger.debug("Failed to fetch user data for EJBCA user {}", username, e);
-            return Result.error(TextError.of("An error occurred while fetching data for EJBCA user %s", username));
+            return Result.error(TextError.of(e));
         }
     }
 }

@@ -115,6 +115,7 @@ public class EjbcaClient {
         return ejbcaWsClient.getUserData(username)
                             .map(data -> new EndEntity(data.getUsername(), data.getPassword(), data.getSubjectDN(),
                                                        data.getSubjectAltName()
-                            ));
+                            ))
+                            .mapError(e -> e.extend("Failed to get end entity %s", username));
     }
 }
