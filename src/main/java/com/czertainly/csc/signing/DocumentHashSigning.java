@@ -12,9 +12,7 @@ import com.czertainly.csc.crypto.PasswordGenerator;
 import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.CredentialMetadata;
-import com.czertainly.csc.model.csc.requests.CredentialInfoRequest;
 import com.czertainly.csc.model.ejbca.EndEntity;
 import com.czertainly.csc.providers.DistinguishedNameProvider;
 import com.czertainly.csc.providers.KeyValueSource;
@@ -91,15 +89,14 @@ public class DocumentHashSigning {
     private Result<SignedDocuments, TextError> loadKeyAndSign(
             SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken
     ) {
-        var credentialRequest = new CredentialInfoRequest(
-                parameters.credentialID(),
-                CertificateReturnType.END_CERTIFICATE,
-                true,
-                false
-        );
-        var getCredentialresult = credentialsService.getCredentialMetadata(credentialRequest.credentialID())
-                                                    .mapError(err -> TextError.of(
-                                                            "Failed to load credential %s " + parameters.credentialID()));
+
+        var getCredentialresult = credentialsService.getCredentialMetadata(parameters.credentialID(),
+                                                                           parameters.userID()
+                                                    )
+                                                    .mapError(err -> err.extend(
+                                                            "Failed to load credential '%s'",
+                                                            parameters.credentialID()
+                                                    ));
         if (getCredentialresult instanceof Error(var err)) return Result.error(err);
         CredentialMetadata credential = getCredentialresult.unwrap();
 

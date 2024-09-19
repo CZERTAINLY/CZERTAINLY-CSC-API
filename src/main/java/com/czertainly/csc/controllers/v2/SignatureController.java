@@ -143,9 +143,7 @@ public class SignatureController {
                     ),
             }
     )
-    public SignDocResponseDto signDoc(@RequestBody SignDocRequestDto signDocRequest,
-                                      Authentication authentication
-    ) {
+    public SignDocResponseDto signDoc(@RequestBody SignDocRequestDto signDocRequest, Authentication authentication) {
         logger.trace("Serving signDoc request.");
         SignDocParameters request = signDocValidatingRequestMapper
                 .map(signDocRequest, getSadIfAvailable(authentication));

@@ -1,5 +1,6 @@
 package com.czertainly.csc.controllers.v2;
 
+import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.api.credentials.CredentialDto;
 import com.czertainly.csc.api.credentials.CredentialsListDto;
 import com.czertainly.csc.api.credentials.GetCredentialInfoDto;
@@ -19,6 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("csc/v2/credentials")
+@PreAuthorize("hasAuthority('SCOPE_credential') || hasAuthority('SCOPE_service')")
 public class CredentialsController {
 
     private static final Logger logger = LoggerFactory.getLogger(CredentialsController.class);
@@ -61,8 +65,12 @@ public class CredentialsController {
                     )
             }
     )
-    public CredentialsListDto listCredentials(@RequestBody ListCredentialsRequestDto requestDto) {
-        ListCredentialsRequest request = credentialsListRequestMapper.map(requestDto);
+    public CredentialsListDto listCredentials(
+            @RequestBody ListCredentialsRequestDto requestDto,
+            Authentication authentication
+    ) {
+        CscAuthenticationToken token = castTokenOrThrow(authentication);
+        ListCredentialsRequest request = credentialsListRequestMapper.map(requestDto, token);
         return credentialsService
                 .listUserCredentials(request)
                 .map(credentials -> CredentialsListDto.from(credentials, dateConverter))
@@ -85,8 +93,12 @@ public class CredentialsController {
                     )
             }
     )
-    public CredentialDto credentialInfo(@RequestBody GetCredentialInfoDto getCredentialInfoDto) {
-        CredentialInfoRequest request = credentialInfoRequestMapper.map(getCredentialInfoDto);
+    public CredentialDto credentialInfo(
+            @RequestBody GetCredentialInfoDto getCredentialInfoDto,
+        Authentication authentication
+    ) {
+        CscAuthenticationToken token = castTokenOrThrow(authentication);
+        CredentialInfoRequest request = credentialInfoRequestMapper.map(getCredentialInfoDto, token);
         return credentialsService
                 .getCredential(request)
                 .map(credential -> CredentialDto.fromModel(credential, dateConverter))
@@ -95,6 +107,18 @@ public class CredentialsController {
                 ))
                 .consumeError(this::logAndThrowError)
                 .unwrap();
+    }
+
+    private static CscAuthenticationToken castTokenOrThrow(Authentication authentication) {
+        CscAuthenticationToken token;
+        if (authentication instanceof CscAuthenticationToken) {
+            token = (CscAuthenticationToken) authentication;
+        } else {
+            throw new InternalErrorException("Failed to authenticate list credentials request because authentication" +
+                                                     " object must be of type CscAuthenticationToken but was " +
+                                                     authentication.getClass().getSimpleName());
+        }
+        return token;
     }
 
     private void logAndThrowError(TextError error) {

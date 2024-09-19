@@ -6,6 +6,7 @@ import java.util.Set;
 
 public class SignatureActivationData {
 
+    private final String userID;
     private final String credentialID;
     private final String signatureQualifier;
     private final int numSignatures;
@@ -14,10 +15,11 @@ public class SignatureActivationData {
     private final String clientData;
     private final Map<String, String> otherAttributes;
 
-    public SignatureActivationData(String credentialID, String signatureQualifier, int numSignatures,
+    public SignatureActivationData(String userID, String credentialID, String signatureQualifier, int numSignatures,
                                    Set<String> hashes, String hashAlgorithmOID, String clientData,
                                    Map<String, String> otherAttributes
     ) {
+        this.userID = userID;
         this.credentialID = credentialID;
         this.signatureQualifier = signatureQualifier;
         this.numSignatures = numSignatures;
@@ -25,6 +27,10 @@ public class SignatureActivationData {
         this.hashAlgorithmOID = hashAlgorithmOID;
         this.clientData = clientData;
         this.otherAttributes = otherAttributes;
+    }
+
+    public Optional<String> getUserID() {
+        return Optional.ofNullable(userID);
     }
 
     public Optional<String> getCredentialID() {

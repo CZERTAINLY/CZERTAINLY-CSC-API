@@ -160,7 +160,7 @@ public class CredentialsService {
 
     public Result<Void, TextError> deleteCredential(UUID credentialId) {
         logger.info("Deleting credential with ID '{}'.", credentialId);
-        return getCredentialMetadataEntity(credentialId)
+        return getCredentialMetadataEntity(credentialId, null)
                 .mapError(e -> e.extend("Failed to obtain credential metadata."))
                 .flatMap(credentialMetadata ->
                                  workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
@@ -187,7 +187,7 @@ public class CredentialsService {
         logger.debug("Re keying credential '{}'.", request.credentialID());
         logger.trace(request.toString());
 
-        var getCredentialMetadataResult = getCredentialMetadataEntity(request.credentialID());
+        var getCredentialMetadataResult = getCredentialMetadataEntity(request.credentialID(), null);
 
         if (getCredentialMetadataResult instanceof Error(var err)) return Result.error(err);
         CredentialMetadataEntity currentCredentialMetadata = getCredentialMetadataResult.unwrap();
@@ -303,8 +303,7 @@ public class CredentialsService {
 
     public Result<Credential, TextError> getCredential(CredentialInfoRequest request) {
         logger.debug("Retrieving credential '{}'.", request.credentialID());
-        logger.trace(request.toString());
-        return getCredentialMetadataEntity(request.credentialID())
+        logger.trace(request.toString()); return getCredentialMetadataEntity(request.credentialID(), request.userID())
                 .mapError(e -> e.extend("Failed to retrieve credential metadata."))
                 .flatMap(metadata -> getCredential(metadata, request.certificateReturnType()));
     }
@@ -340,7 +339,7 @@ public class CredentialsService {
 
     private Result<Void, TextError> updateCredentialStatus(UUID credentialId, boolean disabled) {
         logger.debug("Updating credential '{}', setting disabled={}.", credentialId, disabled);
-        return getCredentialMetadataEntity(credentialId)
+        return getCredentialMetadataEntity(credentialId, null)
                 .consume(metadata -> metadata.setDisabled(disabled))
                 .flatMap(metadata -> {
                     try {
@@ -358,8 +357,8 @@ public class CredentialsService {
 
     }
 
-    public Result<CredentialMetadata, TextError> getCredentialMetadata(UUID credentialId) {
-        return getCredentialMetadataEntity(credentialId)
+    public Result<CredentialMetadata, TextError> getCredentialMetadata(UUID credentialId, String userId) {
+        return getCredentialMetadataEntity(credentialId, userId)
                 .map(metadata -> new CredentialMetadata(
                         metadata.getId(),
                         metadata.getUserId(),
@@ -372,13 +371,24 @@ public class CredentialsService {
                 ));
     }
 
-    private Result<CredentialMetadataEntity, TextError> getCredentialMetadataEntity(UUID credentialId
-    ) {
+    private Result<CredentialMetadataEntity, TextError> getCredentialMetadataEntity(UUID credentialId, String userId) {
         try {
-            return credentialsRepository.findById(credentialId)
-                                        .<Result<CredentialMetadataEntity, TextError>>map(Result::success)
-                                        .orElseGet(() -> Result.error(
-                                                TextError.of("Credential '%s' not found in database.", credentialId)));
+            if (userId == null) {
+                return credentialsRepository.findById(credentialId)
+                                            .<Result<CredentialMetadataEntity, TextError>>map(Result::success)
+                                            .orElseGet(() -> Result.error(
+                                                    TextError.of("No credential with id '%s' found in database.",
+                                                                 credentialId
+                                                    )));
+            } else {
+                return credentialsRepository.findByIdAndUserId(credentialId, userId)
+                                            .<Result<CredentialMetadataEntity, TextError>>map(Result::success)
+                                            .orElseGet(() -> Result.error(
+                                                    TextError.of("No credential with id '%s' belonging to the user '%s' found in database.",
+                                                                 credentialId,
+                                                                 userId
+                                                    )));
+            }
         } catch (Exception e) {
             logger.debug("Failed to retrieve credential '{}' from database.", credentialId, e);
             return Result.error(TextError.of(e));

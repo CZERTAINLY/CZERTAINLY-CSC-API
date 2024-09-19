@@ -39,7 +39,8 @@ public class SADParser {
     private SignatureActivationData extractSadFromToken(Jws<Claims> token) {
         Claims claims = token.getPayload();
         SignatureActivationDataBuilder builder = new SignatureActivationDataBuilder();
-        builder.withCredentialID(claims.get("credentialID", String.class))
+        builder.withUserID(claims.get("userID", String.class))
+               .withCredentialID(claims.get("credentialID", String.class))
                .withSignatureQualifier(claims.get("signatureQualifier", String.class))
                .withHashAlgorithmOID(claims.get("hashAlgorithmOID", String.class))
                .withNumSignatures(Integer.parseInt(claims.get("numSignatures", String.class)))

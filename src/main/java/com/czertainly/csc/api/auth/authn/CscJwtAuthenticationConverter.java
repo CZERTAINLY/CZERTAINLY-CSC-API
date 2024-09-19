@@ -37,6 +37,7 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
     private SignatureActivationData getSignatureActivationData(Jwt source) {
         SignatureActivationDataBuilder builder = new SignatureActivationDataBuilder();
 
+        builder.withUserID(extractStringClaim(source, "userID"));
         builder.withCredentialID(extractStringClaim(source, "credentialID"));
         builder.withSignatureQualifier(extractStringClaim(source, "signatureQualifier"));
         builder.withNumSignatures(extractIntegerClaim(source, "numSignatures"));

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record SignDocParameters(
+        String userID,
         OperationMode operationMode,
         List<DocumentToSign> documentsToSign,
         List<DocumentDigestsToSign> documentDigestsToSign,

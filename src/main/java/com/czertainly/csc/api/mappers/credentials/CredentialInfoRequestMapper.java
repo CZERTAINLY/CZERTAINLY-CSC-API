@@ -1,7 +1,9 @@
 package com.czertainly.csc.api.mappers.credentials;
 
+import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.credentials.GetCredentialInfoDto;
+import com.czertainly.csc.api.credentials.ListCredentialsRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.requests.CredentialInfoRequest;
@@ -12,11 +14,9 @@ import java.util.UUID;
 @Component
 public class CredentialInfoRequestMapper {
 
-    public CredentialInfoRequest map(GetCredentialInfoDto dto) {
+    public CredentialInfoRequest map(GetCredentialInfoDto dto, CscAuthenticationToken authenticationToken) {
 
-        if (dto.credentialID() == null) {
-            throw InvalidInputDataException.of("Missing (or invalid type) string parameter credentialID.");
-        }
+        String userId = extractUserIdFromToken(authenticationToken);
 
         UUID credentialID;
         try {
@@ -38,6 +38,7 @@ public class CredentialInfoRequestMapper {
 
 
         return new CredentialInfoRequest(
+                        userId,
                         credentialID,
                         certificateReturnType,
                         returnCertificateInfo,
@@ -51,5 +52,20 @@ public class CredentialInfoRequestMapper {
             return CertificateReturnType.END_CERTIFICATE;
         }
         return CertificateReturnType.valueOf(certificateReturnType);
+    }
+
+    private String extractUserIdFromToken(CscAuthenticationToken authenticationToken) {
+        if (authenticationToken != null) {
+            Object usernameClaim = authenticationToken.getToken().getClaims().get("userID");
+            if (usernameClaim == null) {
+                throw InvalidInputDataException.of("Missing userID claim in the access token.");
+            }
+            if (!(usernameClaim instanceof String username)) {
+                throw InvalidInputDataException.of("Invalid type of userID claim in the access token. The userID must be a string.");
+            } else {
+                return username;
+            }
+        }
+        return null;
     }
 }

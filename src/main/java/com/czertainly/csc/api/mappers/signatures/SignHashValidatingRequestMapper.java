@@ -41,6 +41,9 @@ public class SignHashValidatingRequestMapper {
             String sadString = dto.getSAD().get();
             sad = sadParser.parse(sadString);
         }
+        final String userID = sad.getUserID()
+                                 .orElseThrow(() -> InvalidInputDataException.of(
+                                         "Missing userID in Signature Activation Data"));
 
         if (dto.getHashes().isEmpty()) {
             throw InvalidInputDataException.of("Missing (or invalid type) string parameter credentialID.");
@@ -70,7 +73,6 @@ public class SignHashValidatingRequestMapper {
 
         clientData = dto.getClientData().orElse("");
 
-
-        return new SignHashParameters(hashes, keyAlgo, digestAlgo, sad, operationMode, clientData);
+        return new SignHashParameters(userID, hashes, keyAlgo, digestAlgo, sad, operationMode, clientData);
     }
 }

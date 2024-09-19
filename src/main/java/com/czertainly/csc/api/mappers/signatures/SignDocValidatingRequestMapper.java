@@ -95,17 +95,20 @@ public class SignDocValidatingRequestMapper {
 
         final String clientData = dto.getClientData().orElse("");
         final boolean returnValidationInfo = dto.getReturnValidationInfo().orElse(false);
-
+        final String userID = sad.getUserID()
+                                 .orElseThrow(() -> InvalidInputDataException.of(
+                                         "Missing userID in Signature Activation Data"));
 
         return new SignDocParameters(
-                        operationMode,
-                        documentsToSign,
-                        documentDigestsToSign,
-                        credentialIdUUID,
-                        signatureQualifier,
-                        sad,
-                        clientData,
-                        returnValidationInfo
+                userID,
+                operationMode,
+                documentsToSign,
+                documentDigestsToSign,
+                credentialIdUUID,
+                signatureQualifier,
+                sad,
+                clientData,
+                returnValidationInfo
         );
     }
 
