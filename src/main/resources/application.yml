@@ -70,7 +70,6 @@ caProvider:
         admin:
             # Name of the keystore bundle containing the admin certificate and private key
             keystoreBundle: ejbcaAdmin
-
         # End entity configuration
         endEntity:
             # Username pattern to create username
@@ -138,9 +137,9 @@ spring:
         bundle:
             # Sample configuration of a truststore using PEM encoded certificate or certificate chain
             # pem:
-                # trustedcertificates:
-                #    truststore:
-                #        certificate: /opt/cscapi/trusted-ca-certs.pem
+            # trustedcertificates:
+            #    truststore:
+            #        certificate: /opt/cscapi/trusted-ca-certs.pem
             jks:
                 # Sample configuration of keystore using PKCS12 keystore
                 # ejbcaAdmin: # Name of the keystore bundle
