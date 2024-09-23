@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.security.PublicKey;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,17 +20,19 @@ public class JwksRepository {
     private final JwksDownloader jwksDownloader;
     private final JwksParser jwksParser;
 
-    private final Map<String, Key> signingKeys;
-    private final Map<String, Key> encryptionKeys;
+    private final Map<String, PublicKey> signingKeys;
+    private final Map<String, PublicKey> encryptionKeys;
 
     public JwksRepository(JwksDownloader jwksDownloader, JwksParser jwksParser) {
+        assert jwksDownloader != null;
+        assert jwksParser != null;
         this.jwksDownloader = jwksDownloader;
         this.jwksParser = jwksParser;
         this.signingKeys = new java.util.HashMap<>();
         this.encryptionKeys = new java.util.HashMap<>();
     }
 
-    public Key getKey(String kid, String usage) throws JwkLookupException {
+    public PublicKey getKey(String kid, String usage) throws JwkLookupException {
         logger.debug("Looking up for a key with usage '{}' and key id '{}'.", usage, kid);
         if (usage.equals("sig")) {
             return getKey(kid, signingKeys);
@@ -40,7 +43,7 @@ public class JwksRepository {
         }
     }
 
-    private Key getKey(String kid, Map<String, Key> keyMap) throws JwkLookupException {
+    private PublicKey getKey(String kid, Map<String, PublicKey> keyMap) throws JwkLookupException {
         if (keyMap.containsKey(kid)) {
             return keyMap.get(kid);
         } else {
