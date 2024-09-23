@@ -175,6 +175,7 @@ spring:
     flyway:
         table: "csc_schema_history"
         schemas: "csc"
+        locations: "classpath:db/migration,classpath:db/specific/{vendor}"
 
 # Logging configuration
 logging:
