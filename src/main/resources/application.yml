@@ -165,12 +165,16 @@ spring:
     # Datasource configuration
     datasource:
         # JDBC URL of the database
+        # for PostgreSQL use: jdbc:postgresql://localhost:5432/cscdb
+        # for MySQL use: jdbc:mysql://localhost:3306/cscdb
         url: jdbc:postgresql://localhost:5432/cscdb
         # Username to connect to the database
         username: 'cscuser'
         # Password to connect to the database
         password: 'your-strong-password'
         # Driver class name of the database
+        # for PostgreSQL use: org.postgresql.Driver
+        # for MySQL use: com.mysql.cj.jdbc.Driver
         driver-class-name: 'org.postgresql.Driver'
     flyway:
         table: "csc_schema_history"
