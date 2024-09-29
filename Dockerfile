@@ -1,12 +1,12 @@
 # Build stage
-FROM maven:3.9.6-eclipse-temurin-21 as build
+FROM maven:3.9.9-eclipse-temurin-21 as build
 COPY src /home/app/src
 COPY pom.xml /home/app
 RUN mvn -f /home/app/pom.xml clean package
 COPY docker /home/app/docker
 
 # Package stage
-FROM eclipse-temurin:21.0.3_9-jre-alpine
+FROM eclipse-temurin:21.0.4_7-jre-alpine
 
 # add non root user cscapi
 RUN addgroup --system --gid 10001 cscapi && adduser --system --home /opt/cscapi --uid 10001 --ingroup cscapi cscapi
