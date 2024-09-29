@@ -35,3 +35,4 @@ build/
 application-*.yml
 workers-*.yml
 .DS_Store
+/.idea/
