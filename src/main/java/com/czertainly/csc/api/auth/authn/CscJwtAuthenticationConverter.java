@@ -75,9 +75,22 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
     }
 
     private Set<String> extractSetClaim(Jwt jwt, String claimName) {
-        String claimsString = jwt.getClaimAsString(claimName);
-        var parts = claimsString.split(",");
-        return Stream.of(parts).map(String::strip).collect(Collectors.toSet());
+        Object claim = jwt.getClaim(claimName);
+        if (claim instanceof List) {
+            if (((List<?>) claim).getFirst() instanceof String) {
+
+                return Set.copyOf((List<String>) claim);
+            } else {
+                logger.warn(String.format("The '%s' claim is not a list of strings. The claim will be ignored.", claimName));
+                return Set.of();
+            }
+        } else if (claim instanceof String s) {
+            var parts = s.split(",");
+            return Stream.of(parts).map(String::strip).collect(Collectors.toSet());
+        } else {
+            logger.warn(String.format("The '%s' claim is not a list of strings or string. The claim will be ignored.", claimName));
+            return Set.of();
+        }
     }
 
 }
