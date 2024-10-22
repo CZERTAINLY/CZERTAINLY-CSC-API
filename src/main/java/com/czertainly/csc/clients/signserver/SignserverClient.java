@@ -6,8 +6,10 @@ import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.csc.clients.signserver.ws.dto.CertReqData;
 import com.czertainly.csc.clients.signserver.ws.dto.TokenEntry;
 import com.czertainly.csc.common.exceptions.RemoteSystemException;
+import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.crypto.CertificateParser;
 import com.czertainly.csc.crypto.DigestAlgorithmJavaName;
 import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignedDocuments;
@@ -18,11 +20,13 @@ import com.czertainly.csc.signing.Signature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,14 +38,17 @@ public class SignserverClient {
     SignserverRestClient signserverRestClient;
     KeySpecificationParser keySpecificationParser;
     ObjectMapper objectMapper;
+    CertificateParser certificateParser;
 
     public SignserverClient(SignserverWsClient signserverWSClient, SignserverRestClient signserverRestClient,
-                            KeySpecificationParser keySpecificationParser, ObjectMapper objectMapper
+                            KeySpecificationParser keySpecificationParser, ObjectMapper objectMapper,
+                            CertificateParser certificateParser
     ) {
         this.signserverWSClient = signserverWSClient;
         this.signserverRestClient = signserverRestClient;
         this.keySpecificationParser = keySpecificationParser;
         this.objectMapper = objectMapper;
+        this.certificateParser = certificateParser;
     }
 
     public Signature signSingleHash(String workerName, byte[] data, String keyAlias, String digestAlgorithm) {
@@ -194,18 +201,29 @@ public class SignserverClient {
     ) {
         return signserverWSClient
                 .queryTokenEntries(cryptoTokenId, includeData, startIndex, numOfItems, keyAliasFilterPattern)
-                .map(searchResult -> {
+                .flatMap(searchResult -> {
                     ArrayList<CryptoTokenKey> keys = new ArrayList<>();
                     for (TokenEntry key : searchResult.getEntries()) {
                         var info = key.getInfo();
                         var builder = new CryptoTokenKeyBuilder().withCryptoTokenId(cryptoTokenId)
                                                                  .withKeyAlias(key.getAlias());
 
-                        if (key.getChain() != null || key.getTrustedCertificate() != null) {
-                            builder.withStatus(new CryptoTokenKeyStatus(true));
-                        }
-                        if (key.getChain() != null) {
+                        if (key.getChain() != null && !key.getChain().isEmpty()) {
+                            byte[] certData = key.getChain().getFirst();
+                            var getCertificateResult = certificateParser.parseDerEncodedCertificate(certData);
+                            if (getCertificateResult instanceof Error(var e)) {
+                                return Result.error(e);
+                            }
+                            X509Certificate cert = getCertificateResult.unwrap();
+                            String dn = cert.getSubjectX500Principal().getName();
+                            if (dn.contains("L=_SignServer_DUMMY_CERT_")) {
+                                builder.withStatus(new CryptoTokenKeyStatus(false));
+                            } else {
+                                builder.withStatus(new CryptoTokenKeyStatus(true));
+                            }
                             builder.withChain(key.getChain());
+                        } else {
+                            builder.withStatus(new CryptoTokenKeyStatus(false));
                         }
                         if (includeData) {
                             info.getEntries().forEach(entry -> {
@@ -224,7 +242,7 @@ public class SignserverClient {
 
                         keys.add(builder.build());
                     }
-                    return keys;
+                    return Result.success(keys);
                 });
     }
 
