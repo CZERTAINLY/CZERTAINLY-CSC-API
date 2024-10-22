@@ -10,6 +10,12 @@ csc:
     region: CZ
     # SignServer workers configuration file
     workerConfigurationFile: /opt/cscapi/workers.yml
+    # Path to the directory containing the certificate management profiles configuration files.
+    # The configuration files must be in the YAML format and must be named according to the following pattern:
+    # - credential-profiles-[caProviderName].yml - profiles that can be selected for credential management
+    # - signature-qualifier-profiles-[caProviderName].yml - profiles that will be used for signatureQualifier requests
+    # The [caProviderName] must match the name of the CA provider configured.
+    # See the example configuration files for more information.
     profilesConfigurationDirectory: /opt/cscapi/profiles
     # Number of preloaded keys that are stored in memory for faster access
     numberOfPreloadedKeys: 10

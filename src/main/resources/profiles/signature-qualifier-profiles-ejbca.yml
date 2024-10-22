@@ -8,8 +8,10 @@ profiles:
     # Certificate profile name to use for the certificate
     certificateProfileName: DemoDocumentSigningEECertificateProfile
     # Certificate validity period in ISO 8601 duration format
+    # See https://en.wikipedia.org/wiki/ISO_8601#Durations for more information
     certificateValidity: P1D
     # Certificate validity offset in ISO 8601 duration format
+    # See https://en.wikipedia.org/wiki/ISO_8601#Durations for more information
     certificateValidityOffset: PT-1M
     # Username pattern to create username
     # You can use placeholders in the patterns, e.g. $[AccessToken.name] will be replaced with the

@@ -15,7 +15,7 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    A name of the of the credential profile to use when generating the certificate.
+                    A name of the credential profile to use when generating the certificate.
                     """,
                 example = "long-term",
                 requiredMode = Schema.RequiredMode.REQUIRED

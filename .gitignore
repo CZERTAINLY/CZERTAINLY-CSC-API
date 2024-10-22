@@ -34,5 +34,7 @@ build/
 
 application-*.yml
 workers-*.yml
+credential-profiles-ejbca-*.yml
+signature-qualifier-profiles-ejbca-*.yml
 .DS_Store
 /.idea/
