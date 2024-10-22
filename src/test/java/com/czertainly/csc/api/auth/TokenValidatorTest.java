@@ -76,7 +76,7 @@ class TokenValidatorTest {
 
         // then
         assertInstanceOf(Error.class, result);
-        assertTrue(result.unwrapError().getError().contains("iss"));
+        assertTrue(result.unwrapError().getErrorText().contains("iss"));
     }
 
     @Test
@@ -92,7 +92,7 @@ class TokenValidatorTest {
 
         // then
         assertInstanceOf(Error.class, result);
-        assertTrue(result.unwrapError().getError().contains("expired"));
+        assertTrue(result.unwrapError().getErrorText().contains("expired"));
 
     }
 
@@ -109,7 +109,7 @@ class TokenValidatorTest {
 
         // then
         assertInstanceOf(Error.class, result);
-        assertTrue(result.unwrapError().getError().contains("issued at future"));
+        assertTrue(result.unwrapError().getErrorText().contains("issued at future"));
     }
 
     @Test
@@ -125,7 +125,7 @@ class TokenValidatorTest {
 
         // then
         assertInstanceOf(Error.class, result);
-        assertTrue(result.unwrapError().getError().contains("Failed to locate key"));
+        assertTrue(result.unwrapError().getErrorText().contains("Failed to locate key"));
     }
 
     @Test
@@ -141,7 +141,7 @@ class TokenValidatorTest {
 
         // then
         assertInstanceOf(Error.class, result);
-        assertTrue(result.unwrapError().getError().contains("signature does not match"));
+        assertTrue(result.unwrapError().getErrorText().contains("signature does not match"));
     }
 
     public Map<String, String> validClaims() {
