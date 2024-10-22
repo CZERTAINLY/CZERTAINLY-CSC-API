@@ -58,7 +58,7 @@ class TokenValidatorTest {
 
         // then
         assertInstanceOf(Error.class, result);
-        assertTrue(result.unwrapError().getError().contains("aud"));
+        assertTrue(result.unwrapError().getErrorText().contains("aud"));
     }
 
     @Test
