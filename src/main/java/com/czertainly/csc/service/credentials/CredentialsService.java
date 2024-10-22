@@ -22,6 +22,8 @@ import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.repository.CredentialsRepository;
 import com.czertainly.csc.repository.entities.CredentialMetadataEntity;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
+import com.czertainly.csc.signing.configuration.profiles.credentialprofile.CredentialProfile;
+import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
@@ -48,12 +50,14 @@ public class CredentialsService {
     private final AlgorithmHelper algorithmHelper;
     private final DateConverter dateConverter;
     private final CertificateValidityDecider certificateValidityDecider;
+    private final CredentialProfileRepository credentialProfileRepository;
 
     public CredentialsService(PasswordGenerator passwordGenerator, EjbcaClient ejbcaClient,
                               SignserverClient signserverClient, CredentialsRepository credentialsRepository,
                               WorkerRepository workerRepository, CertificateParser certificateParser,
                               AlgorithmHelper algorithmHelper, DateConverter dateConverter,
-                              CertificateValidityDecider certificateValidityDecider
+                              CertificateValidityDecider certificateValidityDecider,
+                                CredentialProfileRepository credentialProfileRepository
     ) {
         this.passwordGenerator = passwordGenerator;
         this.ejbcaClient = ejbcaClient;
@@ -64,6 +68,7 @@ public class CredentialsService {
         this.algorithmHelper = algorithmHelper;
         this.dateConverter = dateConverter;
         this.certificateValidityDecider = certificateValidityDecider;
+        this.credentialProfileRepository = credentialProfileRepository;
     }
 
     public Result<UUID, TextError> createCredential(
@@ -71,6 +76,11 @@ public class CredentialsService {
     ) {
         logger.debug("Creating new credential for user '{}'.", createCredentialRequest.userId());
         logger.trace(createCredentialRequest.toString());
+
+        var getCertificateProfileResult = credentialProfileRepository
+                .getCredentialProfile(createCredentialRequest.credentialProfileName());
+        if (getCertificateProfileResult instanceof Error(var err)) return Result.error(err);
+        CredentialProfile credentialProfile = getCertificateProfileResult.unwrap();
 
         String uniqueUserId = createUniqueUserId(createCredentialRequest.userId());
         String tokenAlias = getUniqueKeyAlias(uniqueUserId);
@@ -84,8 +94,8 @@ public class CredentialsService {
         var generateKeyResult = signserverClient
                 .generateKey(
                         token.id(), tokenAlias,
-                        createCredentialRequest.keyAlgorithm(),
-                        createCredentialRequest.keySpecification()
+                        credentialProfile.getKeyAlgorithm(),
+                        credentialProfile.getKeySpecification()
                 )
                 .mapError(e -> e.extend(
                         "Key couldn't be generated on Signserver CryptoToken %s(%s).",
@@ -98,7 +108,7 @@ public class CredentialsService {
                 .generateCSR(
                         token.id(), generatedKeyAlias,
                         createCredentialRequest.dn(),
-                        createCredentialRequest.csrSignatureAlgorithm()
+                        credentialProfile.getCsrSignatureAlgorithm()
                 )
                 .mapError(e -> e.extend("CSR couldn't be generated."))
                 .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias));
@@ -107,7 +117,8 @@ public class CredentialsService {
 
         var createEndEntityResult = createEndEntity(
                 uniqueUserId, createCredentialRequest.dn(),
-                createCredentialRequest.san()
+                createCredentialRequest.san(),
+                credentialProfile
         )
                 .mapError(e -> e.extend("End entity couldn't be created."))
                 .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias));
@@ -115,7 +126,7 @@ public class CredentialsService {
         EndEntity endEntity = createEndEntityResult.unwrap();
 
         var signCertificateResult = ejbcaClient
-                .signCertificateRequest(endEntity, csr)
+                .signCertificateRequest(endEntity, credentialProfile, csr)
                 .mapError(e -> e.extend("Certificate signing request couldn't be signed."))
                 .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias));
 
@@ -192,6 +203,15 @@ public class CredentialsService {
         if (getCredentialMetadataResult instanceof Error(var err)) return Result.error(err);
         CredentialMetadataEntity currentCredentialMetadata = getCredentialMetadataResult.unwrap();
 
+        RekeyCredentialRequest mergedRequest = mergerRekeyRequestWithCurrentSettings(
+                request, currentCredentialMetadata
+        );
+
+        var getCertificateProfileResult = credentialProfileRepository
+                .getCredentialProfile(mergedRequest.credentialProfileName());
+        if (getCertificateProfileResult instanceof Error(var err)) return Result.error(err);
+        CredentialProfile credentialProfile = getCertificateProfileResult.unwrap();
+
         var getCurrentCryptoTokenResult = workerRepository.getCryptoToken(
                 currentCredentialMetadata.getCryptoTokenName()
         );
@@ -203,16 +223,14 @@ public class CredentialsService {
         if (getCurrentKeyResult instanceof Error(var err)) return Result.error(err);
         CryptoTokenKey currentKey = getCurrentKeyResult.unwrap();
 
-        RekeyCredentialRequest mergedRequest = mergerRekeyRequestWithCurrentSettings(
-                request, currentCredentialMetadata, currentKey
-        );
+
 
         var getDestinationCryptoTokenResult = workerRepository
                 .getCryptoToken(mergedRequest.cryptoTokenName())
                 .mapError(
                         e -> e.extend(
                                 "Failed to get destination crypto token when rekeying credential '%s'.",
-                                request.credentialID()
+                                mergedRequest.credentialID()
                         )
                 );
         if (getDestinationCryptoTokenResult instanceof Error(var err)) return Result.error(err);
@@ -221,12 +239,12 @@ public class CredentialsService {
         String newKeyAlias = getUniqueKeyAlias(currentCredentialMetadata.getEndEntityName());
         var newKeyGenerationResult = signserverClient
                 .generateKey(destinationCryptoToken.id(), newKeyAlias,
-                             mergedRequest.keyAlgorithm(),
-                             mergedRequest.keySpecification()
+                             credentialProfile.getKeyAlgorithm(),
+                             credentialProfile.getKeySpecification()
                 )
                 .mapError(e -> e.extend(
                         "Failed to generate a new key when rekeying credential '%s'.",
-                        request.credentialID()
+                        mergedRequest.credentialID()
                 ));
         if (newKeyGenerationResult instanceof Error(var err)) return Result.error(err);
         newKeyAlias = newKeyGenerationResult.unwrap();
@@ -236,7 +254,7 @@ public class CredentialsService {
                 .getEndEntity(currentCredentialMetadata.getEndEntityName())
                 .mapError(e -> e.extend(
                                   "Failed to get end entity when rekeying credential '%s'.",
-                                  request.credentialID()
+                                  mergedRequest.credentialID()
                           )
                 ).consumeError(e -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias));
         if (getEndEntityResult instanceof Error(var err)) return Result.error(err);
@@ -245,17 +263,17 @@ public class CredentialsService {
         var genarateCsrResult = signserverClient
                 .generateCSR(destinationCryptoToken.id(),
                              newKeyAlias, endEntity.subjectDN(),
-                             mergedRequest.csrSignatureAlgorithm()
+                             credentialProfile.getCsrSignatureAlgorithm()
                 )
-                .mapError(e -> e.extend("Failed to generate CSR when rekeying credential '%s'", request.credentialID()))
+                .mapError(e -> e.extend("Failed to generate CSR when rekeying credential '%s'", mergedRequest.credentialID()))
                 .consumeError(e -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias));
         if (genarateCsrResult instanceof Error(var err)) return Result.error(err);
         byte[] csr = genarateCsrResult.unwrap();
 
         var signCsrResult = ejbcaClient
-                .signCertificateRequest(endEntity, csr)
+                .signCertificateRequest(endEntity, credentialProfile, csr)
                 .mapError(e -> e.extend("Failed to sign CSR when rekeying credential '%s'",
-                                        request.credentialID()
+                                        mergedRequest.credentialID()
                           )
                 )
                 .consumeError(e -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias));
@@ -282,7 +300,8 @@ public class CredentialsService {
         if (importChainResult instanceof Error(var err)) return Result.error(err);
 
         var updateCredentialMetadataresult = updateCredentialMetadataWithNewKeyAndCertificate(
-                currentCredentialMetadata, endCertificate, finalNewKeyAlias, destinationCryptoToken)
+                currentCredentialMetadata, endCertificate, finalNewKeyAlias, destinationCryptoToken,
+                credentialProfile.getName())
                 .mapError(e -> e.extend("Failed to update credential metadata with new key and certificate."))
                 .ifError(() -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias))
                 .ifError(() -> revokeCertificate(endCertificate));
@@ -363,6 +382,7 @@ public class CredentialsService {
                         metadata.getId(),
                         metadata.getUserId(),
                         metadata.getKeyAlias(),
+                        metadata.getCredentialProfile(),
                         Optional.of(metadata.getSignatureQualifier()),
                         metadata.getMultisign(),
                         Optional.of(metadata.getScal()),
@@ -526,32 +546,28 @@ public class CredentialsService {
         };
     }
 
-    private Result<EndEntity, TextError> createEndEntity(String userId, String dn, String san) {
+    private Result<EndEntity, TextError> createEndEntity(String userId, String dn, String san,
+                                                         CredentialProfile credentialProfile
+    ) {
         var password = passwordGenerator.generate();
         EndEntity endEntity = new EndEntity(userId, password, dn, san);
-        return ejbcaClient.createEndEntity(endEntity);
+        return ejbcaClient.createEndEntity(endEntity, credentialProfile);
     }
 
     private RekeyCredentialRequest mergerRekeyRequestWithCurrentSettings(
             RekeyCredentialRequest request,
-            CredentialMetadataEntity credentialMetadata,
-            CryptoTokenKey currentKey
+            CredentialMetadataEntity credentialMetadata
     ) {
         String newCryptoTokenName = credentialMetadata.getCryptoTokenName();
         if (request.cryptoTokenName() != null) {
             credentialMetadata.setCryptoTokenName(request.cryptoTokenName());
         }
 
-
-        var newKeyAlgorithm = request.keyAlgorithm() == null ? currentKey.keyAlgorithm() : request.keyAlgorithm();
-        var newKeySpec = request.keySpecification() == null ? currentKey.keySpecification() : request.keySpecification();
-        var newCsrSignatureAlgorithm = request.csrSignatureAlgorithm() == null ? "SHA256WithRSA" : request.csrSignatureAlgorithm();
+        var newCredentialProfileName = request.credentialProfileName() == null ? credentialMetadata.getCredentialProfile() : request.credentialProfileName();
         return new RekeyCredentialRequest(
                 request.credentialID(),
-                newCryptoTokenName,
-                newKeyAlgorithm,
-                newKeySpec,
-                newCsrSignatureAlgorithm
+                newCredentialProfileName,
+                newCryptoTokenName
         );
     }
 
@@ -578,6 +594,7 @@ public class CredentialsService {
         credentialMetadata.setId(UUID.randomUUID());
         credentialMetadata.setUserId(createCredentialRequest.userId());
         credentialMetadata.setKeyAlias(generatedKeyAlias);
+        credentialMetadata.setCredentialProfile(createCredentialRequest.credentialProfileName());
         credentialMetadata.setCryptoTokenName(cryptoToken.name());
         credentialMetadata.setEndEntityName(endEntity.username());
         credentialMetadata.setCurrentCertificateSn(endCertificate.getSerialNumber().toString(16));
@@ -595,19 +612,20 @@ public class CredentialsService {
             return Result.success(entity);
         } catch (Exception e) {
             logger.debug("Failed to save new credential '{}'. {}", credentialMetadata.getId(), e.getMessage());
-            return Result.error(TextError.of(e));
+            return Result.error(TextError.of("Failed to save credential '%s'.", credentialMetadata.getId()));
         }
     }
 
     private Result<Void, TextError> updateCredentialMetadataWithNewKeyAndCertificate(
             CredentialMetadataEntity currentCredentialMetadata, X509CertificateHolder endCertificate,
-            String finalNewKeyAlias, CryptoToken destinationCryptoToken
+            String finalNewKeyAlias, CryptoToken destinationCryptoToken, String credentialProfileName
     ) {
         try {
             currentCredentialMetadata.setCurrentCertificateSn(endCertificate.getSerialNumber().toString(16));
             currentCredentialMetadata.setCurrentCertificateIssuer(endCertificate.getIssuer().toString());
             currentCredentialMetadata.setKeyAlias(finalNewKeyAlias);
             currentCredentialMetadata.setCryptoTokenName(destinationCryptoToken.name());
+            currentCredentialMetadata.setCredentialProfile(credentialProfileName);
             credentialsRepository.save(currentCredentialMetadata);
             return Result.emptySuccess();
         } catch (Exception e) {

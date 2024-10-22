@@ -55,7 +55,7 @@ public class SignHashValidatingRequestMapper {
         String hashAlgorithmOID = dto.getHashAlgorithmOID();
         AlgorithmPair algorithmPair = algorithmUnifier.unify(signAlgo, hashAlgorithmOID)
                 .consumeError(error -> {
-                    throw InvalidInputDataException.of(error.getError());
+                    throw InvalidInputDataException.of(error.getErrorText());
                 })
                 .unwrap();
 

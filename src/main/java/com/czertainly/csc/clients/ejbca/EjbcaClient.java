@@ -1,17 +1,19 @@
 package com.czertainly.csc.clients.ejbca;
 
+import com.czertainly.csc.clients.ejbca.ws.CertificateValidityCalculator;
 import com.czertainly.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.csc.clients.ejbca.ws.dto.CertificateResponse;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.RevocationStatus;
 import com.czertainly.csc.model.ejbca.EndEntity;
+import com.czertainly.csc.signing.configuration.profiles.Profile;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.Period;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Objects;
@@ -22,19 +24,19 @@ public class EjbcaClient {
     private static final Logger logger = LoggerFactory.getLogger(EjbcaClient.class);
 
     private final EjbcaWsClient ejbcaWsClient;
-    private final Period certificateValidity;
+    private final CertificateValidityCalculator certificateValidityCalculator;
 
-    public EjbcaClient(EjbcaWsClient ejbcaWsClient) {
+    public EjbcaClient(EjbcaWsClient ejbcaWsClient, CertificateValidityCalculator certificateValidityCalculator) {
         this.ejbcaWsClient = ejbcaWsClient;
-        this.certificateValidity = Period.ofDays(365);
+        this.certificateValidityCalculator = certificateValidityCalculator;
     }
 
-    public Result<EndEntity, TextError> createEndEntity(EndEntity endEntity) {
+    public Result<EndEntity, TextError> createEndEntity(EndEntity endEntity, Profile profile) {
         logger.debug("Creating new end entity for user '{}'", endEntity.username());
         logger.trace(endEntity.toString());
         return ejbcaWsClient.editUser(endEntity.username(), endEntity.password(), endEntity.subjectDN(),
-                                      endEntity.san()
-                            )
+                                      endEntity.san(), profile.getCertificateAuthority(),
+                                      profile.getCertificateProfileName(), profile.getEndEntityProfileName())
                             .map((v) -> endEntity)
                             .mapError(e -> e.extend("Failed to create end entity %s.", endEntity.username()))
                             .ifSuccess(() -> logger.info("New End Entity {} was created.", endEntity.username()))
@@ -44,11 +46,20 @@ public class EjbcaClient {
     /*
      * Returns a byte array containing the signed certificate with complete chain in PKCS7 format.
      */
-    public Result<byte[], TextError> signCertificateRequest(EndEntity endEntity, byte[] csr) {
-        ZonedDateTime validityStart = ZonedDateTime.now();
-        ZonedDateTime validityEnd = validityStart.plus(certificateValidity);
+    public Result<byte[], TextError> signCertificateRequest(EndEntity endEntity, Profile profile,
+                                                            byte[] csr
+    ) {
+        ZonedDateTime now = ZonedDateTime.now();
+        Duration offset = profile.getCertificateValidityOffset();
+        Duration certificateValidity = profile.getCertificateValidity();
+
+        ZonedDateTime validityStart = certificateValidityCalculator.calculateValidityStart(now, offset);
+        ZonedDateTime validityEnd = certificateValidityCalculator.calculateValidityEnd(validityStart, certificateValidity);
+
         return ejbcaWsClient.requestCertificate(endEntity.username(), endEntity.password(), endEntity.subjectDN(), csr,
-                                                validityStart, validityEnd
+                                                validityStart, validityEnd, profile.getCertificateAuthority(),
+                                                profile.getCertificateProfileName(),
+                                                profile.getEndEntityProfileName()
                             ).map(CertificateResponse::getData)
                             .map(base64Bytes -> ArrayUtils.removeAllOccurrences(base64Bytes, (byte) '\n'))
                             .flatMap(base64BytesWithoutNewLines -> {

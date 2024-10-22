@@ -1,5 +1,6 @@
 package com.czertainly.csc.utils.jwt;
 
+import com.czertainly.csc.api.auth.SignatureActivationData;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -54,4 +55,16 @@ public class TestJWTs {
                                    .build();
     }
 
+    public static SignatureActivationData toSad(Jwt jwt) {
+        return new SignatureActivationData(
+                jwt.getClaim("userID"),
+                jwt.getClaim("credentialID"),
+                jwt.getClaim("signatureQualifier"),
+                Integer.parseInt(jwt.getClaim("numSignatures")),
+                Set.of(jwt.getClaim("hashes").toString().split(",")),
+                jwt.getClaim("hashAlgorithmOID"),
+                jwt.getClaim("clientData"),
+                jwt.getClaim("otherAttributes")
+        );
+    }
 }

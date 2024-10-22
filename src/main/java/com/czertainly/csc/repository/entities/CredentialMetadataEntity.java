@@ -15,7 +15,7 @@ public class CredentialMetadataEntity {
     private UUID id;
     private String userId;
     private String keyAlias;
-
+    private String credentialProfile;
     private String endEntityName;
     private String currentCertificateSn;
     private String currentCertificateIssuer;
@@ -48,6 +48,14 @@ public class CredentialMetadataEntity {
 
     public void setKeyAlias(String keyId) {
         this.keyAlias = keyId;
+    }
+
+    public String getCredentialProfile() {
+        return credentialProfile;
+    }
+
+    public void setCredentialProfile(String credentialProfileName) {
+        this.credentialProfile = credentialProfileName;
     }
 
     public String getEndEntityName() {
@@ -128,6 +136,7 @@ public class CredentialMetadataEntity {
                 .add("id=" + id)
                 .add("userId='" + userId + "'")
                 .add("keyAlias='" + keyAlias + "'")
+                .add("credentialProfileName='" + credentialProfile + "'")
                 .add("endEntityName='" + endEntityName + "'")
                 .add("currentCertificateSn='" + currentCertificateSn + "'")
                 .add("currentCertificateIssuer='" + currentCertificateIssuer + "'")

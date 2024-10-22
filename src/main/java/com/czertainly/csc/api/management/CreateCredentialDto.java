@@ -15,34 +15,12 @@ public record CreateCredentialDto(
 
         @Schema(
                 description = """
-                    Key algorithm to use when generating new private key. The key algorithm must be supported by the
-                    crypto token. See the documentation of the crypto token for supported key algorithms.
+                    A name of the of the credential profile to use when generating the certificate.
                     """,
-                example = "RSA",
+                example = "long-term",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
-        String keyAlgorithm,
-
-        @Schema(
-                description = """
-                    Key specification to use when generating new private keys. The key specification must be supported
-                    by the crypto token. See the documentation of the crypto token for supported key specifications.
-                    """,
-                example = "2048",
-                requiredMode = Schema.RequiredMode.REQUIRED
-        )
-        String keySpecification,
-
-        @Schema(
-                description = """
-                    Signature algorithm the CSR will be signed with to request the certificate. The signature algorithm
-                    must be supported by the crypto token. See the documentation of the crypto token for supported
-                    signature algorithms.
-                    """,
-                example = "SHA256withRSA",
-                requiredMode = Schema.RequiredMode.REQUIRED
-        )
-        String csrSignatureAlgorithm,
+        String credentialProfileName,
 
         @Schema(
                 description = """

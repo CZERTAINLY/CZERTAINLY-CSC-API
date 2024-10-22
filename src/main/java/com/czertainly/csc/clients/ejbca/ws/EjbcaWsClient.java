@@ -20,23 +20,19 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
 
     public static final String WEB_SERVICE_BASE_PATH = "/ejbcaws/ejbcaws";
 
-    private final String caName;
-    private final String endEntityProfileName;
-    private final String certificateProfileName;
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssxxx",
                                                                                     Locale.getDefault()
     );
 
-    public EjbcaWsClient(String ejbcaUrl, String caName, String endEntityProfileName, String certificateProfileName) {
+    public EjbcaWsClient(String ejbcaUrl) {
         super();
         setDefaultUri(ejbcaUrl + WEB_SERVICE_BASE_PATH);
-        this.caName = caName;
-        this.endEntityProfileName = endEntityProfileName;
-        this.certificateProfileName = certificateProfileName;
     }
 
-    public Result<Void, TextError> editUser(String username, String password, String subjectDn, String san) {
+    public Result<Void, TextError> editUser(String username, String password, String subjectDn, String san,
+                                            String caName, String certificateProfileName, String endEntityProfileName
+    ) {
         logger.info("Editing EJBCA user '{} '.", username);
         logger.trace("Subject DN: {}, SAN {}", subjectDn, san);
         var request = new EditUser();
@@ -63,7 +59,8 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
 
     public Result<CertificateResponse, TextError> requestCertificate(
             String username, String password, String subjectDn, byte[] csr,
-            ZonedDateTime certificateValidityStart, ZonedDateTime certificateValidityEnd
+            ZonedDateTime certificateValidityStart, ZonedDateTime certificateValidityEnd,
+            String caName, String certificateProfileName, String endEntityProfileName
     ) {
         var csrBase64 = Base64.getEncoder().encodeToString(csr);
         var request = new CertificateRequest();

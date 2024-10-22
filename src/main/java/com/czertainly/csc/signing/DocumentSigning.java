@@ -5,7 +5,6 @@ import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.providers.DistinguishedNameProvider;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.springframework.stereotype.Component;
 
@@ -15,15 +14,12 @@ public class DocumentSigning {
     SignserverClient signserverClient;
     WorkerRepository workerRepository;
     KeySelector keySelector;
-    DistinguishedNameProvider distinguishedNameProvider;
 
 
-    public DocumentSigning(SignserverClient signserverClient, WorkerRepository workerRepository, PreloadingKeySelector keySelector, DistinguishedNameProvider distinguishedNameProvider) {
+    public DocumentSigning(SignserverClient signserverClient, WorkerRepository workerRepository, PreloadingKeySelector keySelector) {
         this.signserverClient = signserverClient;
         this.workerRepository = workerRepository;
         this.keySelector = keySelector;
-        this.distinguishedNameProvider = distinguishedNameProvider;
-
     }
 
     public Result<SignedDocuments, TextError> sign(SignDocParameters parameters) {

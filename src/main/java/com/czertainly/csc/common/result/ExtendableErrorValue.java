@@ -14,15 +14,11 @@ public abstract class ExtendableErrorValue<T> implements ErrorValue {
         this.error = error;
     }
 
-    public String getError() {
-        return error;
+    public String getErrorText() {
+        return toString();
     }
 
     public abstract ExtendableErrorValue<T> extend(T error);
-
-    public ExtendableErrorValue<T> getExtended() {
-        return extended;
-    }
 
     public String toString() {
         if (this.extended == null) {

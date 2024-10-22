@@ -14,14 +14,13 @@ import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.model.SignedDocuments;
 import com.czertainly.csc.model.csc.CredentialMetadata;
 import com.czertainly.csc.model.ejbca.EndEntity;
-import com.czertainly.csc.providers.DistinguishedNameProvider;
 import com.czertainly.csc.providers.KeyValueSource;
-import com.czertainly.csc.providers.PatternUsernameProvider;
-import com.czertainly.csc.providers.SubjectAlternativeNameProvider;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.signing.configuration.CapabilitiesFilter;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
+import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
+import com.czertainly.csc.signing.configuration.profiles.signaturequalifierprofile.SignatureQualifierProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,13 +34,10 @@ import java.util.function.Supplier;
 @Component
 public class DocumentHashSigning {
 
-
     private final static Logger logger = LoggerFactory.getLogger(DocumentHashSigning.class);
     private final WorkerRepository workerRepository;
     private final KeySelector keySelector;
-    private final DistinguishedNameProvider distinguishedNameProvider;
-    private final PatternUsernameProvider patternUsernameProvider;
-    private final SubjectAlternativeNameProvider subjectAlternativeNameProvider;
+    private final CredentialProfileRepository credentialProfileRepository;
     private final UserInfoProvider userInfoProvider;
     private final PasswordGenerator passwordGenerator;
     private final SignserverClient signserverClient;
@@ -50,9 +46,7 @@ public class DocumentHashSigning {
 
     public DocumentHashSigning(WorkerRepository workerRepository, KeySelector keySelector,
                                IdpUserInfoProvider userInfoProvider, NaivePasswordGenerator passwordGenerator,
-                               DistinguishedNameProvider distinguishedNameProvider,
-                               PatternUsernameProvider patternUsernameProvider,
-                               SubjectAlternativeNameProvider subjectAlternativeNameProvider,
+                               CredentialProfileRepository credentialProfileRepository,
                                SignserverClient signserverClient, EjbcaClient ejbcaClient,
                                CredentialsService credentialsService
     ) {
@@ -60,9 +54,7 @@ public class DocumentHashSigning {
         this.keySelector = keySelector;
         this.userInfoProvider = userInfoProvider;
         this.passwordGenerator = passwordGenerator;
-        this.distinguishedNameProvider = distinguishedNameProvider;
-        this.patternUsernameProvider = patternUsernameProvider;
-        this.subjectAlternativeNameProvider = subjectAlternativeNameProvider;
+        this.credentialProfileRepository = credentialProfileRepository;
         this.signserverClient = signserverClient;
         this.ejbcaClient = ejbcaClient;
         this.credentialsService = credentialsService;
@@ -153,19 +145,29 @@ public class DocumentHashSigning {
                             key.keyAlias(), userInfo, cscAuthenticationToken, parameters.sad()
                     );
 
+                    Result<SignatureQualifierProfile, TextError> getProfileResult = credentialProfileRepository
+                            .getSignatureQualifierProfile(parameters.signatureQualifier());
+
+                    if (getProfileResult instanceof Error(var err)) return Result.error(err);
+                    SignatureQualifierProfile signatureQualifierProfile = getProfileResult.unwrap();
+
                     Map<String, String> keyValuePairs = keyValueSource.get();
-                    var dn = distinguishedNameProvider.getDistinguishedName(() -> keyValuePairs);
-                    var san = subjectAlternativeNameProvider.getSan(() -> keyValuePairs);
-                    var username = patternUsernameProvider.getUsername(() -> keyValuePairs);
+                    var dn = signatureQualifierProfile.getDistinguishedNameProvider()
+                                                      .getDistinguishedName(() -> keyValuePairs);
+                    var san = signatureQualifierProfile.getSubjectAlternativeNameProvider().getSan(() -> keyValuePairs);
+                    var username = signatureQualifierProfile.getUsernameProvider().getUsername(() -> keyValuePairs);
                     var password = passwordGenerator.generate();
 
                     EndEntity endEntity = new EndEntity(username, password, dn, san);
-                    ejbcaClient.createEndEntity(endEntity);
+                    ejbcaClient.createEndEntity(endEntity, signatureQualifierProfile);
                     var result = signserverClient.generateCSR(
                                             key.cryptoTokenId(), key.keyAlias(), dn,
                                             documentDigestsToSign.getSignatureAlgorithm()
                                     )
-                                    .flatMap(csr -> ejbcaClient.signCertificateRequest(endEntity, csr))
+                                                 .flatMap(csr -> ejbcaClient.signCertificateRequest(endEntity,
+                                                                                                    signatureQualifierProfile,
+                                                                                                    csr
+                                                 ))
                                     .flatMap(certificateChain -> signserverClient.importCertificateChain(
                                             key.cryptoTokenId(), key.keyAlias(), List.of(certificateChain)
                                     ));

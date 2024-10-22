@@ -1,6 +1,5 @@
 package com.czertainly.csc.api.mappers.credentials;
 
-import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.management.CreateCredentialDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
@@ -20,16 +19,8 @@ public class CreateCredentialRequestMapper {
             throw InvalidInputDataException.of("Missing string parameter cryptoTokenName.");
         }
 
-        if (dto.keyAlgorithm() == null) {
-            throw InvalidInputDataException.of("Missing string parameter keyAlgorithm.");
-        }
-
-        if (dto.csrSignatureAlgorithm() == null) {
-            throw InvalidInputDataException.of("Missing string parameter csrSignatureAlgorithm.");
-        }
-
-        if (dto.keySpecification() == null) {
-            throw InvalidInputDataException.of("Missing string parameter keySpecification.");
+        if (dto.credentialProfileName() == null) {
+            throw InvalidInputDataException.of("Missing string parameter credentialProfileName.");
         }
 
         if (dto.userId() == null) {
@@ -58,9 +49,7 @@ public class CreateCredentialRequestMapper {
 
         return new CreateCredentialRequest(
                         dto.cryptoTokenName(),
-                        dto.keyAlgorithm(),
-                        dto.csrSignatureAlgorithm(),
-                        dto.keySpecification(),
+                        dto.credentialProfileName(),
                         dto.userId(),
                         dto.signatureQualifier(),
                         numberOfSignaturesPerAuthorization,

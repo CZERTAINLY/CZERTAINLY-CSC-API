@@ -191,12 +191,10 @@ public class ServerConfiguration {
     @Bean
     public EjbcaWsClient ejbcaWsClient(@Qualifier("ejbcaWsMarshaller") Jaxb2Marshaller marshaller,
                                        @Qualifier("ejbcaMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
-                                       @Value("${caProvider.ejbca.url}") String ejbcaUrl,
-                                       @Value("${caProvider.ejbca.endEntity.caName}") String caName,
-                                       @Value("${caProvider.ejbca.endEntity.endEntityProfileName}") String endEntityProfileName,
-                                       @Value("${caProvider.ejbca.endEntity.certificateProfileName}") String certificateProfileName
+                                       @Value("${caProvider.ejbca.url}") String ejbcaUrl
+
     ) {
-        EjbcaWsClient client = new EjbcaWsClient(ejbcaUrl, caName, endEntityProfileName, certificateProfileName);
+        EjbcaWsClient client = new EjbcaWsClient(ejbcaUrl);
         client.setMessageSender(httpComponentsMessageSender);
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);

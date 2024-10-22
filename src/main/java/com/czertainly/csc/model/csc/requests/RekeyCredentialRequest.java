@@ -4,10 +4,7 @@ import java.util.UUID;
 
 public record RekeyCredentialRequest(
         UUID credentialID,
-        String cryptoTokenName,
-
-        String keyAlgorithm,
-        String keySpecification,
-        String csrSignatureAlgorithm
+        String credentialProfileName,
+        String cryptoTokenName
 ) {
 }

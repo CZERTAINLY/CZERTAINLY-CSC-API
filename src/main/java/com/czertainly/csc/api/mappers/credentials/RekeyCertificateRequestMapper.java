@@ -21,10 +21,8 @@ public class RekeyCertificateRequestMapper {
 
             return new RekeyCredentialRequest(
                     uuid,
-                    dto.cryptoTokenName(),
-                    dto.keyAlgorithm(),
-                    dto.keySpecification(),
-                    dto.csrSignatureAlgorithm()
+                    dto.credentialProfileName(),
+                    dto.cryptoTokenName()
             );
         } catch (IllegalArgumentException e) {
             throw InvalidInputDataException.of("Invalid parameter credentialID.");

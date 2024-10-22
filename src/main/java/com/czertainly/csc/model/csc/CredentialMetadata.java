@@ -7,6 +7,7 @@ public record CredentialMetadata(
         UUID id,
         String userId,
         String keyAlias,
+        String credentialProfileName,
         Optional<String> signatureQualifier,
         int multisign,
         Optional<String> scal,
