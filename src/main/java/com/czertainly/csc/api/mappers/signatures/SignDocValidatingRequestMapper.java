@@ -70,9 +70,9 @@ public class SignDocValidatingRequestMapper {
         final List<DocumentToSign> documentsToSign;
         final List<DocumentDigestsToSign> documentDigestsToSign;
         if (dto.getDocuments().isEmpty() && dto.getDocumentDigests().isEmpty()) {
-            throw InvalidInputDataException.of("Empty documentDigests and documents objects");
+            throw InvalidInputDataException.of("Either documentDigests or documents must be present in the request.");
         } else if (!dto.getDocuments().isEmpty() && !dto.getDocumentDigests().isEmpty()) {
-            throw InvalidInputDataException.of("Both documentDigests and documents parameters passed");
+            throw InvalidInputDataException.of("Cannot provide both documentDigests and documents parameters simultaneously.");
         }
 
             documentsToSign = dto.getDocuments().stream()
@@ -121,11 +121,20 @@ public class SignDocValidatingRequestMapper {
 
         final SignatureFormat signatureFormat;
         if (dto.getSignatureFormat().isEmpty()) {
-            throw new InvalidInputDataException("Missing (or invalid type) string parameter signature_format");
+            throw new InvalidInputDataException("Missing string parameter signature_format");
         }
-        signatureFormat = SignatureFormat.fromString(dto.getSignatureFormat().get());
+        try {
+            signatureFormat = SignatureFormat.fromString(dto.getSignatureFormat().get());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidInputDataException("Invalid parameter signature_format.", e);
+        }
 
-        ConformanceLevel conformanceLevel = ConformanceLevel.fromString(dto.getConformanceLevel().orElse("Ades-B-B"));
+        ConformanceLevel conformanceLevel;
+        try {
+            conformanceLevel = ConformanceLevel.fromString(dto.getConformanceLevel().orElse("Ades-B-B"));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidInputDataException("Invalid parameter conformance_level.", e);
+        }
 
         if (dto.getSignAlgo().isEmpty()) {
             throw new InvalidInputDataException("Missing (or invalid type) string parameter signAlgo");
@@ -148,7 +157,11 @@ public class SignDocValidatingRequestMapper {
                 case SignatureFormat.XAdES -> SignaturePackaging.ENVELOPED;
             };
         } else {
-            signaturePackaging = SignaturePackaging.fromString(dto.getSignaturePackaging().get());
+            try {
+                signaturePackaging = SignaturePackaging.fromString(dto.getSignaturePackaging().get());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidInputDataException("Invalid parameter signed_envelope_property", e);
+            }
         }
 
         // TODO: Implement signedAttributes
@@ -167,11 +180,20 @@ public class SignDocValidatingRequestMapper {
 
         final SignatureFormat signatureFormat;
         if (dto.getSignatureFormat().isEmpty()) {
-            throw new IllegalArgumentException("Missing (or invalid type) string parameter signature_format");
+            throw new InvalidInputDataException("Missing string parameter signature_format");
         }
-        signatureFormat = SignatureFormat.fromString(dto.getSignatureFormat().get());
+        try {
+            signatureFormat = SignatureFormat.fromString(dto.getSignatureFormat().get());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidInputDataException("Invalid parameter signature_format.", e);
+        }
 
-        ConformanceLevel conformanceLevel = ConformanceLevel.fromString(dto.getConformanceLevel().orElse("Ades-B-B"));
+        ConformanceLevel conformanceLevel;
+        try {
+            conformanceLevel = ConformanceLevel.fromString(dto.getConformanceLevel().orElse("Ades-B-B"));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidInputDataException("Invalid parameter conformance_level.", e);
+        }
 
         if (dto.getSignAlgo().isEmpty()) {
             throw new IllegalArgumentException("Missing (or invalid type) string parameter signAlgo");
@@ -194,7 +216,11 @@ public class SignDocValidatingRequestMapper {
                 case SignatureFormat.XAdES -> SignaturePackaging.ENVELOPED;
             };
         } else {
-            signaturePackaging = SignaturePackaging.fromString(dto.getSignaturePackaging().get());
+            try {
+                signaturePackaging = SignaturePackaging.fromString(dto.getSignaturePackaging().get());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidInputDataException("Invalid parameter signed_envelope_property", e);
+            }
         }
 
         // TODO: Implement signedAttributes

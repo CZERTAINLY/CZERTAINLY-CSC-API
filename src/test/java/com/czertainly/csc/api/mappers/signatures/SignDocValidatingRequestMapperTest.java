@@ -435,7 +435,7 @@ class SignDocValidatingRequestMapperTest {
 
         // then
         Throwable t = assertThrows(InvalidInputDataException.class, ex);
-        assertEquals("Invalid parameter signature_format", t.getMessage());
+        assertEquals("Invalid parameter signature_format.", t.getMessage());
     }
 
     @Test
@@ -500,7 +500,7 @@ class SignDocValidatingRequestMapperTest {
 
         // then
         Throwable t = assertThrows(InvalidInputDataException.class, ex);
-        assertEquals("Invalid parameter conformance_level", t.getMessage());
+        assertEquals("Invalid parameter conformance_level.", t.getMessage());
     }
 
     @ParameterizedTest
@@ -652,7 +652,7 @@ class SignDocValidatingRequestMapperTest {
 
         // then
         Throwable t = assertThrows(InvalidInputDataException.class, ex);
-        assertEquals("Invalid parameter signature_format", t.getMessage());
+        assertEquals("Invalid parameter signature_format.", t.getMessage());
     }
 
     @Test
@@ -720,7 +720,7 @@ class SignDocValidatingRequestMapperTest {
 
         // then
         Throwable t = assertThrows(InvalidInputDataException.class, ex);
-        assertEquals("Invalid parameter conformance_level", t.getMessage());
+        assertEquals("Invalid parameter conformance_level.", t.getMessage());
     }
 
     @ParameterizedTest
