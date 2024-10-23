@@ -38,3 +38,4 @@ credential-profiles-ejbca-*.yml
 signature-qualifier-profiles-ejbca-*.yml
 .DS_Store
 /.idea/
+/src/main/resources/profiles-*/
