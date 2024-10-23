@@ -150,6 +150,8 @@ public class DocumentHashSigning {
 
                     if (getProfileResult instanceof Error(var err)) return Result.error(err);
                     SignatureQualifierProfile signatureQualifierProfile = getProfileResult.unwrap();
+                    logger.info("Will use signature qualifier profile {} to create a credential.", signatureQualifierProfile.getName());
+                    logger.debug(signatureQualifierProfile.toString());
 
                     Map<String, String> keyValuePairs = keyValueSource.get();
                     var dn = signatureQualifierProfile.getDistinguishedNameProvider()

@@ -4,6 +4,8 @@ import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -23,12 +25,14 @@ import static com.czertainly.csc.signing.configuration.profiles.ConfigurationUti
 @Component
 public class CredentialProfileLoader {
 
+    private static final Logger logger = LoggerFactory.getLogger(CredentialProfileLoader.class);
     private final List<CredentialProfile> credentialProfiles;
 
     public CredentialProfileLoader(
             @Value("${csc.profilesConfigurationDirectory}") String configurationDirectoryPath,
             @Value("credential-profiles-ejbca.yml") String configurationFileName
     ) {
+        logger.info("Loading credential profiles from '{}/{}'", configurationDirectoryPath, configurationFileName);
         var getConfigurationFileResult = checkFileExistenceAndGet(configurationDirectoryPath, configurationFileName);
         if (getConfigurationFileResult instanceof Error(var e)) {
             throw new ApplicationConfigurationException(e.getErrorText());
@@ -80,7 +84,6 @@ public class CredentialProfileLoader {
 
 
     private Result<CredentialProfile, TextError> parseAndValidateProfile(CredentialProfileConfiguration configuration) {
-
         var getNameResult = extractString(configuration::getName, "name");
         if (getNameResult instanceof Error(var e)) {
             return Result.error(e);

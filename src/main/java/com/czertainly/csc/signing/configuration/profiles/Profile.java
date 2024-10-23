@@ -1,6 +1,9 @@
 package com.czertainly.csc.signing.configuration.profiles;
 
+import com.czertainly.csc.signing.configuration.profiles.credentialprofile.CredentialProfile;
+
 import java.time.Duration;
+import java.util.StringJoiner;
 
 public class Profile {
     private final String name;
@@ -43,5 +46,17 @@ public class Profile {
 
     public Duration getCertificateValidityOffset() {
         return certificateValidityOffset;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", CredentialProfile.class.getSimpleName() + "[", "]")
+                .add("name='" + getName() + "'")
+                .add("certificateAuthority='" + getCertificateAuthority() + "'")
+                .add("certificateProfileName='" + getCertificateProfileName() + "'")
+                .add("endEntityProfileName='" + getEndEntityProfileName() + "'")
+                .add("certificateValidity=" + getCertificateValidity())
+                .add("certificateValidityOffset=" + getCertificateValidityOffset())
+                .toString();
     }
 }

@@ -7,6 +7,8 @@ import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.providers.PatternDnProvider;
 import com.czertainly.csc.providers.PatternSanProvider;
 import com.czertainly.csc.providers.PatternUsernameProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ import static com.czertainly.csc.signing.configuration.profiles.ConfigurationUti
 @Component
 public class SignatureQualifierProfileLoader {
 
+    private static final Logger logger = LoggerFactory.getLogger(SignatureQualifierProfileLoader.class);
     private final List<SignatureQualifierProfile> profiles;
 
 
@@ -35,6 +38,7 @@ public class SignatureQualifierProfileLoader {
             @Value("${csc.profilesConfigurationDirectory}") String configurationDirectoryPath,
             @Value("signature-qualifier-profiles-ejbca.yml") String configurationFileName
     ) {
+        logger.info("Loading signature qualifier profiles from '{}/{}'.", configurationDirectoryPath, configurationFileName);
         var getConfigurationFileResult = checkFileExistenceAndGet(configurationDirectoryPath, configurationFileName);
         if (getConfigurationFileResult instanceof Error(var e)) {
             throw new ApplicationConfigurationException(e.getErrorText());
@@ -89,7 +93,6 @@ public class SignatureQualifierProfileLoader {
     private Result<SignatureQualifierProfile, TextError> parseAndValidateProfile(
             SignatureQualifierProfileConfiguration configuration
     ) {
-
         var getNameResult = extractString(configuration::getName, "name");
         if (getNameResult instanceof Error(var e)) {
             return Result.error(e);

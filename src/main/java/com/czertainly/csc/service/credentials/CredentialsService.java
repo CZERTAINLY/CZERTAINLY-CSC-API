@@ -77,10 +77,12 @@ public class CredentialsService {
         logger.debug("Creating new credential for user '{}'.", createCredentialRequest.userId());
         logger.trace(createCredentialRequest.toString());
 
-        var getCertificateProfileResult = credentialProfileRepository
+        var getCredentialProfileResult = credentialProfileRepository
                 .getCredentialProfile(createCredentialRequest.credentialProfileName());
-        if (getCertificateProfileResult instanceof Error(var err)) return Result.error(err);
-        CredentialProfile credentialProfile = getCertificateProfileResult.unwrap();
+        if (getCredentialProfileResult instanceof Error(var err)) return Result.error(err);
+        CredentialProfile credentialProfile = getCredentialProfileResult.unwrap();
+        logger.info("Will use credential profile {} to create a credential.", credentialProfile.getName());
+        logger.debug(credentialProfile.toString());
 
         String uniqueUserId = createUniqueUserId(createCredentialRequest.userId());
         String tokenAlias = getUniqueKeyAlias(uniqueUserId);
@@ -207,10 +209,12 @@ public class CredentialsService {
                 request, currentCredentialMetadata
         );
 
-        var getCertificateProfileResult = credentialProfileRepository
+        var getCredentialProfileResult = credentialProfileRepository
                 .getCredentialProfile(mergedRequest.credentialProfileName());
-        if (getCertificateProfileResult instanceof Error(var err)) return Result.error(err);
-        CredentialProfile credentialProfile = getCertificateProfileResult.unwrap();
+        if (getCredentialProfileResult instanceof Error(var err)) return Result.error(err);
+        CredentialProfile credentialProfile = getCredentialProfileResult.unwrap();
+        logger.info("Will use credential profile {} to rekey a credential.", credentialProfile.getName());
+        logger.debug(credentialProfile.toString());
 
         var getCurrentCryptoTokenResult = workerRepository.getCryptoToken(
                 currentCredentialMetadata.getCryptoTokenName()

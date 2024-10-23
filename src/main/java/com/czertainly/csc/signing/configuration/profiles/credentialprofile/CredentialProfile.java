@@ -3,6 +3,7 @@ package com.czertainly.csc.signing.configuration.profiles.credentialprofile;
 import com.czertainly.csc.signing.configuration.profiles.Profile;
 
 import java.time.Duration;
+import java.util.StringJoiner;
 
 public class CredentialProfile extends Profile {
 
@@ -33,5 +34,20 @@ public class CredentialProfile extends Profile {
 
     public String getCsrSignatureAlgorithm() {
         return csrSignatureAlgorithm;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", CredentialProfile.class.getSimpleName() + "[", "]")
+                .add("name='" + getName() + "'")
+                .add("certificateAuthority='" + getCertificateAuthority() + "'")
+                .add("certificateProfileName='" + getCertificateProfileName() + "'")
+                .add("endEntityProfileName='" + getEndEntityProfileName() + "'")
+                .add("certificateValidity=" + getCertificateValidity())
+                .add("certificateValidityOffset=" + getCertificateValidityOffset())
+                .add("keyAlgorithm='" + keyAlgorithm + "'")
+                .add("keySpecification='" + keySpecification + "'")
+                .add("csrSignatureAlgorithm='" + csrSignatureAlgorithm + "'")
+                .toString();
     }
 }
