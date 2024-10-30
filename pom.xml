@@ -17,7 +17,7 @@
         <sonar.projectKey>3KeyCompany_SignServer-CSC-API</sonar.projectKey>
         <java.version>21</java.version>
 
-        <version.bc>1.78.1</version.bc>
+        <version.bc>1.79</version.bc>
         <version.jjwt>0.12.6</version.jjwt>
         <version.httpclient>5.4</version.httpclient>
         <version.httpcore>5.3</version.httpcore>
