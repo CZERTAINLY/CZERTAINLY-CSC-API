@@ -26,6 +26,31 @@ public class CredentialMetadataEntity {
     private String description;
     private boolean disabled;
 
+    public CredentialMetadataEntity() {
+    }
+
+    public CredentialMetadataEntity(UUID id, String userId, String keyAlias, String credentialProfile,
+                                    String endEntityName,
+                                    String currentCertificateSn, String currentCertificateIssuer,
+                                    String signatureQualifier,
+                                    int multisign, String scal, String cryptoTokenName, String description,
+                                    boolean disabled
+    ) {
+        this.id = id;
+        this.userId = userId;
+        this.keyAlias = keyAlias;
+        this.credentialProfile = credentialProfile;
+        this.endEntityName = endEntityName;
+        this.currentCertificateSn = currentCertificateSn;
+        this.currentCertificateIssuer = currentCertificateIssuer;
+        this.signatureQualifier = signatureQualifier;
+        this.multisign = multisign;
+        this.scal = scal;
+        this.cryptoTokenName = cryptoTokenName;
+        this.description = description;
+        this.disabled = disabled;
+    }
+
     public UUID getId() {
         return id;
     }

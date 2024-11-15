@@ -3,6 +3,8 @@ package com.czertainly.csc.signing.configuration;
 import com.czertainly.csc.signing.filter.*;
 import com.czertainly.csc.signing.filter.*;
 
+import java.util.StringJoiner;
+
 public class CapabilitiesFilter {
 
     private String signatureQualifier;
@@ -82,5 +84,18 @@ public class CapabilitiesFilter {
 
 
         return andCriterion;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", CapabilitiesFilter.class.getSimpleName() + "[", "]")
+                .add("signatureQualifier='" + signatureQualifier + "'")
+                .add("signatureFormat=" + signatureFormat)
+                .add("conformanceLevel=" + conformanceLevel)
+                .add("signaturePackaging=" + signaturePackaging)
+                .add("signatureAlgorithm='" + signatureAlgorithm + "'")
+                .add("signatureAlgorithmParameters='" + signatureAlgorithmParameters + "'")
+                .add("returnValidationInfo=" + returnValidationInfo)
+                .toString();
     }
 }

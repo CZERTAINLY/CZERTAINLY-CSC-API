@@ -7,9 +7,13 @@ import java.util.Map;
 
 public class CustomAlgorithmNameFinder extends DefaultAlgorithmNameFinder {
 
-    public static void main(String[] args) {
-        CustomAlgorithmNameFinder customAlgorithmNameFinder = new CustomAlgorithmNameFinder();
-        System.out.println(customAlgorithmNameFinder.getKeyAlgorithmIdentifier("RSA"));
+    public ASN1ObjectIdentifier getKeyAlgorithmIdentifier(String algorithmName) {
+        for (Map.Entry<ASN1ObjectIdentifier, String> entry : getAlgorithmsMap().entrySet()) {
+            if (entry.getValue().equals(algorithmName)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -21,14 +25,5 @@ public class CustomAlgorithmNameFinder extends DefaultAlgorithmNameFinder {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Unable to access algorithms map", e);
         }
-    }
-
-    public ASN1ObjectIdentifier getKeyAlgorithmIdentifier(String algorithmName) {
-        for (Map.Entry<ASN1ObjectIdentifier, String> entry : getAlgorithmsMap().entrySet()) {
-            if (entry.getValue().equals(algorithmName)) {
-                return entry.getKey();
-            }
-        }
-        return null;
     }
 }

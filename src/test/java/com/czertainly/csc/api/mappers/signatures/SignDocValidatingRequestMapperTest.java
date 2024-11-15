@@ -5,6 +5,7 @@ import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.api.auth.SADParser;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.auth.TokenValidator;
+import com.czertainly.csc.api.mappers.StructuredClientDataMapper;
 import com.czertainly.csc.api.signdoc.AttributeDto;
 import com.czertainly.csc.api.signdoc.DocumentDigestsDto;
 import com.czertainly.csc.api.signdoc.DocumentDto;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,10 +42,12 @@ class SignDocValidatingRequestMapperTest {
     AlgorithmHelper algorithmHelper = new AlgorithmHelper();
     AlgorithmUnifier algorithmUnifier = new AlgorithmUnifier(algorithmHelper);
     TokenValidator tokenValidator = TestIdp.defaultTokenValidator;
+    Jackson2ObjectMapperBuilder objectMapperBuilder = new Jackson2ObjectMapperBuilder();
+    StructuredClientDataMapper structuredClientDataMapper = new StructuredClientDataMapper(objectMapperBuilder);
 
     SADParser sadParser = new SADParser(tokenValidator);
-    SignDocValidatingRequestMapper signDocValidatingRequestMapper = new SignDocValidatingRequestMapper(algorithmUnifier,
-                                                                                                       sadParser
+    SignDocValidatingRequestMapper signDocValidatingRequestMapper = new SignDocValidatingRequestMapper(
+            algorithmUnifier, sadParser, structuredClientDataMapper
     );
 
     @Test
@@ -81,7 +85,7 @@ class SignDocValidatingRequestMapperTest {
         assertEquals(credentialID, result.credentialID());
         assertEquals(signatureQualifier, result.signatureQualifier());
         assertEquals(OperationMode.SYNCHRONOUS, result.operationMode());
-        assertEquals(clientData, result.clientData());
+        assertEquals(clientData, result.clientData().get());
         assertEquals(returnValidationInfo, result.returnValidationInfo());
     }
 

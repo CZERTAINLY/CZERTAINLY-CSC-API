@@ -49,8 +49,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
             logger.debug("Failed to generate CSR. Worker ID={}, KeyAlias={}, SignatureAlgorithm={}, DN={}",
                          workerId, keyAlias, signatureAlgorithm, dn, e
             );
-            return Result.error(TextError.of(e)
-            );
+            return Result.error(TextError.of(""));
         }
     }
 

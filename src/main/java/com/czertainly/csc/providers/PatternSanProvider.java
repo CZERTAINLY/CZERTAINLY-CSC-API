@@ -1,6 +1,8 @@
 package com.czertainly.csc.providers;
 
 import com.czertainly.csc.common.OptionalPatternReplacer;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 
 import java.util.List;
 import java.util.Map;
@@ -22,8 +24,12 @@ public class PatternSanProvider implements SubjectAlternativeNameProvider {
     }
 
     @Override
-    public String getSan(Supplier<Map<String, String>> keyValueSource) {
-        if (isEmpty) return null;
-        return patternReplacer.replacePattern(keyValueSource);
+    public Result<String, TextError> getSan(Supplier<Map<String, String>> keyValueSource) {
+        if (isEmpty) return Result.success(null);
+        try {
+            return Result.success(patternReplacer.replacePattern(keyValueSource));
+        } catch (Exception e) {
+            return Result.error(TextError.of("Could not create SAN based on the provided pattern. %", e.getMessage()));
+        }
     }
 }

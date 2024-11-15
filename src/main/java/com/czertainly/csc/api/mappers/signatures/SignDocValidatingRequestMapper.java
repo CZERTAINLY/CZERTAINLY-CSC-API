@@ -3,6 +3,7 @@ package com.czertainly.csc.api.mappers.signatures;
 import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.api.auth.SADParser;
 import com.czertainly.csc.api.auth.SignatureActivationData;
+import com.czertainly.csc.api.mappers.StructuredClientDataMapper;
 import com.czertainly.csc.api.signdoc.DocumentDigestsDto;
 import com.czertainly.csc.api.signdoc.DocumentDto;
 import com.czertainly.csc.api.signdoc.SignDocRequestDto;
@@ -24,13 +25,16 @@ import java.util.UUID;
 @Component
 public class SignDocValidatingRequestMapper {
 
-    AlgorithmUnifier algorithmUnifier;
-    SADParser sadParser;
+    private final AlgorithmUnifier algorithmUnifier;
+    private final SADParser sadParser;
+    private final StructuredClientDataMapper structuredClientDataMapper;
 
-
-    public SignDocValidatingRequestMapper(AlgorithmUnifier algorithmUnifier, SADParser sadParser) {
+    public SignDocValidatingRequestMapper(AlgorithmUnifier algorithmUnifier, SADParser sadParser,
+                                          StructuredClientDataMapper structuredClientDataMapper
+    ) {
         this.algorithmUnifier = algorithmUnifier;
         this.sadParser = sadParser;
+        this.structuredClientDataMapper = structuredClientDataMapper;
     }
 
     public SignDocParameters map(SignDocRequestDto dto, SignatureActivationData sad) {
@@ -99,6 +103,8 @@ public class SignDocValidatingRequestMapper {
                                  .orElseThrow(() -> InvalidInputDataException.of(
                                          "Missing userID in Signature Activation Data"));
 
+        StructuredClientDataMapper.StructuredClientData structuredClientData = structuredClientDataMapper.map(clientData);
+
         return new SignDocParameters(
                 userID,
                 operationMode,
@@ -107,7 +113,8 @@ public class SignDocValidatingRequestMapper {
                 credentialIdUUID,
                 signatureQualifier,
                 sad,
-                clientData,
+                structuredClientData.clientData(),
+                structuredClientData.session(),
                 returnValidationInfo
         );
     }

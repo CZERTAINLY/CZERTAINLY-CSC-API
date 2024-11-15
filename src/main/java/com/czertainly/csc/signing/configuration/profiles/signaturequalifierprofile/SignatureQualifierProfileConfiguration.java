@@ -8,9 +8,11 @@ public class SignatureQualifierProfileConfiguration {
     private String endEntityProfileName;
     private String certificateValidity;
     private String certificateValidityOffset;
+    private String csrSignatureAlgorithm;
     private String usernamePattern;
     private NamePattern dn;
     private NamePattern san;
+    private int multisign;
 
     public String getName() {
         return name;
@@ -60,6 +62,14 @@ public class SignatureQualifierProfileConfiguration {
         this.certificateValidityOffset = certificateValidityOffset;
     }
 
+    public String getCsrSignatureAlgorithm() {
+        return csrSignatureAlgorithm;
+    }
+
+    public void setCsrSignatureAlgorithm(String csrSignatureAlgorithm) {
+        this.csrSignatureAlgorithm = csrSignatureAlgorithm;
+    }
+
     public String getUsernamePattern() {
         return usernamePattern;
     }
@@ -82,5 +92,13 @@ public class SignatureQualifierProfileConfiguration {
 
     public void setSan(NamePattern san) {
         this.san = san;
+    }
+
+    public int getMultisign() {
+        return multisign;
+    }
+
+    public void setMultisign(int multisign) {
+        this.multisign = multisign;
     }
 }

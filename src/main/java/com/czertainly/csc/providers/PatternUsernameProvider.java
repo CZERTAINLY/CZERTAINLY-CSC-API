@@ -2,6 +2,8 @@ package com.czertainly.csc.providers;
 
 import com.czertainly.csc.common.PatternReplacer;
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -18,7 +20,11 @@ public class PatternUsernameProvider implements UsernameProvider {
     }
 
     @Override
-    public String getUsername(Supplier<Map<String, String>> keyValueSource) {
-        return patternReplacer.replacePattern(keyValueSource);
+    public Result<String, TextError> getUsername(Supplier<Map<String, String>> keyValueSource) {
+        try {
+            return Result.success(patternReplacer.replacePattern(keyValueSource));
+        } catch (Exception e) {
+            return Result.error(TextError.of("Could not create Username based on the provided pattern.", e.getMessage()));
+        }
     }
 }

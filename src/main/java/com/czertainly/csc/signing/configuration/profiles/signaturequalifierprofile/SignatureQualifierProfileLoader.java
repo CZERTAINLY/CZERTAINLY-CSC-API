@@ -134,6 +134,15 @@ public class SignatureQualifierProfileLoader {
         if (getCertificateValidityOffsetResult instanceof Error(var e)) {
             return Result.error(e);
         }
+
+        var getCsrSignatureAlgorithm = extractString(configuration::getCsrSignatureAlgorithm,
+                                                          "csrSignatureAlgorithm"
+        );
+        if (getCsrSignatureAlgorithm instanceof Error(var e)) {
+            return Result.error(e);
+        }
+        var csrSignatureAlgorithm = getCsrSignatureAlgorithm.unwrap();
+
         var certificateValidityOffset = getCertificateValidityOffsetResult.unwrap();
 
         var getUsernamePatternResult = extractString(configuration::getUsernamePattern, "usernamePattern");
@@ -141,6 +150,12 @@ public class SignatureQualifierProfileLoader {
             return Result.error(e);
         }
         var usernamePattern = getUsernamePatternResult.unwrap();
+
+        var getMultisignResult = extractInt(configuration::getMultisign, "multisign");
+        if (getMultisignResult instanceof Error(var e)) {
+            return Result.error(e);
+        }
+        var multisign = getMultisignResult.unwrap();
 
         var getDistinguishedNameProviderResult = extractNamePattern(configuration::getDn, "dn", false);
         if (getDistinguishedNameProviderResult instanceof Error(var e)) {
@@ -159,6 +174,7 @@ public class SignatureQualifierProfileLoader {
                 certificateProfileName, endEntityProfileName,
                 certificateValidity,
                 certificateValidityOffset,
+                csrSignatureAlgorithm,
                 new PatternUsernameProvider(usernamePattern),
                 new PatternDnProvider(
                         distinguishedNamePattern.getPattern(),
@@ -167,7 +183,8 @@ public class SignatureQualifierProfileLoader {
                 new PatternSanProvider(
                         subjectAlternativeNamePattern.getPattern(),
                         subjectAlternativeNamePattern.getRequired()
-                )
+                ),
+                multisign
         );
         return Result.success(profile);
     }

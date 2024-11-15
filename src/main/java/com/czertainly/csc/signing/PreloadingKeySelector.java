@@ -1,8 +1,8 @@
 package com.czertainly.csc.signing;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
-import com.czertainly.csc.common.exceptions.ApplicationException;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
@@ -42,28 +42,35 @@ public class PreloadingKeySelector implements KeySelector {
     }
 
     @Override
-    public CryptoTokenKey selectKey(int workerId) {
+    public Result<CryptoTokenKey, TextError> selectKey(int workerId) {
         var workerWithCapabilities = workerRepository.getWorker(workerId);
         var cryptoToken = workerWithCapabilities.worker().cryptoToken();
         logger.debug("Will select key for worker {} from CryptoToken {}", workerId, cryptoToken.name());
         Queue<CryptoTokenKey> keys = cryptoTokensKeys.get(cryptoToken.id());
         if (keys == null || keys.isEmpty()) {
-            preloadKeysForCryptoToken(cryptoToken);
+            var preloadKeysResult = preloadKeysForCryptoToken(cryptoToken);
+            if (preloadKeysResult instanceof Error(var err)) {
+                logger.warn("Tried to preload keys for CryptoToken {} but failed: {}", cryptoToken.name(), err);
+            }
             keys = cryptoTokensKeys.get(cryptoToken.id());
         }
         CryptoTokenKey key = keys.poll();
         if (key == null) {
-            throw new ApplicationException(
-                    "No pre-generated keys are available for signing for CryptoToken " + cryptoToken.name() + " used by worker "
-                            + workerId);
+            return Result.error(TextError.of("No pre-generated keys are available for signing for CryptoToken %s used by worker %s", cryptoToken.name(), workerId));
         }
         keysInUse.add(key);
-        return key;
+        return Result.success(key);
     }
 
-    public void markKeyAsUsed(CryptoTokenKey key) {
+    public Result<Void, TextError> markKeyAsUsed(CryptoTokenKey key) {
         logger.debug("Deleting key in use {}", key.keyAlias());
-        keysInUse.remove(key);
+        try {
+            keysInUse.remove(key);
+            return Result.emptySuccess();
+        } catch (Exception e) {
+            logger.error("Failed to delete key in use {}", key.keyAlias(), e);
+            return Result.error(TextError.of("Failed to delete key in use %s", key.keyAlias()));
+        }
     }
 
     public Result<Void, TextError> preloadKeysForCryptoToken(CryptoToken cryptoToken) {
@@ -89,7 +96,7 @@ public class PreloadingKeySelector implements KeySelector {
             int numberOfNewKeys = maxNumberOfPreloadedKeys - numberOfExistingKeys;
 
             return signserverClient
-                    .queryCryptoTokenKeys(cryptoToken.id(), true, numberOfExistingKeys, numberOfNewKeys,
+                    .queryCryptoTokenKeys(cryptoToken, true, numberOfExistingKeys, numberOfNewKeys,
                                           keyAliasFilterPattern
                     )
                     .runIf(List::isEmpty,

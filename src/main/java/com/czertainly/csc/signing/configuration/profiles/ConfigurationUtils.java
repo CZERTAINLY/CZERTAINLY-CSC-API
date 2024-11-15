@@ -63,6 +63,20 @@ public class ConfigurationUtils {
         return Result.success(value);
     }
 
+    @NonNull
+    public static Result<Integer, TextError> extractInt(Supplier<Integer> supplier, String propertyName) {
+        Integer value = supplier.get();
+        if (value == null) {
+            return Result.error(
+                    TextError.of(
+                            "Missing value for '%s' property.",
+                            propertyName
+                    )
+            );
+        }
+        return Result.success(value);
+    }
+
     public static Result<Duration, TextError> extractDuration(Supplier<String> supplier,
                                                               String propertyName
     ) {

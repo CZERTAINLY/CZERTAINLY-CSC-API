@@ -2,6 +2,7 @@ package com.czertainly.csc.model;
 
 
 import java.util.Map;
+import java.util.StringJoiner;
 
 public class UserInfo {
 
@@ -17,5 +18,9 @@ public class UserInfo {
 
     public Map<String, String> getAttributes() {
         return attributes;
+    }
+
+    public static UserInfo empty() {
+        return new UserInfo(Map.of());
     }
 }

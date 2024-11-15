@@ -117,9 +117,11 @@ class CredentialProfileRepositoryTest {
                 "MyEndEntityProfile",
                 Duration.ofDays(365),
                 Duration.ofMinutes(-1),
+                "SHA256withRSA",
                 null,
                 null,
-                null
+                null,
+                1
         );
     }
 }

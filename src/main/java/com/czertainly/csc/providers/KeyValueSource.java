@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class KeyValueSource {
 
@@ -25,16 +26,6 @@ public class KeyValueSource {
         this.userInfo = userInfo;
         this.cscAuthenticationToken = cscAuthenticationToken;
         this.sad = sad;
-    }
-
-    public Map<String, String> get() {
-        Map<String, String> properties = new HashMap<>();
-
-        addProperty(properties, "Credential.id", KeyAlias);
-        addSadProperties(properties);
-        addUserInfoProperties(properties);
-        addAccessTokenProperties(properties);
-        return properties;
     }
 
     private void addSadProperties(Map<String, String> properties) {
@@ -61,5 +52,15 @@ public class KeyValueSource {
     private void addProperty(Map<String, String> properties, String key, String value) {
         logger.trace("Adding property {} with value {} into KeyValue Source", key, value);
         properties.put(key, value);
+    }
+
+    public Supplier<Map<String, String>> getSupplier() {
+        Map<String, String> properties = new HashMap<>();
+
+        addProperty(properties, "Credential.id", KeyAlias);
+        addSadProperties(properties);
+        addUserInfoProperties(properties);
+        addAccessTokenProperties(properties);
+        return () -> properties;
     }
 }

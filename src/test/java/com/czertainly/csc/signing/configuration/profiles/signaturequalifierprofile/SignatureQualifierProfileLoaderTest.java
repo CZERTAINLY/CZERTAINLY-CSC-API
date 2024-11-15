@@ -76,6 +76,7 @@ class SignatureQualifierProfileLoaderTest {
         assertEquals("EndEntityProfile1", profile.getEndEntityProfileName());
         assertEquals(Duration.ofDays(365), profile.getCertificateValidity());
         assertEquals(Duration.ZERO, profile.getCertificateValidityOffset());
+        assertEquals("SHA256WithRSA", profile.getCsrSignatureAlgorithm());
         assertInstanceOf(UsernameProvider.class, profile.getUsernameProvider());
         assertInstanceOf(DistinguishedNameProvider.class, profile.getDistinguishedNameProvider());
         assertInstanceOf(SubjectAlternativeNameProvider.class, profile.getSubjectAlternativeNameProvider());
@@ -254,6 +255,22 @@ class SignatureQualifierProfileLoaderTest {
     }
 
     @Test
+    void loadCredentialProfilesThrowsExceptionIfProfileIsMissingCsrSignatureAlgorithm() {
+        // given
+        List<SignatureQualifierProfileConfiguration> profiles = List.of(aSignatureQualifierProfileConfiguration().set(
+                field(SignatureQualifierProfileConfiguration::getCsrSignatureAlgorithm), null).create());
+        File config = prepareConfigurationFile(profiles);
+
+        // when
+        Executable ex = () -> new SignatureQualifierProfileLoader(config.getParent(), config.getName());
+
+        // then
+        assertThrowsAndMessageContains(ApplicationConfigurationException.class,
+                                       "Missing value for 'csrSignatureAlgorithm' property", ex
+        );
+    }
+
+    @Test
     void loadCredentialProfilesThrowsExceptionIfProfileIsMissingUsernamePattern() {
         // given
         List<SignatureQualifierProfileConfiguration> profiles = List.of(aSignatureQualifierProfileConfiguration().set(
@@ -420,6 +437,7 @@ class SignatureQualifierProfileLoaderTest {
                              "EndEntityProfile1"
                         ).set(field(SignatureQualifierProfileConfiguration::getCertificateValidity), "P365D")
                         .set(field(SignatureQualifierProfileConfiguration::getCertificateValidityOffset), "P0D")
+                        .set(field(SignatureQualifierProfileConfiguration::getCsrSignatureAlgorithm), "SHA256WithRSA")
                         .set(field(SignatureQualifierProfileConfiguration::getUsernamePattern), "$[UserInfo.name]")
                         .set(field(SignatureQualifierProfileConfiguration::getDn),
                              new NamePattern("CN=$[UserInfo.name]", List.of("CN"))

@@ -21,6 +21,11 @@ csc:
     numberOfPreloadedKeys: 10
     # A filter pattern to identifies keys that can be used for signing in the short term use-case. Use % as a wildcard.
     keyAliasFilterPattern: pregenerated%
+    credentialSessions:
+        # Keep the expired credential sessions for the specified time
+        expiredSessionsKeepTime: PT1H
+        # Run cleanup of expired sessions according to the specified cron expression
+        cleanupCronExpression: "0 0 * * * *"
 
 # IDP configuration
 idp:

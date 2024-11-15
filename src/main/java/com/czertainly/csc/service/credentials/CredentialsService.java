@@ -95,7 +95,7 @@ public class CredentialsService {
 
         var generateKeyResult = signserverClient
                 .generateKey(
-                        token.id(), tokenAlias,
+                        token, tokenAlias,
                         credentialProfile.getKeyAlgorithm(),
                         credentialProfile.getKeySpecification()
                 )
@@ -108,7 +108,7 @@ public class CredentialsService {
 
         var generateCSRResult = signserverClient
                 .generateCSR(
-                        token.id(), generatedKeyAlias,
+                        token, generatedKeyAlias,
                         createCredentialRequest.dn(),
                         credentialProfile.getCsrSignatureAlgorithm()
                 )
@@ -148,7 +148,7 @@ public class CredentialsService {
 
         var importChainResult = signserverClient
                 .importCertificateChain(
-                        token.id(), generatedKeyAlias,
+                        token, generatedKeyAlias,
                         List.of(encodedCertificates)
                 )
                 .mapError(e -> e.extend("Certificate chain couldn't be imported to the crypto token."))
@@ -223,7 +223,7 @@ public class CredentialsService {
         CryptoToken currentCryptoToken = getCurrentCryptoTokenResult.unwrap();
 
         var getCurrentKeyResult = signserverClient
-                .getCryptoTokenKey(currentCryptoToken.id(), currentCredentialMetadata.getKeyAlias());
+                .getCryptoTokenKey(currentCryptoToken, currentCredentialMetadata.getKeyAlias());
         if (getCurrentKeyResult instanceof Error(var err)) return Result.error(err);
         CryptoTokenKey currentKey = getCurrentKeyResult.unwrap();
 
@@ -242,7 +242,7 @@ public class CredentialsService {
 
         String newKeyAlias = getUniqueKeyAlias(currentCredentialMetadata.getEndEntityName());
         var newKeyGenerationResult = signserverClient
-                .generateKey(destinationCryptoToken.id(), newKeyAlias,
+                .generateKey(destinationCryptoToken, newKeyAlias,
                              credentialProfile.getKeyAlgorithm(),
                              credentialProfile.getKeySpecification()
                 )
@@ -265,7 +265,7 @@ public class CredentialsService {
         EndEntity endEntity = getEndEntityResult.unwrap();
 
         var genarateCsrResult = signserverClient
-                .generateCSR(destinationCryptoToken.id(),
+                .generateCSR(destinationCryptoToken,
                              newKeyAlias, endEntity.subjectDN(),
                              credentialProfile.getCsrSignatureAlgorithm()
                 )
@@ -295,7 +295,7 @@ public class CredentialsService {
 
         var importChainResult = signserverClient
                 .importCertificateChain(
-                        destinationCryptoToken.id(), finalNewKeyAlias, List.of(certificateChain)
+                        destinationCryptoToken, finalNewKeyAlias, List.of(certificateChain)
                 )
                 .mapError(e -> e.extend(
                         "Failed to import certificate chain for key '%s'",
@@ -428,7 +428,7 @@ public class CredentialsService {
                 .flatMap(cryptoToken ->
                                  signserverClient
                                          .queryCryptoTokenKeys(
-                                                 cryptoToken.id(), true, 0, 2,
+                                                 cryptoToken, true, 0, 2,
                                                  credentialMetadata.getKeyAlias()
                                          )
                                          .mapError(e -> e.extend(
@@ -553,7 +553,11 @@ public class CredentialsService {
     private Result<EndEntity, TextError> createEndEntity(String userId, String dn, String san,
                                                          CredentialProfile credentialProfile
     ) {
-        var password = passwordGenerator.generate();
+        var genResult = passwordGenerator.generate();
+        if (genResult instanceof Error(var err)) {
+            return Result.error(err.extend("Failed to generate password for end entity."));
+        }
+        String password = genResult.unwrap();
         EndEntity endEntity = new EndEntity(userId, password, dn, san);
         return ejbcaClient.createEndEntity(endEntity, credentialProfile);
     }

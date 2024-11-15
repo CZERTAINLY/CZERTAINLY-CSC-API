@@ -42,6 +42,8 @@ public sealed interface Result<V, E extends ErrorValue> permits Error, Success {
 
     Result<V,E> runIf(Function<V,Boolean> condition, Consumer<V> runnable);
 
+    Result<V,E> run(Runnable runnable);
+
     V unwrap();
 
     E unwrapError();

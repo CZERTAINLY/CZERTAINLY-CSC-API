@@ -4,6 +4,7 @@ import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public record SignDocParameters(
@@ -14,6 +15,7 @@ public record SignDocParameters(
         UUID credentialID,
         String signatureQualifier,
         SignatureActivationData sad,
-        String clientData,
+        Optional<String> clientData,
+        Optional<UUID> sessionId,
         boolean returnValidationInfo) {
 }

@@ -73,6 +73,12 @@ public record Error<V, E extends ErrorValue>(E error) implements Result<V, E> {
     }
 
     @Override
+    public Result<V, E> run(Runnable runnable) {
+        runnable.run();
+        return this;
+    }
+
+    @Override
     public V unwrap() {
         throw new UnsupportedOperationException("Cannot unwrap value from Error.");
     }

@@ -38,7 +38,8 @@ public class WorkerConfigurationLoader {
         List<WorkerWithCapabilities> workersWithCapabilities = new ArrayList<>();
 
         Map<String, CryptoToken> cryptoTokenMap = getCryptoTokenMap(configuration.getCryptoTokens());
-        for (WorkerConfiguration workerConfiguration : configuration.getSigners()) {
+        List<WorkerConfiguration> workerConfigurations = configuration.getSigners()  != null? configuration.getSigners() : List.of();
+        for (WorkerConfiguration workerConfiguration : workerConfigurations) {
             String workerName = workerConfiguration.getName();
             if (workerName == null) {
                 throw new ApplicationConfigurationException(

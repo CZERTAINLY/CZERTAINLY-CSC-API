@@ -79,6 +79,12 @@ public record Success<V, E extends ErrorValue>(V value) implements Result<V, E> 
     }
 
     @Override
+    public Result<V, E> run(Runnable runnable) {
+        runnable.run();
+        return this;
+    }
+
+    @Override
     public V unwrap() {
         return value;
     }

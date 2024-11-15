@@ -2,6 +2,8 @@ package com.czertainly.csc.providers;
 
 import com.czertainly.csc.common.OptionalPatternReplacer;
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,11 @@ public class PatternDnProvider implements DistinguishedNameProvider {
     }
 
     @Override
-    public String getDistinguishedName(Supplier<Map<String, String>> keyValueSource) {
-        return patternReplacer.replacePattern(keyValueSource);
+    public Result<String, TextError> getDistinguishedName(Supplier<Map<String, String>> keyValueSource) {
+        try {
+            return Result.success(patternReplacer.replacePattern(keyValueSource));
+        } catch (Exception e) {
+            return Result.error(TextError.of("Could not create Distinguished Name based on the provided pattern.", e.getMessage()));
+        }
     }
 }

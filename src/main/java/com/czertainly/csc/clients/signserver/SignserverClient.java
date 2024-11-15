@@ -14,6 +14,7 @@ import com.czertainly.csc.crypto.DigestAlgorithmJavaName;
 import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignedDocuments;
 import com.czertainly.csc.model.builders.CryptoTokenKeyBuilder;
+import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.model.signserver.CryptoTokenKeyStatus;
 import com.czertainly.csc.signing.Signature;
@@ -66,8 +67,8 @@ public class SignserverClient {
         return signatures;
     }
 
-    public List<Signature> signMultipleHashes(String workerName, DocumentDigestsToSign digests, String keyAlias) {
-        byte[] encodedSignatureData = multisign(workerName, digests, keyAlias);
+    public List<Signature> signMultipleHashes(String workerName, List<String> data, String keyAlias, String digestAlgorithm) {
+        byte[] encodedSignatureData = multisign(workerName, data, keyAlias, digestAlgorithm);
         Base64.Decoder decoder = Base64.getDecoder();
         byte[] signatureData = decoder.decode(encodedSignatureData);
 
@@ -118,13 +119,13 @@ public class SignserverClient {
         return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
     }
 
-    private byte[] multisign(String workerName, DocumentDigestsToSign digests, String keyAlias) {
+    private byte[] multisign(String workerName, List<String> data, String keyAlias, String digestAlgorithm) {
         var signatureRequests = new ArrayList<BatchSignatureRequest>();
         int i = 0;
 
-        for (String hash : digests.hashes()) {
+        for (String hash : data) {
             var signatureRequest = new BatchSignatureRequest(hash,
-                                                             DigestAlgorithmJavaName.get(digests.digestAlgorithm()),
+                                                             DigestAlgorithmJavaName.get(digestAlgorithm),
                                                              "r" + i
             );
             signatureRequests.add(signatureRequest);
@@ -134,7 +135,7 @@ public class SignserverClient {
         var metadata = new HashMap<String, String>();
         metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
         metadata.put("USING_BATCHSIGNING", "true");
-        metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digests.digestAlgorithm()));
+        metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
 
         final byte[] requestBytes;
         try {
@@ -148,10 +149,10 @@ public class SignserverClient {
         );
     }
 
-    public SignedDocuments signMultipleHashesWithValidationData(String workerName, DocumentDigestsToSign digests,
-                                                                String keyAlias
+    public SignedDocuments signMultipleHashesWithValidationData(
+            String workerName, List<String> data, String keyAlias, String digestAlgorithm
     ) {
-        byte[] encodedSignatureData = multisign(workerName, digests, keyAlias);
+        byte[] encodedSignatureData = multisign(workerName, data, keyAlias, digestAlgorithm);
         Base64.Decoder decoder = Base64.getDecoder();
         byte[] signatureData = decoder.decode(encodedSignatureData);
 
@@ -184,28 +185,28 @@ public class SignserverClient {
     }
 
 
-    public Result<byte[], TextError> generateCSR(int signerId, String keyAlias,
+    public Result<byte[], TextError> generateCSR(CryptoToken cryptoToken, String keyAlias,
                                                  String distinguishedName,
                                                  String signatureAlgorithm
     ) {
-        return signserverWSClient.generateCsr(signerId, keyAlias, signatureAlgorithm, distinguishedName)
+        return signserverWSClient.generateCsr(cryptoToken.id(), keyAlias, signatureAlgorithm, distinguishedName)
                                  .map(CertReqData::getBinary);
 
     }
 
-    public Result<List<CryptoTokenKey>, TextError> queryCryptoTokenKeys(int cryptoTokenId,
+    public Result<List<CryptoTokenKey>, TextError> queryCryptoTokenKeys(CryptoToken cryptoToken,
                                                                         boolean includeData,
                                                                         int startIndex,
                                                                         int numOfItems,
                                                                         String keyAliasFilterPattern
     ) {
         return signserverWSClient
-                .queryTokenEntries(cryptoTokenId, includeData, startIndex, numOfItems, keyAliasFilterPattern)
+                .queryTokenEntries(cryptoToken.id(), includeData, startIndex, numOfItems, keyAliasFilterPattern)
                 .flatMap(searchResult -> {
                     ArrayList<CryptoTokenKey> keys = new ArrayList<>();
                     for (TokenEntry key : searchResult.getEntries()) {
                         var info = key.getInfo();
-                        var builder = new CryptoTokenKeyBuilder().withCryptoTokenId(cryptoTokenId)
+                        var builder = new CryptoTokenKeyBuilder().withCryptoTokenId(cryptoToken)
                                                                  .withKeyAlias(key.getAlias());
 
                         if (key.getChain() != null && !key.getChain().isEmpty()) {
@@ -246,13 +247,13 @@ public class SignserverClient {
                 });
     }
 
-    public Result<CryptoTokenKey, TextError> getCryptoTokenKey(int cryptoTokenId, String keyAlias
+    public Result<CryptoTokenKey, TextError> getCryptoTokenKey(CryptoToken cryptoToken, String keyAlias
     ) {
-        return queryCryptoTokenKeys(cryptoTokenId, true, 0, 2, keyAlias)
+        return queryCryptoTokenKeys(cryptoToken, true, 0, 2, keyAlias)
                 .flatMap(keys -> {
                     if (keys.isEmpty()) {
                         return Result.error(
-                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias, cryptoTokenId)
+                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias, cryptoToken.name())
                         );
                     }
                     if (keys.size() > 1) {
@@ -268,17 +269,17 @@ public class SignserverClient {
                 });
     }
 
-    public Result<Void, TextError> importCertificateChain(int workerId, String keyAlias,
+    public Result<Void, TextError> importCertificateChain(CryptoToken cryptoToken, String keyAlias,
                                                           List<byte[]> chain
     ) {
-        return signserverWSClient.importCertificateChain(workerId, keyAlias, chain);
+        return signserverWSClient.importCertificateChain(cryptoToken.id(), keyAlias, chain);
     }
 
-    public Result<String, TextError> generateKey(int workerId, String keyAlias,
+    public Result<String, TextError> generateKey(CryptoToken cryptoToken, String keyAlias,
                                                  String keyAlgorithm, String keySpec
     ) {
-        return signserverWSClient.generateKey(workerId, keyAlias, keyAlgorithm, keySpec)
-                                 .flatMap(partialAlias -> queryCryptoTokenKeys(workerId, false, 0, 2,
+        return signserverWSClient.generateKey(cryptoToken.id(), keyAlias, keyAlgorithm, keySpec)
+                                 .flatMap(partialAlias -> queryCryptoTokenKeys(cryptoToken, false, 0, 2,
                                                                                partialAlias + "%"
                                  ))
                                  .flatMap(this::extractKeyAlias);

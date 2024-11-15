@@ -1,6 +1,5 @@
-package com.czertainly.csc.service;
+package com.czertainly.csc.service.scheduled;
 
-import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.signing.PreloadingKeySelector;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.slf4j.Logger;
@@ -8,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component

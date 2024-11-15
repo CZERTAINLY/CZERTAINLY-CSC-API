@@ -13,6 +13,15 @@ profiles:
     # Certificate validity offset in ISO 8601 duration format
     # See https://en.wikipedia.org/wiki/ISO_8601#Durations for more information
     certificateValidityOffset: PT-1M
+    # Signature algorithm the CSR will be signed with to request the certificate. The signature algorithm
+    # must be supported by the crypto token. See the documentation of the crypto token for supported
+    # signature algorithms.
+    csrSignatureAlgorithm: SHA256withRSA
+    # A number equal or higher to 1 representing the maximum number of signatures that can be created
+    # with a credential with a single authorization request.
+    # For example, if the value is 5, the credential based on this profile can sign up to 5 documents
+    # within a single request.
+    multisign: 5
     # Username pattern to create username
     # You can use placeholders in the patterns, e.g. $[AccessToken.name] will be replaced with the
     # claim value of the `name` attribute in the access token

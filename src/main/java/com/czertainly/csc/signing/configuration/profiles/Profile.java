@@ -12,9 +12,10 @@ public class Profile {
     private final String endEntityProfileName;
     private final Duration certificateValidity;
     private final Duration certificateValidityOffset;
+    private final String csrSignatureAlgorithm;
 
     public Profile(String name, String certificateAuthority, String certificateProfileName, String endEntityProfileName,
-                   Duration certificateValidity, Duration certificateValidityOffset
+                   Duration certificateValidity, Duration certificateValidityOffset, String csrSignatureAlgorithm
     ) {
         this.name = name;
         this.certificateAuthority = certificateAuthority;
@@ -22,6 +23,7 @@ public class Profile {
         this.endEntityProfileName = endEntityProfileName;
         this.certificateValidity = certificateValidity;
         this.certificateValidityOffset = certificateValidityOffset;
+        this.csrSignatureAlgorithm = csrSignatureAlgorithm;
     }
 
     public String getName() {
@@ -46,6 +48,10 @@ public class Profile {
 
     public Duration getCertificateValidityOffset() {
         return certificateValidityOffset;
+    }
+
+    public String getCsrSignatureAlgorithm() {
+        return csrSignatureAlgorithm;
     }
 
     @Override
