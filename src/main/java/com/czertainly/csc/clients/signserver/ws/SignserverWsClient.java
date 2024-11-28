@@ -1,7 +1,6 @@
 package com.czertainly.csc.clients.signserver.ws;
 
 import com.czertainly.csc.clients.signserver.ws.dto.*;
-import com.czertainly.csc.common.exceptions.RemoteSystemException;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import jakarta.xml.bind.JAXBElement;
@@ -38,7 +37,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setKeyAlias(keyAlias);
         request.setCertReqInfo(certReqInfo);
 
-        logger.debug("Requesting CSR for key {} from crypto token with ID {}", keyAlias, workerId);
+        logger.debug("Requesting CSR for key '{}' from crypto token with ID '{}'", keyAlias, workerId);
         try {
             var response = (JAXBElement<GetPKCS10CertificateRequestForAlias2Response>) getWebServiceTemplate()
                     .marshalSendAndReceive(request);
@@ -66,7 +65,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         }
 
 
-        logger.debug("Querying token entries for worker: {}", workerId);
+        logger.debug("Querying token entries for worker: '{}'", workerId);
         try {
             var response = (JAXBElement<QueryTokenEntriesResponse>) getWebServiceTemplate().marshalSendAndReceive(
                     request);
@@ -85,10 +84,10 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setCertificateChain(
                 chain.stream().map(data -> Base64.getEncoder().encode(data)).map(String::new).toList());
 
-        logger.debug("Importing certificate chain to key {} stored in crypto token with ID {}", keyAlias, workerId);
+        logger.debug("Importing certificate chain to key '{}' stored in crypto token with ID '{}'", keyAlias, workerId);
         try {
             getWebServiceTemplate().marshalSendAndReceive(request);
-            logger.info("Certificate chain was imported to key {} stored in crypto token with ID {}", keyAlias,
+            logger.info("Certificate chain was imported to key '{}' stored in crypto token with ID '{}'", keyAlias,
                         workerId
             );
             return Result.emptySuccess();
@@ -106,15 +105,15 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setKeyAlgorithm(keyAlgorithm);
         request.setKeySpec(keySpec);
 
-        logger.debug("Generating new key {} for crypto token {}", keyAlias, workerId);
+        logger.debug("Generating new key '{}' for crypto token '{}'", keyAlias, workerId);
         try {
             var response = (JAXBElement<GenerateSignerKeyResponse>) getWebServiceTemplate().marshalSendAndReceive(
                     request);
             keyAlias = response.getValue().getReturn();
-            logger.info("A new key {} was generated for Crypto Token with ID {}", keyAlias, workerId);
+            logger.info("A new key '{}' was generated for Crypto Token with ID '{}'", keyAlias, workerId);
             return Result.success(keyAlias);
         } catch (Exception e) {
-            logger.error("Generation of a key {} on Crypto Token with ID {} has failed.", keyAlias, workerId, e);
+            logger.error("Generation of a key '{}' on Crypto Token with ID '{}' has failed.", keyAlias, workerId, e);
             return Result.error(TextError.of(e));
         }
     }
@@ -124,18 +123,18 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         request.setSignerId(workerId);
         request.setAlias(keyAlias);
 
-        logger.debug("Removing key {} from crypto token {}", keyAlias, workerId);
+        logger.debug("Removing key '{}' from crypto token '{}'", keyAlias, workerId);
         try {
             var response = (JAXBElement<RemoveKeyResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
             boolean isDeleted = response.getValue().isReturn();
             if (isDeleted) {
-                logger.info("Key {} was removed from crypto token {}", keyAlias, workerId);
+                logger.info("Key '{}' was removed from crypto token '{}'", keyAlias, workerId);
                 return Result.emptySuccess();
             } else {
-                return Result.error(TextError.of("Key %s was not removed but no error was returned.", keyAlias));
+                return Result.error(TextError.of("Key '%s' was not removed but no error was returned.", keyAlias));
             }
         } catch (Exception e) {
-            logger.error("Failed to remove key {} from crypto token {}", keyAlias, workerId, e);
+            logger.error("Failed to remove key '{}' from crypto token '{}'", keyAlias, workerId, e);
             return Result.error(TextError.of(e));
         }
     }
