@@ -1,6 +1,8 @@
 package com.czertainly.csc.signing.configuration.profiles.credentialprofile;
 
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.csc.configuration.csc.CscConfiguration;
+import com.czertainly.csc.utils.configuration.CscConfigurationBuilder;
 import org.instancio.Instancio;
 import org.instancio.InstancioApi;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CredentialProfileLoaderTest {
 
+    Path configurationDirectory = Files.createTempDirectory("configs");
+    CscConfiguration cscConfiguration = new CscConfigurationBuilder()
+            .withProfilesConfigurationDirectory(configurationDirectory.toString())
+            .build();
+
+    CredentialProfileLoaderTest() throws IOException {}
+
     @Test
     void loadCredentialProfilesCanLoadEmptyProfilesConfiguration() {
         // given
@@ -31,7 +40,7 @@ class CredentialProfileLoaderTest {
 
         // when
         CredentialProfileLoader loader = new CredentialProfileLoader(
-                config.getParent(),
+                cscConfiguration,
                 config.getName()
         );
 
@@ -50,7 +59,7 @@ class CredentialProfileLoaderTest {
 
         // when
         CredentialProfileLoader loader = new CredentialProfileLoader(
-                config.getParent(),
+                cscConfiguration,
                 config.getName()
         );
 
@@ -66,7 +75,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        CredentialProfileLoader loader = new CredentialProfileLoader(config.getParent(), config.getName());
+        CredentialProfileLoader loader = new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertEquals(1, loader.getProfiles().size());
@@ -86,10 +95,13 @@ class CredentialProfileLoaderTest {
     void loadCredentialProfilesThrowsExceptionIfConfigurationFileDoesNotExist() throws IOException {
         // given
         String dir = Files.createTempDirectory("configs").toString();
+        CscConfiguration cscConfiguration = new CscConfigurationBuilder()
+                .withProfilesConfigurationDirectory(dir)
+                .build();
         String configurationFile = "non-existing-file.yml";
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(dir, configurationFile);
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, configurationFile);
 
         // then
         assertThrowsAndMessageContains(
@@ -105,7 +117,7 @@ class CredentialProfileLoaderTest {
         File config = File.createTempFile("credential-profiles-ejbca", "yml");
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -124,7 +136,7 @@ class CredentialProfileLoaderTest {
         }
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -145,7 +157,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -166,7 +178,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -187,7 +199,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -208,7 +220,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -229,7 +241,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -250,7 +262,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -271,7 +283,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -292,7 +304,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -313,7 +325,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -334,7 +346,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -356,7 +368,7 @@ class CredentialProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new CredentialProfileLoader(config.getParent(), config.getName());
+        Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
 
         // then
         assertThrowsAndMessageContains(
@@ -369,7 +381,6 @@ class CredentialProfileLoaderTest {
 
     private File prepareConfigurationFile(List<CredentialProfileConfiguration> profiles) {
         try {
-            Path configurationDirectory = Files.createTempDirectory("configs");
             Path f = Files.createTempFile(configurationDirectory, "credential-profiles-ejbca", ".yml");
             DumperOptions options = new DumperOptions();
             options.setIndent(2);

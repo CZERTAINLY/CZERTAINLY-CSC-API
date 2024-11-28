@@ -1,6 +1,7 @@
 package com.czertainly.csc.clients.idp;
 
 import com.czertainly.csc.common.exceptions.RemoteSystemException;
+import com.czertainly.csc.configuration.idp.IdpConfiguration;
 import com.czertainly.csc.model.UserInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -28,13 +28,13 @@ public class IdpClient {
     private final String jwksUri;
     private final String userInfoUri;
 
-    public IdpClient(@Value("${idp.userInfoUrl:none}") String userInfoUrl,
-                     @Value("${idp.jwksUri}") String jwksUri,
+    public IdpClient(IdpConfiguration idpConfiguration,
                      @Qualifier("idpClientRequestFactory") HttpComponentsClientHttpRequestFactory requestFactory
     ) {
-        canDownloadUserInfo = userInfoUrl != null && !userInfoUrl.equals("none");
+        String userInfoUrl = idpConfiguration.userInfoUrl();
+        canDownloadUserInfo = idpConfiguration.userInfoUrl() != null && !userInfoUrl.equals("none");
         this.userInfoUri = userInfoUrl;
-        this.jwksUri = jwksUri;
+        this.jwksUri = idpConfiguration.jwksUri();
 
         this.restClient = RestClient.builder()
                                     .requestFactory(requestFactory)

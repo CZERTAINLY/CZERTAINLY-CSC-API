@@ -3,10 +3,11 @@ package com.czertainly.csc.service;
 import com.czertainly.csc.api.info.InfoDto;
 import com.czertainly.csc.api.info.SignatureFormatsDto;
 import com.czertainly.csc.api.info.SignatureAlgorithmsDto;
+import com.czertainly.csc.configuration.csc.CscConfiguration;
+import com.czertainly.csc.configuration.idp.IdpConfiguration;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.SignatureAlgorithmIdentifierFinder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -25,15 +26,13 @@ public class InfoService {
     SignatureAlgorithmIdentifierFinder signatureAlgorithmIdentifierFinder = new DefaultSignatureAlgorithmIdentifierFinder();
 
     public InfoService(
-            @Value("${csc.name}") String componentName,
-            @Value("${csc.logo}") String logoUri,
-            @Value("${csc.region}") String region,
-            @Value("${idp.baseUrl}") String idbBaseUri,
+            CscConfiguration cscConfiguration,
+            IdpConfiguration idpConfiguration,
             WorkerRepository workerRepository) {
-        this.componentName = componentName;
-        this.logoUri = logoUri;
-        this.region = region;
-        this.idbBaseUri = idbBaseUri;
+        this.componentName = cscConfiguration.name();
+        this.logoUri = cscConfiguration.logo();
+        this.region = cscConfiguration.region();
+        this.idbBaseUri = idpConfiguration.baseUrl();
         this.workerRepository = workerRepository;
     }
     public InfoDto getInfo() {

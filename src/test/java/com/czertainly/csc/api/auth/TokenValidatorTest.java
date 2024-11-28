@@ -2,6 +2,8 @@ package com.czertainly.csc.api.auth;
 
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Success;
+import com.czertainly.csc.configuration.idp.IdpConfiguration;
+import com.czertainly.csc.utils.configuration.IdpConfigurationBuilder;
 import com.czertainly.csc.utils.jwt.TestJWTs;
 import com.czertainly.csc.utils.jwt.TestJwkGenerator;
 import com.czertainly.csc.utils.jwt.TestJwtBuilder;
@@ -22,9 +24,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TokenValidatorTest {
 
     TestJwtBuilder jwtBuilder = new TestJwtBuilder();
+    IdpConfiguration idpConfiguration = new IdpConfigurationBuilder()
+            .withAudience(TEST_AUDIENCE)
+            .withIssuer(TEST_ISSUER)
+            .withClockSkewSeconds(Duration.ofSeconds(1))
+            .build();
 
     TestKeyLocator keyLocator = new TestKeyLocator(TestJwkGenerator.defaultJwkSet);
-    TokenValidator validator = new TokenValidator(keyLocator, TEST_ISSUER, TEST_AUDIENCE, 1);
+    TokenValidator validator = new TokenValidator(keyLocator, idpConfiguration);
 
     @Test
     public void succeedsWithValidToken() {

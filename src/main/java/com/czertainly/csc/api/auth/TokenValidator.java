@@ -3,8 +3,8 @@ package com.czertainly.csc.api.auth;
 import com.czertainly.csc.api.auth.exceptions.JwkLookupException;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.configuration.idp.IdpConfiguration;
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -15,15 +15,12 @@ public class TokenValidator {
 
     JwtParser jwtParser;
 
-    public TokenValidator(LocatorAdapter<Key> keyLocator, @Value("${idp.issuer}") String issuer,
-                          @Value("${idp.audience}") String audience,
-                          @Value("${idp.clockSkewSeconds}") int clockSkewSeconds
-    ) {
+    public TokenValidator(LocatorAdapter<Key> keyLocator, IdpConfiguration idpConfiguration) {
         jwtParser = Jwts.parser()
                         .keyLocator(keyLocator)
-                        .requireAudience(audience)
-                        .requireIssuer(issuer)
-                        .clockSkewSeconds(clockSkewSeconds)
+                        .requireAudience(idpConfiguration.audience())
+                        .requireIssuer(idpConfiguration.issuer())
+                        .clockSkewSeconds(idpConfiguration.clockSkewSeconds().getSeconds())
                         .build();
     }
 

@@ -1,4 +1,4 @@
-package com.czertainly.csc.configuration;
+package com.czertainly.csc.configuration.idp;
 
 public enum IdpAuthentication {
     NONE,

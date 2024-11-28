@@ -3,8 +3,9 @@ package com.czertainly.csc.configuration;
 import com.czertainly.csc.api.auth.authn.CscJwtAuthenticationConverter;
 import com.czertainly.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
-import com.czertainly.csc.common.PatternReplacer;
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.csc.configuration.idp.IdpAuthentication;
+import com.czertainly.csc.configuration.idp.IdpConfiguration;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.loader.WorkerConfigurationLoader;
@@ -154,26 +155,22 @@ public class ServerConfiguration {
 
     @Bean("idpClientRequestFactory")
     public HttpComponentsClientHttpRequestFactory idpRequestFactory(
-            @Value("${idp.client.authType}") IdpAuthentication authnType,
-            @Value("${idp.client.certificate.keystoreBundle:none}") String keystoreBundleName,
-            @Value("${idp.truststoreBundle:none}") String truststoreBundleName,
+            IdpConfiguration idpConfiguration,
             SslBundles sslBundles
     ) throws ApplicationConfigurationException {
         try {
             SSLContextBuilder builder = SSLContexts.custom();
 
-            if (!truststoreBundleName.equals("none") && !truststoreBundleName.isBlank()) {
-                SslBundle truststoreBundle = sslBundles.getBundle(truststoreBundleName);
+            if (idpConfiguration.truststoreBundle() != null && !idpConfiguration.truststoreBundle().isBlank()) {
+                SslBundle truststoreBundle = sslBundles.getBundle(idpConfiguration.truststoreBundle());
                 KeyStore truststore = truststoreBundle.getStores().getTrustStore();
                 builder.loadTrustMaterial(truststore, null);
             }
 
-            if (authnType == IdpAuthentication.CERTIFICATE) {
-                if (keystoreBundleName.equals("none") || keystoreBundleName.isBlank()) {
-                    throw new ApplicationConfigurationException(
-                            "Keystore bundle name must be provided when using certificate authorization.");
-                }
-                SslStoreBundle keystoreBundle = sslBundles.getBundle(keystoreBundleName).getStores();
+            if (idpConfiguration.client().authType() == IdpAuthentication.CERTIFICATE) {
+                SslStoreBundle keystoreBundle = sslBundles.getBundle(
+                        idpConfiguration.client().certificate().keystoreBundle()
+                ).getStores();
                 KeyStore keystore = keystoreBundle.getKeyStore();
                 builder.loadKeyMaterial(keystore, keystoreBundle.getKeyStorePassword().toCharArray());
             }
