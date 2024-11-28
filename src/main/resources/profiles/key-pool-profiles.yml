@@ -1,0 +1,29 @@
+keyPoolProfiles:
+  - name: session-rsa
+    keyAlgorithm: RSA
+    keySpecification: 2048
+    keyPrefix: session
+    desiredSize: 1
+    maxKeysGeneratedPerReplenish: 5
+    designatedUsage: SESSION_SIGNATURE # SESSION_SIGNATURE, ONE_TIME_SIGNATURE
+  - name: session-ecdsa
+    keyAlgorithm: ECDSA
+    keySpecification: prime256v1
+    keyPrefix: session
+    desiredSize: 1
+    maxKeysGeneratedPerReplenish: 5
+    designatedUsage: SESSION_SIGNATURE
+  - name: onetime-rsa
+    keyAlgorithm: RSA
+    keySpecification: 2048
+    keyPrefix: one-time
+    desiredSize: 1
+    maxKeysGeneratedPerReplenish: 5
+    designatedUsage: ONE_TIME_SIGNATURE
+  - name: onetime-ecdsa
+    keyAlgorithm: ECDSA
+    keySpecification: prime256v1
+    keyPrefix: one-time
+    desiredSize: 1
+    maxKeysGeneratedPerReplenish: 5
+    designatedUsage: ONE_TIME_SIGNATURE

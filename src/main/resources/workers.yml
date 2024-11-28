@@ -3,11 +3,14 @@
 cryptoTokens:
     # - name: Name of the Crypto Token
     #   id: ID of the Crypto Token
+    #   keyPoolProfiles: A list of key pool profile names that will be used to pre-generate pools of ready to use signing keys
     - name: "EntrustSAMCryptoToken"
       id: 2
-
-# List of Signers referenced in the configuration
-# First matched Signer according to the request will be used for signing
+      keyPoolProfiles:
+        - session-rsa
+        - session-ecdsa
+        - onetime-rsa
+        - onetime-ecdsa
 signers:
     # - name: Name of the Signer
     #   id: ID of the Signer

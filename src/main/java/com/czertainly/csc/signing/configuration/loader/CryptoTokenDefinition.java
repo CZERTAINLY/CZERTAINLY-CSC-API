@@ -1,9 +1,12 @@
 package com.czertainly.csc.signing.configuration.loader;
 
+import java.util.List;
+
 public class CryptoTokenDefinition {
 
-    String name;
-    int id = -1;
+    private String name;
+    private int id = -1;
+    private List<String> keyPoolProfiles;
 
     public String getName() {
         return name;
@@ -21,4 +24,11 @@ public class CryptoTokenDefinition {
         this.id = id;
     }
 
+    public List<String> getKeyPoolProfiles() {
+        return keyPoolProfiles;
+    }
+
+    public void setKeyPoolProfiles(List<String> keyPoolProfiles) {
+        this.keyPoolProfiles = keyPoolProfiles;
+    }
 }

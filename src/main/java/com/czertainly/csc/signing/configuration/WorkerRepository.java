@@ -56,6 +56,22 @@ public class WorkerRepository {
         return Result.success(tokens);
     }
 
+    public Result<List<CryptoToken>, TextError> getCryptoTokensWithPools(KeyUsageDesignation designatedUsage) {
+        var tokens = workersWithCapabilities
+                .stream()
+                .map(WorkerWithCapabilities::worker)
+                .map(Worker::cryptoToken)
+                .map(cryptoToken -> new CryptoToken(cryptoToken.name(), cryptoToken.id(),
+                                                    cryptoToken.keyPoolProfiles().stream()
+                                                               .filter(profile -> profile.designatedUsage() == designatedUsage)
+                                                               .toList()
+                ))
+                .filter(cryptoToken -> !cryptoToken.keyPoolProfiles().isEmpty())
+                .distinct()
+                .toList();
+        return Result.success(tokens);
+    }
+
     public Result<CryptoToken, TextError> getCryptoToken(String tokenName) {
         var maybeToken = workersWithCapabilities.stream()
                                       .map(WorkerWithCapabilities::worker)
@@ -66,5 +82,17 @@ public class WorkerRepository {
         return maybeToken
                 .<Result<CryptoToken, TextError>>map(Result::success)
                 .orElseGet(() -> Result.error(TextError.of("Crypto token '%s' not found.", tokenName)));
+    }
+
+    public Result<CryptoToken, TextError> getCryptoToken(int tokenId) {
+        var maybeToken = workersWithCapabilities.stream()
+                                                .map(WorkerWithCapabilities::worker)
+                                                .map(Worker::cryptoToken)
+                                                .filter(token -> Objects.equals(token.id(), tokenId))
+                                                .findFirst();
+
+        return maybeToken
+                .<Result<CryptoToken, TextError>>map(Result::success)
+                .orElseGet(() -> Result.error(TextError.of("Crypto token with id '%s' not found.", tokenId)));
     }
 }

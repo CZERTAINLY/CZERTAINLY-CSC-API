@@ -1,11 +1,12 @@
 package com.czertainly.csc.signing.configuration.loader;
 
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.csc.configuration.csc.CscConfiguration;
+import com.czertainly.csc.configuration.keypools.KeyPoolProfile;
+import com.czertainly.csc.configuration.keypools.KeyPoolProfilesConfiguration;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.signing.configuration.*;
 import com.czertainly.csc.signing.filter.Worker;
-import com.czertainly.csc.signing.configuration.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -18,16 +19,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class WorkerConfigurationLoader {
 
     private final WorkerConfigurationFile configuration;
+    private final Map<String, KeyPoolProfile> keyPoolMap;
 
-    public WorkerConfigurationLoader(@Value("${csc.workerConfigurationFile}") String configurationFilePath) {
+    public WorkerConfigurationLoader(CscConfiguration cscConfiguration, KeyPoolProfilesConfiguration keyPoolProfilesConfiguration) {
+        this.keyPoolMap = keyPoolProfilesConfiguration.keyPoolProfiles()
+                                          .stream()
+                                          .collect(Collectors.toMap(KeyPoolProfile::name,
+                                                                    Function.identity()
+                                          ));
         Yaml yaml = new Yaml(new Constructor(WorkerConfigurationFile.class, new LoaderOptions()));
         try {
-            configuration = yaml.load(new BufferedReader(new FileReader(configurationFilePath)));
+            configuration = yaml.load(new BufferedReader(new FileReader(cscConfiguration.workerConfigurationFile())));
             getCryptoTokenMap(configuration.getCryptoTokens());
         } catch (FileNotFoundException e) {
             throw new ApplicationConfigurationException("Worker configuration file not found.", e);
@@ -130,15 +139,20 @@ public class WorkerConfigurationLoader {
                         "Worker configuration is not valid. CryptoToken '" + tokenName + "' is missing an 'id' property.");
             }
 
-            map.put(tokenName, new CryptoToken(tokenName, id));
+            List<KeyPoolProfile> keyPoolProfiles = new ArrayList<>();
+            for (String keyPoolProfileName : cryptoTokenConfiguration.getKeyPoolProfiles()) {
+                KeyPoolProfile keyPoolProfile = keyPoolMap.get(keyPoolProfileName);
+                if (keyPoolProfile == null) {
+                    throw new ApplicationConfigurationException(
+                            "Worker configuration is not valid. CryptoToken '" + tokenName + "' references an unknown" +
+                                    " KeyPoolProfile '" + keyPoolProfileName + "'.");
+                }
+                keyPoolProfiles.add(keyPoolProfile);
+            }
+
+            map.put(tokenName, new CryptoToken(tokenName, id, keyPoolProfiles));
         }
         return map;
     }
 
-    public static void main(String[] args) {
-        WorkerConfigurationLoader workerConfigurationLoader = new WorkerConfigurationLoader(
-                "/home/lukas/dev/customers/3key/SignServer-CSC-API/src/main/resources/workers-dev.yml");
-        List<WorkerWithCapabilities> workers = workerConfigurationLoader.getWorkers();
-        System.out.println(workers);
-    }
 }
