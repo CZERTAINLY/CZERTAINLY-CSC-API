@@ -1,0 +1,171 @@
+version: '3'
+services:
+  postgresql.csc.dev:
+    container_name: csc-postgresql-db
+    image: postgres:16
+    command: >
+      -c ssl=on 
+      -c ssl_cert_file=/var/lib/postgresql/server.crt 
+      -c ssl_key_file=/var/lib/postgresql/server.key
+    environment:
+      - POSTGRES_USER=csc
+      - POSTGRES_DB=csc-dev
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/var/lib/postgresql/data/pgdata/
+    ports:
+      - '5432:5432'
+    expose:
+      - '5432'
+    volumes:
+      - './postgresql_data:/var/lib/postgresql/data'
+      - './certs/db/db_postgres_server.crt:/var/lib/postgresql/server.crt'
+      - './certs/db/db_postgres_server.key:/var/lib/postgresql/server.key'
+    user: '1000:0'
+    networks:
+      - csc
+
+  mysql.csc.dev:
+    container_name: csc-mysql-db
+    image: mysql:8.4
+    command:
+      #      - --ssl-ca=/etc/mysql/certs/ca.crt # CA certificate for mTLS
+      - --ssl-cert=/etc/mysql/certs/mysql.crt
+      - --ssl-key=/etc/mysql/certs/mysql.key
+      - --bind-address=0.0.0.0
+    environment:
+      MYSQL_DATABASE: csc-dev
+      MYSQL_USER: csc
+      MYSQL_PASSWORD: password
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: password
+    user: '1000:0'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - './mysql_data:/var/lib/mysql'
+      - './certs/db/db_mysql_server.crt:/etc/mysql/certs/mysql.crt'
+      - './certs/db/db_mysql_server.key:/etc/mysql/certs/mysql.key'
+    networks:
+      - csc
+
+  signserverdb.csc.dev:
+    container_name: csc-signserver-db
+    image: mariadb:latest
+    command:
+      - --ssl-cert=/etc/mysql/certs/mysql.crt
+      - --ssl-key=/etc/mysql/certs/mysql.key
+      - --ssl=1
+      - --bind-address=0.0.0.0
+    ports:
+      - "3307:3306"
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_INITDB_SKIP_TZINFO: "1"
+      MYSQL_ROOT_PASSWORD: cscdev
+      MYSQL_DATABASE: signserver
+      MYSQL_USER: signserver
+      MYSQL_PASSWORD: cscdev
+    restart: on-failure
+    volumes:
+      - './maria_signserverdb_data:/var/lib/mysql:z'
+      - './certs/db/db_mariadb_server.crt:/etc/mysql/certs/mysql.crt:z'
+      - './certs/db/db_mariadb_server.key:/etc/mysql/certs/mysql.key:z'
+    user: "1000:0"
+
+  keycloak.csc.dev:
+    container_name: csc-keycloak
+    image: quay.io/keycloak/keycloak:25.0.1
+    restart: always
+    command: start-dev --log-level="INFO,com.czertainly.csc:trace" --debug --verbose
+    depends_on:
+      - postgresql.csc.dev
+    environment:
+      - KC_HOSTNAME_STRICT=true
+      - KC_HOSTNAME=keycloak.csc.dev
+      - KC_HTTP_ENABLED=false
+      - KC_DB=postgres
+      - KC_DB_USERNAME=csc
+      - KC_DB_PASSWORD=password
+      - KC_DB_URL_HOST=postgresql.csc.dev
+      - KC_DB_URL_PORT=5432
+      - KC_DB_URL_DATABASE=keycloak
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - KC_HTTPS_KEY_STORE_FILE=/opt/keycloak/keystore.p12
+      - KC_HTTPS_KEY_STORE_PASSWORD=cscapi
+      - KC_HTTPS_KEY_STORE_TYPE=PKCS12
+      - KC_HTTPS_CLIENT_AUTH=required
+      - KC_HTTPS_TRUST_STORE_FILE=/opt/keycloak/truststore.p12
+      - KC_HTTPS_TRUST_STORE_PASSWORD=cscapi
+      - KC_HTTPS_TRUST_STORE_TYPE=PKCS12
+      - DEBUG_PORT='*:5005'
+    volumes:
+      - './keycloack_providers:/opt/keycloak/providers'
+      - './certs/keycloak/keycloak_server.p12:/opt/keycloak/keystore.p12'
+      - './certs/keycloak/keycloak_client_ca.truststore.p12:/opt/keycloak/truststore.p12' # Truststore for client verification (mTLS)
+      - './certs/authorities/db_intermediate_ca.crt:/opt/keycloak/conf/truststores/database.cer' # Truststore for outgoing https requests
+    networks:
+      - csc
+    ports:
+      - '8081:8080'
+      - '8443:8443'
+      - '5005:5005' # JVM Remote Debug
+
+  signserver.csc.dev:
+    container_name: csc-signserver
+    depends_on:
+      - signserverdb.csc.dev
+    image: 3keycompany-signserver
+    ports:
+      - 443:8443/tcp
+      - 80:8080/tcp
+      - 5006:5006/tcp # JVM Remote Debug
+    environment:
+      LOG_LEVEL_APP: DEBUG
+      DATABASE_JDBC_URL: jdbc:mariadb://signserverdb.csc.dev:3306/signserver
+      DATABASE_USER: signserver
+      DATABASE_PASSWORD: cscdev
+    volumes:
+      - ./certs/signserver/signserver_server.jks:/opt/keyfactor/secrets/external/tls/ks/server.jks:z
+      - ./certs/signserver/signserver_server.storepasswd:/opt/keyfactor/secrets/external/tls/ks/server.storepasswd:z
+      - ./certs/authorities/signserver_intermediate_management_client_ca.crt:/mnt/external/secrets/tls/cas/ManagementCA.crt:z
+      - ./certs/signserver/keystores:/opt/ssuser/keystores:z
+    user: "0:0"
+
+#  csc-api.csc.dev:
+#    container_name: csca-api
+#    image: dev.csc.cscapi:latest
+#    restart: always
+#    command: start-dev --log-level="INFO,com.czertainly.csc:trace" --debug --verbose
+#    depends_on:
+#      - postgresql.csc.dev
+#      - mysql.csc.dev
+#      - keycloak.csc.dev
+#    environment:
+#      - SPRING_CONFIG_LOCATION=/opt/cscapi/application.yml
+#    volumes:
+#      - './csc_configuration/application.yml:/opt/cscapi/application.yml'
+#      - './csc_configuration/workers.yml:/opt/cscapi/workers.yml'
+#      - './csc_configuration/profiles:/opt/cscapi/profiles'
+#      - './csc_configuration/credential-profiles-ejbca.yml:/opt/cscapi/credential-profiles-ejbca.yml'
+#      - './certs/cscapi/csc_dev_api_server_keystore.p12:/opt/cscapi/certificates/server_keystore.p12'
+#      - './certs/cscapi/csc_dev_api_server_truststore.p12:/opt/cscapi/certificates/server_truststore.p12'
+#      - './certs/cscapi/csc_dev_api_keycloak_client_keystore.p12:/opt/cscapi/certificates/keycloack_client_cert.p12'
+#      - './certs/cscapi/csc_dev_api_truststore.p12:/opt/cscapi/certificates/truststore.p12'
+#      - './certs/cscapi/csc_dev_api_keycloak_client_keystore.p12:/opt/cscapi/certificates/keycloack_client_cert.p12'
+#      - './certs/cscapi/ejbca_admin_cert.p12:/opt/cscapi/certificates/ejbca_admin_cert.p12'
+#      - './certs/cscapi/signserver_admin_cert.p12:/opt/cscapi/certificates/signserver_admin_cert.p12'
+#      - './certs/cscapi/signserver_client_cert.p12:/opt/cscapi/certificates/signserver_client_cert.p12'
+#
+#    networks:
+#      - csc
+#    ports:
+#      - '8080:8080'
+#      - '9443:9443'
+#      - '5006:5005'
+
+networks:
+  csc:
+    driver: bridge
