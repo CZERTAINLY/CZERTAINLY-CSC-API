@@ -287,7 +287,11 @@ public class SignserverClient {
     }
 
     public Result<Void, TextError> removeKey(int workerId, String keyAlias) {
-        return signserverWSClient.removeKey(workerId, keyAlias);
+        return signserverWSClient.removeKey(workerId, keyAlias, false);
+    }
+
+    public Result<Void, TextError> removeKeyOkIfNotExists(int workerId, String keyAlias) {
+        return signserverWSClient.removeKey(workerId, keyAlias, true);
     }
 
     private Result<String, TextError> extractKeyAlias(List<CryptoTokenKey> keys) {

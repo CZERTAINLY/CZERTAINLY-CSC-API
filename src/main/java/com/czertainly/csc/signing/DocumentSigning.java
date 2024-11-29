@@ -13,13 +13,11 @@ public class DocumentSigning {
 
     SignserverClient signserverClient;
     WorkerRepository workerRepository;
-    KeySelector keySelector;
 
 
-    public DocumentSigning(SignserverClient signserverClient, WorkerRepository workerRepository, PreloadingKeySelector keySelector) {
+    public DocumentSigning(SignserverClient signserverClient, WorkerRepository workerRepository) {
         this.signserverClient = signserverClient;
         this.workerRepository = workerRepository;
-        this.keySelector = keySelector;
     }
 
     public Result<SignedDocuments, TextError> sign(SignDocParameters parameters) {

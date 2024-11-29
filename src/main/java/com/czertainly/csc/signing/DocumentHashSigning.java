@@ -8,10 +8,12 @@ import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.service.credentials.CredentialSessionsService;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.service.credentials.SessionCredentialsService;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
+import com.czertainly.csc.service.credentials.SigningSessionsService;
+import com.czertainly.csc.service.keys.OneTimeKeysService;
+import com.czertainly.csc.service.keys.SessionKeysService;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.process.DocumentHashSignatureProcessTemplate;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
@@ -35,26 +37,29 @@ public class DocumentHashSigning {
     private final DocumentHashSignatureProcessTemplate<SessionTokenConfiguration, DocumentHashSignatureProcessConfiguration, SessionToken> sessionSignature;
 
 
-    public DocumentHashSigning(WorkerRepository workerRepository, KeySelector keySelector,
+    public DocumentHashSigning(WorkerRepository workerRepository,
+                               OneTimeKeySelector oneTimeKeySelector, SessionKeySelector sessionKeySelector,
+                               OneTimeKeysService oneTimeKeysService, SessionKeysService sessionKeysService,
                                SignserverClient signserverClient, CredentialsService credentialsService,
                                SignatureQualifierBasedCredentialFactory signatureQualifierBasedCredentialFactory,
-                               CredentialSessionsService credentialSessionsService,
+                               SigningSessionsService signingSessionsService,
                                SessionCredentialsService sessionCredentialsService,
                                CredentialProfileRepository credentialProfileRepository
     ) {
         DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
         OneTimeTokenProvider<DocumentHashSignatureProcessConfiguration> oneTimeTokenProvider =
-                new OneTimeTokenProvider<>(signatureQualifierBasedCredentialFactory,
-                                           signserverClient, keySelector
+                new OneTimeTokenProvider<>(signatureQualifierBasedCredentialFactory, oneTimeKeySelector,
+                                           oneTimeKeysService
                 );
         LongTermTokenProvider<DocumentHashSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(
                 credentialsService);
 
         SessionTokenProvider<DocumentHashSignatureProcessConfiguration> sessionTokenProvider = new SessionTokenProvider<>(
-                signserverClient,
-                credentialSessionsService,
+                signingSessionsService,
                 sessionCredentialsService,
-                credentialProfileRepository
+                credentialProfileRepository,
+                sessionKeySelector,
+                sessionKeysService
         );
 
         oneTimeHashSignature = new DocumentHashSignatureProcessTemplate<>(

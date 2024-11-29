@@ -1,6 +1,6 @@
 package com.czertainly.csc.repository.entities;
 
-import com.czertainly.csc.service.credentials.CredentialSession;
+import com.czertainly.csc.service.credentials.SigningSession;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -9,17 +9,17 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "credential_sessions")
-public class CredentialSessionEntity {
+@Table(name = "signing_sessions")
+public class SigningSessionEntity {
     @Id
     private UUID id;
     private UUID credentialId;
     private ZonedDateTime expiresIn;
 
-    public CredentialSessionEntity() {
+    public SigningSessionEntity() {
     }
 
-    public CredentialSessionEntity(UUID id, UUID credentialId, ZonedDateTime expiresIn) {
+    public SigningSessionEntity(UUID id, UUID credentialId, ZonedDateTime expiresIn) {
         this.id = id;
         this.credentialId = credentialId;
         this.expiresIn = expiresIn;
@@ -49,7 +49,7 @@ public class CredentialSessionEntity {
         this.expiresIn = expiresIn;
     }
 
-    public static CredentialSessionEntity fromRecord(CredentialSession session) {
-        return new CredentialSessionEntity(session.id(), session.credentialId(), session.getExpiresIn());
+    public static SigningSessionEntity fromRecord(SigningSession session) {
+        return new SigningSessionEntity(session.id(), session.credentialId(), session.getExpiresIn());
     }
 }

@@ -2,12 +2,12 @@ package com.czertainly.csc.signing;
 
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.model.signserver.CryptoTokenKey;
+import com.czertainly.csc.service.keys.SigningKey;
 
-public interface KeySelector {
+public interface KeySelector<K extends SigningKey> {
 
-    Result<CryptoTokenKey, TextError> selectKey(int workerId);
+    Result<K, TextError> selectKey(int workerId, String keyAlgorithm);
 
-    Result<Void, TextError> markKeyAsUsed(CryptoTokenKey key);
+    Result<Void, TextError> markKeyAsUsed(K key);
 
 }

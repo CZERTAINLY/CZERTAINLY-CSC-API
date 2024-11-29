@@ -5,6 +5,10 @@ import com.czertainly.csc.model.signserver.CryptoToken;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+/**
+ * Represents a signing key that can be acquired for signing.
+ * The signing key is connected to a specific key of a crypto token on Signserver.
+ */
 public class SigningKey {
 
     private final UUID id;

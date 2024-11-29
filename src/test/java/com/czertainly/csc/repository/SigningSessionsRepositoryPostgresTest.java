@@ -1,7 +1,7 @@
 package com.czertainly.csc.repository;
 
 import com.czertainly.csc.repository.entities.CredentialMetadataEntity;
-import com.czertainly.csc.repository.entities.CredentialSessionEntity;
+import com.czertainly.csc.repository.entities.SigningSessionEntity;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -11,7 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -26,24 +26,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-class CredentialSessionsRepositoryMysqlTest {
+class SigningSessionsRepositoryPostgresTest {
 
     @Container
-    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysql::getJdbcUrl);
-        registry.add("spring.datasource.username", mysql::getUsername);
-        registry.add("spring.datasource.password", mysql::getPassword);
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.schemas", () -> "test");
+        registry.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/specific/{vendor}");
     }
 
     @Autowired
-    private TestEntityManager testEntityManager;
+    TestEntityManager testEntityManager;
 
     @Autowired
-    CredentialSessionsRepository credentialSessionsRepository;
+    SigningSessionsRepository signingSessionsRepository;
 
     @Autowired
     CredentialsRepository credentialsRepository;
@@ -58,7 +59,7 @@ class CredentialSessionsRepositoryMysqlTest {
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, expiresIn);
 
         // when
-        var e = credentialSessionsRepository.findById(sessionId);
+        var e = signingSessionsRepository.findById(sessionId);
 
         // then
         ZonedDateTime expectedExpiresIn = ZonedDateTime.of(2020, 10, 5, 17, 0, 0, 0, ZoneOffset.UTC);
@@ -80,7 +81,7 @@ class CredentialSessionsRepositoryMysqlTest {
         ZonedDateTime testTime = ZonedDateTime.of(2020, 10, 5, 13, 30, 0, 0, ZoneOffset.UTC);
 
         // when
-        var credentials = credentialSessionsRepository.findByExpiresInBeforeOrderByExpiresInAsc(testTime);
+        var credentials = signingSessionsRepository.findByExpiresInBeforeOrderByExpiresInAsc(testTime);
 
         // then
         assertEquals(2, credentials.size());
@@ -130,8 +131,8 @@ class CredentialSessionsRepositoryMysqlTest {
     private UUID createAndInsertSessionIntoDB(UUID credentialId, ZonedDateTime expiresIn) {
         UUID sessionId = UUID.randomUUID();
 
-        credentialSessionsRepository.save(
-                new CredentialSessionEntity(
+        signingSessionsRepository.save(
+                new SigningSessionEntity(
                         sessionId,
                         credentialId,
                         expiresIn

@@ -7,15 +7,17 @@ import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.crypto.CertificateParser;
 import com.czertainly.csc.crypto.PasswordGenerator;
 import com.czertainly.csc.model.UserInfo;
 import com.czertainly.csc.model.csc.SignatureQualifierBasedCredentialMetadata;
 import com.czertainly.csc.model.ejbca.EndEntity;
-import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.providers.KeyValueSource;
+import com.czertainly.csc.service.keys.SigningKey;
 import com.czertainly.csc.signing.UserInfoProvider;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
 import com.czertainly.csc.signing.configuration.profiles.signaturequalifierprofile.SignatureQualifierProfile;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,21 +34,24 @@ public class SignatureQualifierBasedCredentialFactory {
     private final CredentialProfileRepository credentialProfileRepository;
     private final SignserverClient signserverClient;
     private final EjbcaClient ejbcaClient;
+    private final CertificateParser certificateParser;
 
     public SignatureQualifierBasedCredentialFactory(UserInfoProvider userInfoProvider,
                                                     PasswordGenerator passwordGenerator,
                                                     CredentialProfileRepository credentialProfileRepository,
-                                                    SignserverClient signserverClient, EjbcaClient ejbcaClient
+                                                    SignserverClient signserverClient, EjbcaClient ejbcaClient,
+                                                    CertificateParser certificateParser
     ) {
         this.userInfoProvider = userInfoProvider;
         this.passwordGenerator = passwordGenerator;
         this.credentialProfileRepository = credentialProfileRepository;
         this.signserverClient = signserverClient;
         this.ejbcaClient = ejbcaClient;
+        this.certificateParser = certificateParser;
     }
 
-    public Result<SignatureQualifierBasedCredentialMetadata, TextError> createCredential(
-            CryptoTokenKey key,
+    public <K extends SigningKey> Result<SignatureQualifierBasedCredentialMetadata<K>, TextError> createCredential(
+            K key,
             String signatureQualifier,
             String userId,
             SignatureActivationData sad,
@@ -112,17 +117,22 @@ public class SignatureQualifierBasedCredentialFactory {
         if (certifyKeyResult instanceof Error(var err)) {
             return Result.error(err);
         }
+        X509CertificateHolder certificate = certifyKeyResult.unwrap();
 
-        return Result.success(new SignatureQualifierBasedCredentialMetadata(
-                userId, key, endEntity.username(), signatureQualifierProfile.getName(),
-                signatureQualifierProfile.getMultisgn()
+        return Result.success(new SignatureQualifierBasedCredentialMetadata<>(
+                userId, key, endEntity.username(), certificate, signatureQualifierProfile.getName(),
+                signatureQualifierProfile.getMultisign()
         ));
     }
 
-    private Result<Void, TextError> generateCertificateForSigningKey(
-            CryptoTokenKey key, String dn, EndEntity endEntity, SignatureQualifierProfile signatureQualifierProfile
+    public <K extends SigningKey> void rollbackCredentialCreation(SignatureQualifierBasedCredentialMetadata<K> credentialMetadata) {
+        revokeCertificate(credentialMetadata.certificate());
+    }
+
+    private Result<X509CertificateHolder, TextError> generateCertificateForSigningKey(
+            SigningKey key, String dn, EndEntity endEntity, SignatureQualifierProfile signatureQualifierProfile
     ) {
-        return signserverClient.generateCSR(
+        var csrSignResult = signserverClient.generateCSR(
                                        key.cryptoToken(), key.keyAlias(), dn,
                                        signatureQualifierProfile.getCsrSignatureAlgorithm()
                                )
@@ -130,9 +140,39 @@ public class SignatureQualifierBasedCredentialFactory {
                                        endEntity,
                                        signatureQualifierProfile,
                                        csr
-                               ))
-                               .flatMap(certificateChain -> signserverClient.importCertificateChain(
-                                       key.cryptoToken(), key.keyAlias(), List.of(certificateChain)
                                ));
+
+        if (csrSignResult instanceof Error(var err)) {
+            return Result.error(err);
+        }
+        byte[] certificateChain = csrSignResult.unwrap();
+
+        var parseCertificateResult = certificateParser.getEndCertificateFromPkcs7Chain(certificateChain)
+                                                      .mapError(e -> e.extend(
+                                                              "End certificate couldn't be extracted from PKCS7 chain."));
+        if (parseCertificateResult instanceof Error(var err)) {
+            return Result.error(err);
+        }
+        X509CertificateHolder certificate = parseCertificateResult.unwrap();
+
+        return signserverClient.importCertificateChain(key.cryptoToken(), key.keyAlias(), List.of(certificateChain))
+                               .ifError(() -> revokeCertificate(certificate))
+                               .map((v) -> certificate);
+    }
+
+    private void revokeCertificate(X509CertificateHolder certificate) {
+        logger.info("Revoking certificate '{}' due to an error during session credential creation.",
+                    certificate.getSerialNumber()
+        );
+        ejbcaClient.revokeCertificate(
+                           certificate.getSerialNumber().toString(16), certificate.getIssuer().toString()
+                   )
+                   .consumeError(e -> logger.error(
+                           e.extend(
+                                   "Failed to revoke certificate '%s'. The certificate should be revoked manually.",
+                                   certificate.getSerialNumber()
+                           ).getErrorText()
+                   ));
+
     }
 }

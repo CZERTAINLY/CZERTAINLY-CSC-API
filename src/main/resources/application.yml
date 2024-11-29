@@ -17,11 +17,7 @@ csc:
     # The [caProviderName] must match the name of the CA provider configured.
     # See the example configuration files for more information.
     profilesConfigurationDirectory: /opt/cscapi/profiles
-    # Number of preloaded keys that are stored in memory for faster access
-    numberOfPreloadedKeys: 10
-    # A filter pattern to identifies keys that can be used for signing in the short term use-case. Use % as a wildcard.
-    keyAliasFilterPattern: pregenerated%
-    credentialSessions:
+    signingSessions:
         # Keep the expired credential sessions for the specified time
         expiredSessionsKeepTime: PT1H
         # Run cleanup of expired sessions according to the specified cron expression

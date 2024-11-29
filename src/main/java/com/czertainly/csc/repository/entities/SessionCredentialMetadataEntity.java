@@ -15,6 +15,7 @@ public class SessionCredentialMetadataEntity {
     private UUID id;
     private String userId;
     private String keyAlias;
+    private UUID keyId;
     private String endEntityName;
     private String signatureQualifier;
     private int multisign;
@@ -24,13 +25,13 @@ public class SessionCredentialMetadataEntity {
     }
 
     public SessionCredentialMetadataEntity(
-            UUID id, String userId, String keyAlias, String endEntityName, String signatureQualifier, int multisign,
+            UUID id, String userId, String keyAlias, UUID keyId, String endEntityName, String signatureQualifier, int multisign,
             String cryptoTokenName
-
     ) {
         this.id = id;
         this.userId = userId;
         this.keyAlias = keyAlias;
+        this.keyId = keyId;
         this.endEntityName = endEntityName;
         this.signatureQualifier = signatureQualifier;
         this.multisign = multisign;
@@ -59,6 +60,14 @@ public class SessionCredentialMetadataEntity {
 
     public void setKeyAlias(String keyId) {
         this.keyAlias = keyId;
+    }
+
+    public UUID getKeyId() {
+        return keyId;
+    }
+
+    public void setKeyId(UUID keyId) {
+        this.keyId = keyId;
     }
 
     public String getEndEntityName() {
@@ -99,6 +108,7 @@ public class SessionCredentialMetadataEntity {
                 .add("id=" + id)
                 .add("userId='" + userId + "'")
                 .add("keyAlias='" + keyAlias + "'")
+                .add("keyId=" + keyId)
                 .add("endEntityName='" + endEntityName + "'")
                 .add("signatureQualifier='" + signatureQualifier + "'")
                 .add("multisign=" + multisign)

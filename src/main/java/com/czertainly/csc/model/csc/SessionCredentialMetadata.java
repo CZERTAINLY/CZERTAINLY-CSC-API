@@ -1,12 +1,11 @@
 package com.czertainly.csc.model.csc;
 
-import com.czertainly.csc.service.credentials.CredentialSession;
-
 import java.util.UUID;
 
 public record SessionCredentialMetadata(
-        CredentialSession session,
+        UUID id,
         String keyAlias,
+        UUID keyId,
         String endEntityName,
         int multisign
 ) {

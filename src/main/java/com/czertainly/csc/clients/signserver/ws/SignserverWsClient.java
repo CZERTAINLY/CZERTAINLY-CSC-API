@@ -118,7 +118,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
         }
     }
 
-    public Result<Void, TextError> removeKey(int workerId, String keyAlias) {
+    public Result<Void, TextError> removeKey(int workerId, String keyAlias, boolean notExistsOk) {
         var request = new RemoveKey();
         request.setSignerId(workerId);
         request.setAlias(keyAlias);
@@ -134,6 +134,10 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
                 return Result.error(TextError.of("Key '%s' was not removed but no error was returned.", keyAlias));
             }
         } catch (Exception e) {
+            if (notExistsOk && e.getMessage().contains("No such alias in token")) {
+                logger.info("Key '{}' was not found on crypto token '{}'. Key is considered removed.", keyAlias, workerId);
+                return Result.emptySuccess();
+            }
             logger.error("Failed to remove key '{}' from crypto token '{}'", keyAlias, workerId, e);
             return Result.error(TextError.of(e));
         }

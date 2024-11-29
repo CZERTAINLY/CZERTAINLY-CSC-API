@@ -1,9 +1,11 @@
 package com.czertainly.csc.service.credentials;
 
-import com.czertainly.csc.repository.CredentialSessionsRepository;
-import com.czertainly.csc.repository.CredentialsRepository;
-import com.czertainly.csc.repository.entities.CredentialMetadataEntity;
-import com.czertainly.csc.repository.entities.CredentialSessionEntity;
+import com.czertainly.csc.repository.SigningSessionsRepository;
+import com.czertainly.csc.repository.SessionCredentialsRepository;
+import com.czertainly.csc.repository.SessionKeyRepository;
+import com.czertainly.csc.repository.entities.SessionCredentialMetadataEntity;
+import com.czertainly.csc.repository.entities.SessionKeyEntity;
+import com.czertainly.csc.repository.entities.SigningSessionEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -18,15 +20,18 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(CredentialSessionsService.class)
+@Import(SigningSessionsService.class)
 @Testcontainers
-class CredentialSessionsServiceTest {
+class SigningSessionsServiceTest {
 
     @Container
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
@@ -37,22 +42,26 @@ class CredentialSessionsServiceTest {
         registry.add("spring.datasource.username", mysql::getUsername);
         registry.add("spring.datasource.password", mysql::getPassword);
         registry.add("spring.flyway.schemas", () -> "test");
+        registry.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/specific/{vendor}");
     }
 
     @Autowired
     TestEntityManager testEntityManager;
 
     @Autowired
-    CredentialSessionsService credentialSessionsService;
+    SigningSessionsService signingSessionsService;
 
     @Autowired
-    CredentialSessionsRepository credentialSessionsRepository;
+    SigningSessionsRepository signingSessionsRepository;
 
     @Autowired
-    CredentialsRepository credentialsRepository;
+    SessionCredentialsRepository credentialsRepository;
+
+    @Autowired
+    SessionKeyRepository sessionKeyRepository;
 
     @Test
-    public void isValidSessionReturnsTrueIfTheSessionExistsAndIsNotExpired() {
+    public void getSessionReturnsActiveSessionIfTheSessionExistsAndIsNotExpired() {
         // setup
         UUID credentialId = createCredentialAndInsertIntoDB();
 
@@ -61,14 +70,16 @@ class CredentialSessionsServiceTest {
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, sessionExpiresIn);
 
         // when
-        var result = credentialSessionsService.isActiveSession(sessionId);
+        var result = signingSessionsService.getSession(sessionId);
 
         // then
-        assertTrue(result.unwrap());
+        Optional<SigningSession> session = result.unwrap();
+        assertTrue(session.isPresent());
+        assertEquals(CredentialSessionStatus.ACTIVE, session.get().status());
     }
 
     @Test
-    public void isValidSessionReturnsFalseIfTheSessionExistsAndIsExpired() {
+    public void getSessionReturnsExpiredSessionIfTheSessionExistsAndIsExpired() {
         // setup
         UUID credentialId = createCredentialAndInsertIntoDB();
 
@@ -77,39 +88,44 @@ class CredentialSessionsServiceTest {
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, sessionExpiresIn);
 
         // when
-        var result = credentialSessionsService.isActiveSession(sessionId);
+        var result = signingSessionsService.getSession(sessionId);
 
         // then
-        assertFalse(result.unwrap());
+        Optional<SigningSession> session = result.unwrap();
+        assertTrue(session.isPresent());
+        assertEquals(CredentialSessionStatus.EXPIRED, session.get().status());
     }
 
     @Test
-    public void isActiveSessionReturnsFalseIfTheSessionDoesNotExist() {
+    public void getSessionReturnsNullIfTheSessionDoesNotExist() {
         // given
         UUID nonExistentSessionId = UUID.randomUUID();
 
         // when
-        var result = credentialSessionsService.isActiveSession(nonExistentSessionId);
+        var result = signingSessionsService.getSession(nonExistentSessionId);
 
         // then
-        assertFalse(result.unwrap());
+        Optional<SigningSession> session = result.unwrap();
+        assertFalse(session.isPresent());
     }
 
     @Test
-    public void cleanExpiredSessionsWillDeleteExpiredSession() {
+    public void getExpiredSessionsWillReturnExpiredSessions() {
         // setup
         UUID credentialId = createCredentialAndInsertIntoDB();
 
         // given
         ZonedDateTime sessionExpiresIn = ZonedDateTime.now().minus(Duration.ofHours(1));
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, sessionExpiresIn);
-        assertTrue(credentialSessionsRepository.existsById(sessionId));
+        assertTrue(signingSessionsRepository.existsById(sessionId));
 
         // when
-        credentialSessionsService.cleanExpiredSessions(Duration.ZERO);
+        var getExpiredSessionsResult = signingSessionsService.getExpiredSessions(Duration.ZERO);
 
         // then
-        assertFalse(credentialSessionsRepository.existsById(sessionId));
+        var expiredSessions = assertSuccessAndGet(getExpiredSessionsResult);
+        assertEquals(1, expiredSessions.size());
+        assertTrue(expiredSessions.stream().anyMatch(s -> s.id().equals(sessionId)));
     }
 
     @Test
@@ -120,13 +136,15 @@ class CredentialSessionsServiceTest {
         // given
         ZonedDateTime sessionExpiresIn = ZonedDateTime.now().minus(Duration.ofHours(3));
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, sessionExpiresIn);
-        assertTrue(credentialSessionsRepository.existsById(sessionId));
+        assertTrue(signingSessionsRepository.existsById(sessionId));
 
         // when
-        credentialSessionsService.cleanExpiredSessions(Duration.ofHours(2));
+        var getExpiredSessionsResult = signingSessionsService.getExpiredSessions(Duration.ofHours(2));
 
         // then
-        assertFalse(credentialSessionsRepository.existsById(sessionId));
+        var expiredSessions = assertSuccessAndGet(getExpiredSessionsResult);
+        assertEquals(1, expiredSessions.size());
+        assertTrue(expiredSessions.stream().anyMatch(s -> s.id().equals(sessionId)));
     }
 
     @Test
@@ -137,20 +155,21 @@ class CredentialSessionsServiceTest {
         // given
         ZonedDateTime sessionExpiresIn = ZonedDateTime.now().minus(Duration.ofHours(1));
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, sessionExpiresIn);
-        assertTrue(credentialSessionsRepository.existsById(sessionId));
+        assertTrue(signingSessionsRepository.existsById(sessionId));
 
         // when
-        credentialSessionsService.cleanExpiredSessions(Duration.ofHours(2));
+        var getExpiredSessionsResult = signingSessionsService.getExpiredSessions(Duration.ofHours(2));
 
         // then
-        assertTrue(credentialSessionsRepository.existsById(sessionId));
+        var expiredSessions = assertSuccessAndGet(getExpiredSessionsResult);
+        assertIterableEquals(List.of(), expiredSessions);
     }
 
     private UUID createAndInsertSessionIntoDB(UUID credentialId, ZonedDateTime expiresIn) {
         UUID sessionId = UUID.randomUUID();
 
-        credentialSessionsRepository.save(
-                new CredentialSessionEntity(
+        signingSessionsRepository.save(
+                new SigningSessionEntity(
                         sessionId,
                         credentialId,
                         expiresIn
@@ -162,21 +181,27 @@ class CredentialSessionsServiceTest {
     }
 
     private UUID createCredentialAndInsertIntoDB() {
+
+        SessionKeyEntity keyEntity = new SessionKeyEntity(
+                UUID.randomUUID(),
+                1,
+                "myKeyAlias",
+                "RSA",
+                false,
+                ZonedDateTime.now()
+        );
+        sessionKeyRepository.save(keyEntity);
+
         UUID credentialId = UUID.randomUUID();
-        credentialsRepository.save(new CredentialMetadataEntity(
+        credentialsRepository.save(new SessionCredentialMetadataEntity(
                 credentialId,
                 "user",
                 "keyAlias",
-                "credentialProfile",
-                "endEntityName",
-                "currentCertificateSn",
-                "currentCertificateIssuer",
+                keyEntity.getId(),
                 "signatureQualifier",
+                "endEntityName",
                 1,
-                "scal",
-                "cryptoTokenName",
-                "description",
-                false
+                "cryptoTokenName"
         ));
         testEntityManager.flush();
         testEntityManager.clear();

@@ -1,11 +1,18 @@
 package com.czertainly.csc.model.csc;
 
-import com.czertainly.csc.model.signserver.CryptoTokenKey;
+import com.czertainly.csc.service.keys.SigningKey;
+import org.bouncycastle.cert.X509CertificateHolder;
 
-public record SignatureQualifierBasedCredentialMetadata(
+import java.security.cert.X509Certificate;
+
+/**
+ * Represents a metadata for a credential created based on the Signature Qualifier Profile
+ */
+public record SignatureQualifierBasedCredentialMetadata<K extends SigningKey>(
         String userId,
-        CryptoTokenKey key,
+        K key,
         String endEntityName,
+        X509CertificateHolder certificate,
         String signatureQualifier,
         int multisign
 ){}

@@ -2,6 +2,7 @@ package com.czertainly.csc.signing.configuration;
 
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.signing.filter.Criterion;
 import com.czertainly.csc.signing.filter.Worker;

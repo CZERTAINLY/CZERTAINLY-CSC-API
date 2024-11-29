@@ -109,16 +109,20 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
         }
     }
 
+    public Result<Void, TextError> deleteKey(UUID keyId) {
+        return getKey(keyId).flatMap(this::deleteKey);
+    }
+
     @Override
     public Result<Void, TextError> deleteKey(K key) {
         logger.debug("Deleting key '{}' with id '{}'", key.keyAlias(), key.id());
         try {
-            return signserverClient.removeKey(key.cryptoToken().id(), key.keyAlias())
+            return signserverClient.removeKeyOkIfNotExists(key.cryptoToken().id(), key.keyAlias())
                                    .flatMap(v -> {
                                        try {
                                            keysRepository.deleteById(key.id());
                                        } catch (Exception e) {
-                                           logger.error("Failed to delete Key '{}' with id '{}' from database.",
+                                           logger.error("Failed to delete signing key '{}' with id '{}' from database.",
                                                         key.keyAlias(), key.id(), e
                                            );
                                            Result.error(TextError.of("Key not deleted from database."));
