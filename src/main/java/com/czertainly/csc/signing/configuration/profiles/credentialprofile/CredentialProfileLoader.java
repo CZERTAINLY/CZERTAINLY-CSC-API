@@ -4,6 +4,7 @@ import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.configuration.csc.CscConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,9 +30,9 @@ public class CredentialProfileLoader {
     private final List<CredentialProfile> credentialProfiles;
 
     public CredentialProfileLoader(
-            @Value("${csc.profilesConfigurationDirectory}") String configurationDirectoryPath,
-            @Value("credential-profiles-ejbca.yml") String configurationFileName
+            CscConfiguration cscConfiguration, @Value("credential-profiles-ejbca.yml") String configurationFileName
     ) {
+        String configurationDirectoryPath = cscConfiguration.profilesConfigurationDirectory();
         logger.info("Loading credential profiles from '{}/{}'", configurationDirectoryPath, configurationFileName);
         var getConfigurationFileResult = checkFileExistenceAndGet(configurationDirectoryPath, configurationFileName);
         if (getConfigurationFileResult instanceof Error(var e)) {

@@ -4,6 +4,7 @@ import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.configuration.csc.CscConfiguration;
 import com.czertainly.csc.providers.PatternDnProvider;
 import com.czertainly.csc.providers.PatternSanProvider;
 import com.czertainly.csc.providers.PatternUsernameProvider;
@@ -35,9 +36,9 @@ public class SignatureQualifierProfileLoader {
 
 
     public SignatureQualifierProfileLoader(
-            @Value("${csc.profilesConfigurationDirectory}") String configurationDirectoryPath,
-            @Value("signature-qualifier-profiles-ejbca.yml") String configurationFileName
+            CscConfiguration cscConfiguration, @Value("signature-qualifier-profiles-ejbca.yml") String configurationFileName
     ) {
+        String configurationDirectoryPath = cscConfiguration.profilesConfigurationDirectory();
         logger.info("Loading signature qualifier profiles from '{}/{}'.", configurationDirectoryPath, configurationFileName);
         var getConfigurationFileResult = checkFileExistenceAndGet(configurationDirectoryPath, configurationFileName);
         if (getConfigurationFileResult instanceof Error(var e)) {
