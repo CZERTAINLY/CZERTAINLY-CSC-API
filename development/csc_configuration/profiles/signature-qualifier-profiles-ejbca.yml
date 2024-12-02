@@ -1,0 +1,56 @@
+# End entity configuration
+profiles:
+  - name: eu_eidas_qes
+    # Username pattern to create username
+    # You can use placeholders in the patterns, e.g. $[AccessToken.name] will be replaced with the
+    # claim value of the `name` attribute in the access token
+    # The claim values and other placeholder information is taken from:
+    # - the access token that is provided in the Authorization header, in this case the placeholder
+    #   has to be in the form $[AccessToken.<claim>]
+    # - the user info that is retrieved from the IDP UserInfo endpoint, in this case the placeholder
+    #   has to be in the form $[UserInfo.<claim>]
+    # - the Signature Activation Data (SAD) token that is provided in the request body or
+    #   Authorization header, in this case the placeholder has to be in the form $[Sad.<claim>]
+    # - the Credential that is representing the credential of the user, currently only the id is available,
+    #   in this case the placeholder has to be in the form $[Credential.id] and it will be replaced with the
+    #   alias of the key pair that is used for signing
+    # Username pattern will apply only when the username is not provided during the credential creation, e.g. in the one-time signature use case
+    usernamePattern: $[UserInfo.name] $[Credential.id] $[Sad.clientData] $[AccessToken.sub]
+    # DN pattern to create subject DN of requested certificate
+
+    # DN pattern will apply only when the username is not provided during the credential creation, e.g. in the one-time signature use case
+    dn:
+      pattern: CN=$[UserInfo.name], UID=$[Credential.id]
+      required:
+        - CN
+        - UID
+    # SAN pattern to create subject alternative name of requested certificate
+    # SAN pattern will apply only when the username is not provided during the credential creation, e.g. in the one-time signature use case
+    san:
+      pattern: null
+      required: null
+    # CA name to issue the certificate
+
+    caName: DemoClientSubCA_2307RSA
+    # End entity profile name to use for the certificate
+    endEntityProfileName: DemoDocumentSigningEndEntityProfile
+    # Certificate profile name to use for the certificate
+    certificateProfileName: DemoDocumentSigningEECertificateProfile
+    certificateValidity: P10D
+    certificateValidityOffset: P-1DT-1M
+
+  - name: eu_eidas_aes
+    usernamePattern: $[UserInfo.name] $[Credential.id] $[Sad.clientData] $[AccessToken.sub]
+    dn:
+      pattern: CN=$[UserInfo.name], UID=$[Credential.id]
+      required:
+        - CN
+        - UID
+    san:
+      pattern: null
+      required: null
+    caName: DemoClientSubCA_2307RSA
+    endEntityProfileName: DemoDocumentSigningEndEntityProfile
+    certificateProfileName: DemoDocumentSigningEECertificateProfile
+    certificateValidity: P365D
+    certificateValidityOffset: PT-1M

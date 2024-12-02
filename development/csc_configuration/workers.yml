@@ -1,0 +1,39 @@
+# List of Crypto Tokens referenced in the configuration
+# Crypto Tokens must exist in the SignServer
+cryptoTokens:
+  # - name: Name of the Crypto Token
+  #   id: ID of the Crypto Token
+  #   keyPoolProfiles: A list of key pool profile names that will be used to pre-generate pools of ready to use signing keys
+  - name: "SigningToken01"
+    id: 1
+    keyPoolProfiles:
+      - session-rsa
+      - session-ecdsa
+      - onetime-rsa
+      - onetime-ecdsa
+signers:
+  # - name: Name of the Signer
+  #   id: ID of the Signer
+  #   cryptoToken: Name of the referenced Crypto Token from the list above
+  #   capabilities:
+  #     signatureQualifiers: List of signature qualifiers
+  #     signatureFormat: Signature format
+  #     conformanceLevel: Conformance level
+  #     signaturePackaging: Signature packaging
+  #     signatureAlgorithms: List of signature algorithms
+  #     returnsValidationInfo: Flag to return validation info
+  - name: "XAdES-Baseline-B"
+    id: 201
+    cryptoToken: "SigningToken01"
+    capabilities:
+      signatureQualifiers:
+        - eu_eidas_qes
+        - eu_eidas_aes
+      signatureFormat: X
+      conformanceLevel: Ades-B-B
+      signaturePackaging: Detached
+      signatureAlgorithms:
+        - SHA256withRSA
+        - SHA384withRSA
+        - SHA512withRSA
+      returnsValidationInfo: false
