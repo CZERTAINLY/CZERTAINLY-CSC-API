@@ -580,14 +580,14 @@ public class CredentialsService {
     }
 
     private String createUniqueUserId(String userID) {
-        String random_id = RandomStringUtils.random(8, true, true);
+        String random_id = RandomStringUtils.secure().next(8, true, true);
         String uniqueUserId = String.format("%s-%s", userID, random_id);
         logger.trace("Generated new unique user id {}", uniqueUserId);
         return uniqueUserId;
     }
 
     private String getUniqueKeyAlias(String userId) {
-        String random_id = RandomStringUtils.random(8, true, true);
+        String random_id = RandomStringUtils.secure().next(8, true, true);
         String alias = String.format("%s-%s", userId, random_id);
         logger.trace("Generated new unique key alias {}", alias);
         return alias;
