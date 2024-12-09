@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(SigningSessionsService.class)
 @Testcontainers
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class SigningSessionsServiceTest extends MysqlTest {
 
     @Autowired

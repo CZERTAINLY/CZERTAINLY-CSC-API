@@ -65,7 +65,7 @@ public class MysqlTest {
         registry.add("spring.datasource.username", databaseContainer::getUsername);
         registry.add("spring.datasource.password", databaseContainer::getPassword);
         registry.add("spring.datasource.hikari.max-lifetime", () -> 10000);
-        registry.add("spring.datasource.hikari.connection-timeout", () -> 2000);
+        registry.add("spring.datasource.hikari.connection-timeout", () -> 3000);
         registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
         registry.add("spring.flyway.schemas", () -> "test");
         registry.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/specific/{vendor}");
