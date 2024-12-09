@@ -1,6 +1,7 @@
 package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
+import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.model.SignedDocuments;
 import com.czertainly.csc.signing.Signature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
@@ -37,7 +38,7 @@ class DocumentHashSignerTest {
     @Test
     void signCanSignSingleHash() {
         when(signserverClient.signSingleHash(any(), any(), any(), any()))
-                .thenReturn(Signature.of("signature".getBytes(), SignaturePackaging.DETACHED));
+                .thenReturn(Result.success(Signature.of("signature".getBytes(), SignaturePackaging.DETACHED)));
 
         // given
         List<String> data = List.of("data");
@@ -64,7 +65,8 @@ class DocumentHashSignerTest {
     @Test
     void signCanSignSingleHashWithValidationInfo() {
         when(signserverClient.signSingleHashWithValidationData(any(), any(), any(), any()))
-                .thenReturn(SignedDocuments.of(Signature.of("signature".getBytes(), SignaturePackaging.DETACHED)));
+                .thenReturn(Result.success(
+                        SignedDocuments.of(Signature.of("signature".getBytes(), SignaturePackaging.DETACHED))));
 
         // given
         List<String> data = List.of("data");
@@ -95,7 +97,7 @@ class DocumentHashSignerTest {
                 Signature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
         );
         when(signserverClient.signMultipleHashes(any(), any(), any(), any()))
-                .thenReturn(signatures);
+                .thenReturn(Result.success(signatures));
 
         // given
         List<String> data = List.of("data1", "data2");
@@ -128,7 +130,7 @@ class DocumentHashSignerTest {
                 )
         );
         when(signserverClient.signMultipleHashesWithValidationData(any(), any(), any(), any()))
-                .thenReturn(signatures);
+                .thenReturn(Result.success(signatures));
 
         // given
         List<String> data = List.of("data1", "data2");
@@ -160,7 +162,7 @@ class DocumentHashSignerTest {
                 )
         );
         when(signserverClient.signMultipleHashesWithValidationData(any(), any(), any(), any()))
-                .thenReturn(signatures);
+                .thenReturn(Result.success(signatures));
 
         // given
         List<String> data = List.of("data1", "data2");

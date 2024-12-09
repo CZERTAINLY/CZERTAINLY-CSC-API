@@ -4,7 +4,6 @@ import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.signing.Signature;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
@@ -58,68 +57,44 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
     private Result<SignedDocuments, TextError> signSingleHash(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
-        try {
-            Signature signature = signserverClient.signSingleHash(
+        return signserverClient.signSingleHash(
                     worker.worker().workerName(),
                     data.getFirst().getBytes(),
                     signingToken.getKeyAlias(),
                     configuration.digestAlgorithm()
-            );
-            return Result.success(SignedDocuments.of(signature));
-        } catch (Exception e) {
-            logger.error("The signing of the single document has failed.", e);
-            return Result.error(TextError.of("The signing of the single document has failed."));
-        }
+        ).map(SignedDocuments::of);
     }
 
     private Result<SignedDocuments, TextError> signSingleHashWithValidationInfo(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
-        try {
-            SignedDocuments signedDocuments = signserverClient.signSingleHashWithValidationData(
+        return signserverClient.signSingleHashWithValidationData(
                     worker.worker().workerName(),
                     data.getFirst().getBytes(),
                     signingToken.getKeyAlias(),
                     configuration.digestAlgorithm()
             );
-            return Result.success(signedDocuments);
-        } catch (Exception e) {
-            logger.error("The signing of the documents with validation info has failed.", e);
-            return Result.error(TextError.of("The signing of the documents with validation info has failed."));
-        }
     }
 
     private Result<SignedDocuments, TextError> signMultipleHashesWithValidationInfo(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
-        try {
-            SignedDocuments signedDocuments = signserverClient.signMultipleHashesWithValidationData(
+        return signserverClient.signMultipleHashesWithValidationData(
                     worker.worker().workerName(),
                     data,
                     signingToken.getKeyAlias(),
                     configuration.digestAlgorithm()
             );
-            return Result.success(signedDocuments);
-        } catch (Exception e) {
-            logger.error("The signing of the documents with validation info has failed.", e);
-            return Result.error(TextError.of("The signing of the documents with validation info has failed."));
-        }
     }
 
     private Result<SignedDocuments, TextError> signMultipleHashes(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
-        try {
-            List<Signature> signatures = signserverClient.signMultipleHashes(
-                    worker.worker().workerName(),
-                    data,
-                    signingToken.getKeyAlias(),
-                    configuration.digestAlgorithm()
-            );
-            return Result.success(SignedDocuments.of(signatures));
-        } catch (Exception e) {
-            logger.error("The signing of the documents has failed.", e);
-            return Result.error(TextError.of("The signing of the documents has failed."));
-        }
+        return signserverClient.signMultipleHashes(
+                worker.worker().workerName(),
+                data,
+                signingToken.getKeyAlias(),
+                configuration.digestAlgorithm()
+        ).map(SignedDocuments::of);
     }
 }

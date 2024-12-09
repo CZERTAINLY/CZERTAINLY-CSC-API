@@ -1,16 +1,26 @@
 package com.czertainly.csc.clients.signserver.ws;
 
 import com.czertainly.csc.clients.signserver.ws.dto.*;
+import com.czertainly.csc.common.errorhandling.ErrorResultRetryException;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.common.result.TextErrorWithRetryIndication;
 import jakarta.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.ws.client.WebServiceIOException;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 
 import java.util.Base64;
 import java.util.List;
 
+@Retryable(
+        retryFor = {ErrorResultRetryException.class},
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 1000, multiplier = 2),
+        listeners = {"resultRetryListener"})
 public class SignserverWsClient extends WebServiceGatewaySupport {
 
     private static final Logger logger = LoggerFactory.getLogger(SignserverWsClient.class);
@@ -44,6 +54,12 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
             var csrData = response.getValue().getReturn();
             logger.info("CSR was generated for key {}", keyAlias);
             return Result.success(csrData);
+        } catch (WebServiceIOException e) {
+            logger.debug("Failed to generate CSR. Worker ID={}, KeyAlias={}, SignatureAlgorithm={}, DN={}",
+                         workerId, keyAlias, signatureAlgorithm, dn, e
+            );
+            return Result.error(
+                    TextErrorWithRetryIndication.of("Failed to generate CSR", true));
         } catch (Exception e) {
             logger.debug("Failed to generate CSR. Worker ID={}, KeyAlias={}, SignatureAlgorithm={}, DN={}",
                          workerId, keyAlias, signatureAlgorithm, dn, e
@@ -71,6 +87,10 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
                     request);
             var results = response.getValue().getReturn();
             return Result.success(results);
+        } catch (WebServiceIOException e) {
+            logger.debug("Failed to query token entries of worker {}", workerId, e);
+            return Result.error(
+                    TextErrorWithRetryIndication.of("Failed to query token entries of worker.", true));
         } catch (Exception e) {
             logger.debug("Failed to query token entries of worker {}", workerId, e);
             return Result.error(TextError.of(e));
@@ -91,8 +111,17 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
                         workerId
             );
             return Result.emptySuccess();
+        } catch (WebServiceIOException e) {
+            logger.error("Failed to import certificate chain to key '{}' stored in crypto token with ID '{}'", keyAlias,
+                         workerId, e
+            );
+            return Result.error(
+                    TextErrorWithRetryIndication.of("Failed to import certificate chain to key.", true));
         } catch (Exception e) {
-            return Result.error(TextError.of(e));
+            logger.error("Failed to import certificate chain to key '{}' stored in crypto token with ID '{}'", keyAlias,
+                         workerId, e
+            );
+            return Result.error(TextError.of("Failed to import certificate chain to key '%s' stored in crypto token with ID '%s'", keyAlias, workerId));
         }
     }
 
@@ -112,6 +141,9 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
             keyAlias = response.getValue().getReturn();
             logger.info("A new key '{}' was generated for Crypto Token with ID '{}'", keyAlias, workerId);
             return Result.success(keyAlias);
+        } catch (WebServiceIOException e) {
+            logger.error("Generation of a key '{}' on Crypto Token with ID '{}' has failed.", keyAlias, workerId, e);
+            return Result.error(TextErrorWithRetryIndication.of("Generation of a key has failed.", true));
         } catch (Exception e) {
             logger.error("Generation of a key '{}' on Crypto Token with ID '{}' has failed.", keyAlias, workerId, e);
             return Result.error(TextError.of(e));
@@ -133,13 +165,17 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
             } else {
                 return Result.error(TextError.of("Key '%s' was not removed but no error was returned.", keyAlias));
             }
+        } catch (WebServiceIOException e) {
+            logger.error("Failed to remove key '{}' from crypto token '{}'", keyAlias, workerId, e);
+            return Result.error(
+                    TextErrorWithRetryIndication.doRetry("Failed to remove key"));
         } catch (Exception e) {
             if (notExistsOk && e.getMessage().contains("No such alias in token")) {
                 logger.info("Key '{}' was not found on crypto token '{}'. Key is considered removed.", keyAlias, workerId);
                 return Result.emptySuccess();
             }
             logger.error("Failed to remove key '{}' from crypto token '{}'", keyAlias, workerId, e);
-            return Result.error(TextError.of(e));
+            return Result.error(TextErrorWithRetryIndication.doNotRetry("Failed to remove key."));
         }
     }
 }
