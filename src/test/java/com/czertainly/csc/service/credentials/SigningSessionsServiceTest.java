@@ -9,15 +9,11 @@ import com.czertainly.csc.repository.entities.SigningSessionEntity;
 import com.czertainly.csc.utils.db.MysqlTest;
 import com.czertainly.csc.utils.signing.aSigningSession;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
-import jakarta.persistence.EntityTransaction;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -121,9 +117,10 @@ class SigningSessionsServiceTest extends MysqlTest {
 
         // given
         SigningSession newSession = aSigningSession.instance()
-                .withCredentialId(credentialId)
-                .withStatus(CredentialSessionStatus.NEW)
-                .build();
+                                                   .withCredentialId(credentialId)
+                                                   .withStatus(CredentialSessionStatus.NEW)
+                                                   .withExpiresIn(ZonedDateTime.now().plus(Duration.ofMinutes(5)))
+                                                   .build();
 
         // when
         var result = signingSessionsService.saveNewSession(newSession);
@@ -155,7 +152,10 @@ class SigningSessionsServiceTest extends MysqlTest {
     @Transactional(propagation=Propagation.NEVER)
     public void saveNewSessionWillReturnErrorIfSaveFails() throws IOException {
         // setup
-        SigningSession newSession = aSigningSession.instance().build();
+        SigningSession newSession = aSigningSession.instance()
+                                                   .withStatus(CredentialSessionStatus.NEW)
+                                                   .withExpiresIn(ZonedDateTime.now().plus(Duration.ofMinutes(5)))
+                                                   .build();
 
         // given
        proxy.toxics().timeout("timeout-toxics", ToxicDirection.UPSTREAM, 2);
