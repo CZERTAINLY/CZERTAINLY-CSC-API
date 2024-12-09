@@ -2,11 +2,11 @@ package com.czertainly.csc.repository;
 
 import com.czertainly.csc.repository.entities.SessionKeyEntity;
 import com.czertainly.csc.utils.db.MysqlTest;
-import com.czertainly.csc.utils.db.PostgresTest;
-import org.junit.jupiter.api.Assertions;
+import eu.rekawek.toxiproxy.model.ToxicDirection;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -18,7 +18,6 @@ class SessionKeyRepositoryMysqlTest extends MysqlTest {
     @Autowired
     private SessionKeyRepository sessionKeyRepository;
 
-    // TODO FIX TEST
     @Test
     void findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse() {
         // given
@@ -52,7 +51,6 @@ class SessionKeyRepositoryMysqlTest extends MysqlTest {
         assertEquals(key4, key.get().getId());
     }
 
-    //TODO FIX TEST
     @Test
     void countByCryptoTokenIdAndKeyAlgorithmAndInUse() {
         // given

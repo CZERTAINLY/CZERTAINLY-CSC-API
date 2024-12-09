@@ -49,7 +49,6 @@ class SessionKeyRepositoryPostgresTest extends PostgresTest {
         assertEquals(key4, key.get().getId());
     }
 
-    // TODO FIX TEST
     @Test
     void countByCryptoTokenIdAndKeyAlgorithmAndInUse() {
         // given
