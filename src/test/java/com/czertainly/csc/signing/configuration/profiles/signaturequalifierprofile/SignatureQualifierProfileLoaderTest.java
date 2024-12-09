@@ -110,7 +110,7 @@ class SignatureQualifierProfileLoaderTest {
     @Test
     void loadCredentialProfilesThrowsExceptionIfConfigurationFileIsEmpty() throws IOException {
         // given
-        File config = File.createTempFile("siqnature-qualifier-profiles-ejbca", "yml");
+        File config = File.createTempFile("siqnature-qualifier-profiles-ejbca", "yml", configurationDirectory.toFile());
 
         // when
         Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
@@ -119,10 +119,11 @@ class SignatureQualifierProfileLoaderTest {
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Configuration file is empty", ex);
     }
 
+
     @Test
     void loadCredentialProfilesThrowsExceptionIfConfigurationFileIsInvalid() throws IOException {
         // given
-        File config = File.createTempFile("siqnature-qualifier-profiles-ejbca", "yml");
+        File config = File.createTempFile("siqnature-qualifier-profiles-ejbca", "yml", configurationDirectory.toFile());
         try (FileWriter writer = new FileWriter(config)) {
             writer.write("invalid yaml");
         }

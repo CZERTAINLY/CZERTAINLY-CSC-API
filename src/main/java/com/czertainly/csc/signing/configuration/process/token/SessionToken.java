@@ -19,17 +19,23 @@ public record SessionToken(SessionCredentialMetadata credentialMetadata, Signing
     }
 
     @Override
-    public Boolean canSignData(List<String> data) {
+    public Boolean canSignData(List<String> data, int numberOfDocumentsAuthorizedBySad) {
         if (session.status() != CredentialSessionStatus.ACTIVE) {
-            logger.info("Session Token '{}' belonging to session credential '{}' cannot be used to sign documents as the session is not active. The session status is '{}'.",
+            logger.warn("Session Token '{}' belonging to session credential '{}' cannot be used to sign documents as the session is not active. The session status is '{}'.",
                         credentialMetadata.keyAlias(), session().credentialId(), session.status());
             return false;
         }
 
         boolean canSignEnoughDocuments = credentialMetadata.multisign() >= data.size();
         if (!canSignEnoughDocuments) {
-            logger.info("Session Token '{}' belonging to session credential '{}' cannot sign requested {} documents, because it is configured to sign only {} documents at once.",
+            logger.warn("Session Token '{}' belonging to session credential '{}' cannot sign requested {} documents, because it is configured to sign only {} documents at once.",
                         credentialMetadata.keyAlias(), session().credentialId(), data.size(), credentialMetadata.multisign());
+            return false;
+        }
+
+        if (numberOfDocumentsAuthorizedBySad > credentialMetadata.multisign()) {
+            logger.warn("Session Token '{}' belonging to session credential '{}' cannot sign requested {} documents, because it is configured to sign only {} documents at once but the Signature Activation Data allows to sign {} documents.",
+                        credentialMetadata.keyAlias(), session().credentialId(), data.size(), credentialMetadata.multisign(), numberOfDocumentsAuthorizedBySad);
             return false;
         }
 

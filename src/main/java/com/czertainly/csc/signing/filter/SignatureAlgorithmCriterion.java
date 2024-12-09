@@ -8,7 +8,6 @@ public class SignatureAlgorithmCriterion implements Criterion<WorkerCapabilities
 
     public SignatureAlgorithmCriterion(String algorithm) {
         this.algorithm = algorithm;
-        ;
     }
 
     @Override

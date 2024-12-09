@@ -76,7 +76,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
     @Override
     public Result<K, TextError> acquireKey(CryptoToken cryptoToken, String keyAlgorithm) {
         logger.debug("Acquiring a signing key of CryptoToken '{}' with algorithm '{}'",
-                     cryptoToken.identifier(),keyAlgorithm
+                     cryptoToken.identifier(), keyAlgorithm
         );
         return keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(
                                      cryptoToken.id(), keyAlgorithm, false
@@ -110,7 +110,8 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
     }
 
     public Result<Void, TextError> deleteKey(UUID keyId) {
-        return getKey(keyId).flatMap(this::deleteKey);
+        return getKey(keyId).flatMap(this::deleteKey)
+                            .mapError(e -> e.extend("Can't delete key with id '%s'.", keyId));
     }
 
     @Override
@@ -125,7 +126,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                                            logger.error("Failed to delete signing key '{}' with id '{}' from database.",
                                                         key.keyAlias(), key.id(), e
                                            );
-                                           Result.error(TextError.of("Key not deleted from database."));
+                                           Result.error(TextError.of("Key '%s' not deleted from database.", key.keyAlias()));
                                        }
                                        return Result.emptySuccess();
                                    })

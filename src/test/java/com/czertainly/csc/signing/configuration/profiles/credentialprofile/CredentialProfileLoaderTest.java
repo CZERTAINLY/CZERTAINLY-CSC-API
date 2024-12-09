@@ -114,7 +114,8 @@ class CredentialProfileLoaderTest {
     @Test
     void loadCredentialProfilesThrowsExceptionIfConfigurationFileIsEmpty() throws IOException {
         // given
-        File config = File.createTempFile("credential-profiles-ejbca", "yml");
+        File config = File.createTempFile("credential-profiles-ejbca", "yml", configurationDirectory.toFile());
+
 
         // when
         Executable ex = () -> new CredentialProfileLoader(cscConfiguration, config.getName());
@@ -130,7 +131,7 @@ class CredentialProfileLoaderTest {
     @Test
     void loadCredentialProfilesThrowsExceptionIfConfigurationFileIsInvalid() throws IOException {
         // given
-        File config = File.createTempFile("credential-profiles-ejbca", "yml");
+        File config = File.createTempFile("credential-profiles-ejbca", "yml", configurationDirectory.toFile());
         try (FileWriter writer = new FileWriter(config)) {
             writer.write("invalid yaml");
         }

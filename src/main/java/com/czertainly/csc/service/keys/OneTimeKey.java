@@ -15,7 +15,7 @@ public class OneTimeKey extends SigningKey {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", SessionKey.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", OneTimeKey.class.getSimpleName() + "[", "]")
                 .add("id=" + this.id().toString())
                 .add("keyAlias=" + this.keyAlias())
                 .toString();

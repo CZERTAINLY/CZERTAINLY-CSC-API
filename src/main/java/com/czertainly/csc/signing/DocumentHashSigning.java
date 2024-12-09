@@ -15,11 +15,12 @@ import com.czertainly.csc.service.credentials.SigningSessionsService;
 import com.czertainly.csc.service.keys.OneTimeKeysService;
 import com.czertainly.csc.service.keys.SessionKeysService;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
-import com.czertainly.csc.signing.configuration.process.DocumentHashSignatureProcessTemplate;
+import com.czertainly.csc.signing.configuration.process.SignatureProcessTemplate;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.LongTermTokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.OneTimeTokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.SessionTokenConfiguration;
+import com.czertainly.csc.signing.configuration.process.signers.DocumentHashSigner;
 import com.czertainly.csc.signing.configuration.process.token.*;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
 import com.czertainly.csc.signing.signatureauthorizers.DocumentHashAuthorizer;
@@ -32,10 +33,9 @@ public class DocumentHashSigning {
 
     private final static Logger logger = LoggerFactory.getLogger(DocumentHashSigning.class);
 
-    private final DocumentHashSignatureProcessTemplate<OneTimeTokenConfiguration, DocumentHashSignatureProcessConfiguration, OneTimeToken> oneTimeHashSignature;
-    private final DocumentHashSignatureProcessTemplate<LongTermTokenConfiguration, DocumentHashSignatureProcessConfiguration, LongTermToken> longTermHashSignature;
-    private final DocumentHashSignatureProcessTemplate<SessionTokenConfiguration, DocumentHashSignatureProcessConfiguration, SessionToken> sessionSignature;
-
+    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentHashSignatureProcessConfiguration, OneTimeToken> oneTimeHashSignature;
+    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentHashSignatureProcessConfiguration, LongTermToken> longTermHashSignature;
+    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentHashSignatureProcessConfiguration, SessionToken> sessionSignature;
 
     public DocumentHashSigning(WorkerRepository workerRepository,
                                OneTimeKeySelector oneTimeKeySelector, SessionKeySelector sessionKeySelector,
@@ -47,10 +47,8 @@ public class DocumentHashSigning {
                                CredentialProfileRepository credentialProfileRepository
     ) {
         DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
-        OneTimeTokenProvider<DocumentHashSignatureProcessConfiguration> oneTimeTokenProvider =
-                new OneTimeTokenProvider<>(signatureQualifierBasedCredentialFactory, oneTimeKeySelector,
-                                           oneTimeKeysService
-                );
+        OneTimeTokenProvider<DocumentHashSignatureProcessConfiguration> oneTimeTokenProvider = new OneTimeTokenProvider<>(
+                signatureQualifierBasedCredentialFactory, oneTimeKeySelector, oneTimeKeysService);
         LongTermTokenProvider<DocumentHashSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(
                 credentialsService);
 
@@ -62,25 +60,28 @@ public class DocumentHashSigning {
                 sessionKeysService
         );
 
-        oneTimeHashSignature = new DocumentHashSignatureProcessTemplate<>(
+        DocumentHashSigner<DocumentHashSignatureProcessConfiguration> documentHashSigner = new DocumentHashSigner<>(
+                signserverClient);
+
+        oneTimeHashSignature = new SignatureProcessTemplate<>(
                 documentHashAuthorizer,
                 workerRepository,
                 oneTimeTokenProvider,
-                signserverClient
+                documentHashSigner
         );
 
-        longTermHashSignature = new DocumentHashSignatureProcessTemplate<>(
+        longTermHashSignature = new SignatureProcessTemplate<>(
                 documentHashAuthorizer,
                 workerRepository,
                 longTermTokenProvider,
-                signserverClient
+                documentHashSigner
         );
 
-        sessionSignature = new DocumentHashSignatureProcessTemplate<>(
+        sessionSignature = new SignatureProcessTemplate<>(
                 documentHashAuthorizer,
                 workerRepository,
                 sessionTokenProvider,
-                signserverClient
+                documentHashSigner
         );
     }
 

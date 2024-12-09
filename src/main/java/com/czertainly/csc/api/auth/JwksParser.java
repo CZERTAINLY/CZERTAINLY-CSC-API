@@ -19,7 +19,7 @@ public class JwksParser {
         this.parser = Jwks.setParser().build();
     }
 
-    Set<PublicJwk<?>> parse(String jwksString) {
+    public Set<PublicJwk<?>> parse(String jwksString) {
         JwkSet set = parser.parse(jwksString);
         Set<PublicJwk<?>> publicJwks = new HashSet<>();
         for (Jwk<?> jwk : set.getKeys()) {

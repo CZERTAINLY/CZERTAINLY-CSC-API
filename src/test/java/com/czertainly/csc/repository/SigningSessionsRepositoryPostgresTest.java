@@ -1,19 +1,13 @@
 package com.czertainly.csc.repository;
 
-import com.czertainly.csc.repository.entities.CredentialMetadataEntity;
+import com.czertainly.csc.repository.entities.SessionCredentialMetadataEntity;
+import com.czertainly.csc.repository.entities.SessionKeyEntity;
 import com.czertainly.csc.repository.entities.SigningSessionEntity;
+import com.czertainly.csc.utils.db.PostgresTest;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -23,31 +17,16 @@ import static com.czertainly.csc.utils.assertions.ExceptionAssertions.assertThro
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Testcontainers
-class SigningSessionsRepositoryPostgresTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.flyway.schemas", () -> "test");
-        registry.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/specific/{vendor}");
-    }
-
-    @Autowired
-    TestEntityManager testEntityManager;
+class SigningSessionsRepositoryPostgresTest extends PostgresTest {
 
     @Autowired
     SigningSessionsRepository signingSessionsRepository;
 
     @Autowired
-    CredentialsRepository credentialsRepository;
+    SessionCredentialsRepository credentialsRepository;
+
+    @Autowired
+    SessionKeyRepository keyRepository;
 
     @Test
     public void expiresInPointsToTheSameInstantWhenRetrievedBack() {
@@ -107,21 +86,23 @@ class SigningSessionsRepositoryPostgresTest {
     }
 
     private UUID createCredentialAndInsertIntoDB() {
+        UUID keyId = UUID.randomUUID();
+        String keyAlias = "testKey";
         UUID credentialId = UUID.randomUUID();
-        credentialsRepository.save(new CredentialMetadataEntity(
+
+        keyRepository.save(new SessionKeyEntity(
+                keyId, 1, keyAlias, "RSA", false, null
+        ));
+
+        credentialsRepository.save(new SessionCredentialMetadataEntity(
                 credentialId,
                 "user",
-                "keyAlias",
-                "credentialProfile",
+                keyAlias,
+                keyId,
                 "endEntityName",
-                "currentCertificateSn",
-                "currentCertificateIssuer",
                 "signatureQualifier",
                 1,
-                "scal",
-                "cryptoTokenName",
-                "description",
-                false
+                "cryptoTokenName"
         ));
         testEntityManager.flush();
         testEntityManager.clear();

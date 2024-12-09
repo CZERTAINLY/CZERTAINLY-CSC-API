@@ -32,7 +32,7 @@ public class IdpClient {
                      @Qualifier("idpClientRequestFactory") HttpComponentsClientHttpRequestFactory requestFactory
     ) {
         String userInfoUrl = idpConfiguration.userInfoUrl();
-        canDownloadUserInfo = idpConfiguration.userInfoUrl() != null && !userInfoUrl.equals("none");
+        canDownloadUserInfo = idpConfiguration.userInfoUrl() != null && !userInfoUrl.isBlank();
         this.userInfoUri = userInfoUrl;
         this.jwksUri = idpConfiguration.jwksUri();
 

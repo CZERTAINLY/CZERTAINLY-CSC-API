@@ -6,4 +6,8 @@ public record Signature(
         byte[] value,
         SignaturePackaging packaging
 ) {
+
+    public static Signature of(byte[] value, SignaturePackaging packaging) {
+        return new Signature(value, packaging);
+    }
 }

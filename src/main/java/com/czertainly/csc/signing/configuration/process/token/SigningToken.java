@@ -6,6 +6,6 @@ public interface SigningToken {
 
     String getKeyAlias();
 
-    Boolean canSignData(List<String> data);
+    Boolean canSignData(List<String> data, int numberOfDocumentsAuthorizedBySad);
 
 }

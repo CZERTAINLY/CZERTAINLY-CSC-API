@@ -11,9 +11,7 @@ import java.util.UUID;
 public interface KeyRepository<T extends KeyEntity> extends CrudRepository<T, UUID> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<T> findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(int cryptoTokenId, String keyAlgorithm,
-                                                                        boolean inUse
-    );
+    Optional<T> findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(int cryptoTokenId, String keyAlgorithm, boolean inUse);
 
     int countByCryptoTokenIdAndKeyAlgorithmAndInUse(int cryptoTokenId, String keyAlgorithm, boolean inUse);
 }

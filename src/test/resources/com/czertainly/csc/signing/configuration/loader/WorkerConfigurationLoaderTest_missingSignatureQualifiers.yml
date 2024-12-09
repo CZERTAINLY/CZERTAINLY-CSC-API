@@ -1,0 +1,16 @@
+cryptoTokens:
+  - name: "SigningToken01"
+    id: 1
+signers:
+  - name: "XAdES-Baseline-B"
+    id: 201
+    cryptoToken: "SigningToken01"
+    capabilities:
+      signatureFormat: X
+      conformanceLevel: Ades-B-B
+      signaturePackaging: Detached
+      signatureAlgorithms:
+        - SHA256withRSA
+        - SHA384withRSA
+        - SHA512withRSA
+      returnsValidationInfo: false

@@ -9,6 +9,7 @@ import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.TokenConfiguration;
+import com.czertainly.csc.signing.configuration.process.signers.DocumentSigner;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
 import com.czertainly.csc.signing.configuration.process.token.TokenProvider;
 import com.czertainly.csc.signing.signatureauthorizers.SignatureAuthorizer;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public abstract class SignatureProcessTemplate<
+public class SignatureProcessTemplate<
         TC extends TokenConfiguration,
         C extends SignatureProcessConfiguration,
         T extends SigningToken
@@ -27,13 +28,16 @@ public abstract class SignatureProcessTemplate<
     private final SignatureAuthorizer signatureAuthorizer;
     private final WorkerRepository workerRepository;
     private final TokenProvider<TC, C, T> tokenProvider;
+    private final DocumentSigner<C> signer;
 
-    protected SignatureProcessTemplate(SignatureAuthorizer signatureAuthorizer,
-                                       WorkerRepository workerRepository, TokenProvider<TC, C, T> tokenProvider
+    public SignatureProcessTemplate(SignatureAuthorizer signatureAuthorizer,
+                                       WorkerRepository workerRepository, TokenProvider<TC, C, T> tokenProvider,
+                                       DocumentSigner<C> signer
     ) {
         this.signatureAuthorizer = signatureAuthorizer;
         this.workerRepository = workerRepository;
         this.tokenProvider = tokenProvider;
+        this.signer = signer;
     }
 
     public Result<SignedDocuments, TextError> sign(C configuration, TC tokenConfiguration,  List<String> data) {
@@ -45,7 +49,7 @@ public abstract class SignatureProcessTemplate<
         if (authorized) {
             var getWorkerResult = getWorker(configuration);
             if (getWorkerResult instanceof Error(var err))
-                return Result.error(err.extend("Failed to get worker for the signature request."));
+                return Result.error(err.extend("Failed to obtain suitable worker for the signature request."));
             WorkerWithCapabilities worker = getWorkerResult.unwrap();
 
             var getSigningTokenResult = tokenProvider.getSigningToken(configuration, tokenConfiguration, worker);
@@ -53,15 +57,15 @@ public abstract class SignatureProcessTemplate<
                 return Result.error(err.extend("Failed to get signing token for the signature request."));
             T signingToken = getSigningTokenResult.unwrap();
 
-            if (!signingToken.canSignData(data)) {
+            if (!signingToken.canSignData(data, configuration.sad().getNumSignatures())) {
                 return Result.error(TextError.of("Selected signing token cannot sign the requested data."));
             }
 
-            return sign(data, configuration, signingToken, worker)
-                    .mapError(err -> err.extend("Failed to sign documents."))
+            return signer.sign(data, configuration, signingToken, worker)
+                    .mapError(err -> err.extend("Error occurred during signing."))
                     .run(() -> tokenProvider.cleanup(signingToken));
         } else {
-            return Result.error(TextError.of("Some documents were not authorized by the SAD."));
+            return Result.error(TextError.of("Signature request was not authorized."));
         }
     }
 
@@ -81,14 +85,10 @@ public abstract class SignatureProcessTemplate<
         WorkerWithCapabilities worker = workerRepository.selectWorker(requiredWorkerCapabilities);
         if (worker == null) {
             logger.error("No worker found for the given capabilities: {}.", requiredWorkerCapabilities);
-            return Result.error(TextError.of("No suitable worker found."));
+            return Result.error(TextError.of("No worker with matching capabilities found."));
         }
         logger.debug("Selected worker: {}.", worker.worker().workerName());
         return Result.success(worker);
     }
 
-    protected abstract Result<SignedDocuments, TextError> sign(
-            List<String> data, C configuration, T signingToken,
-            WorkerWithCapabilities worker
-    );
 }

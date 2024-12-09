@@ -16,12 +16,22 @@ public record LongTermToken(CredentialMetadata credentialMetadata) implements Si
     }
 
     @Override
-    public Boolean canSignData(List<String> data) {
-        boolean canSignEnoughDocuments = credentialMetadata.multisign() >= data.size();
-        if (!canSignEnoughDocuments) {
-            logger.info("LongTermToken {} cannot sign requested {} documents, because it is configured to sign only {} documents at once.",
+    public Boolean canSignData(List<String> data, int numberOfDocumentsAuthorizedBySad) {
+        if (credentialMetadata.multisign() < data.size()) {
+            logger.warn(
+                    "LongTermToken '{}' cannot sign requested '{}' documents, because it is configured to sign only '{}' documents at once.",
                     credentialMetadata.keyAlias(), data.size(), credentialMetadata.multisign());
+            return false;
         }
-        return canSignEnoughDocuments;
+
+        if (credentialMetadata.multisign() < numberOfDocumentsAuthorizedBySad) {
+            logger.warn(
+                    "LongTermToken '{}' cannot sign requested '{}' documents, because it is configured to sign only '{}' documents at once but the Signature Activation Data allows to sign '{}' documents.",
+                    credentialMetadata.keyAlias(), data.size(), credentialMetadata.multisign(),
+                    numberOfDocumentsAuthorizedBySad
+            );
+            return false;
+        }
+        return true;
     }
 }

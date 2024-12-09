@@ -1,51 +1,68 @@
 package com.czertainly.csc.utils.configuration;
 
+import com.czertainly.csc.configuration.idp.IdpClientAuth;
 import com.czertainly.csc.configuration.idp.IdpConfiguration;
-import jakarta.validation.constraints.NotBlank;
 import org.instancio.Instancio;
+import org.instancio.InstancioClassApi;
 
 import java.time.Duration;
 
 import static org.instancio.Select.field;
 
 public class IdpConfigurationBuilder {
-    String issuer;
-    @NotBlank String audience;
-    Duration clockSkewSeconds;
+
+    InstancioClassApi<IdpConfiguration> partial = Instancio.of(IdpConfiguration.class);
 
     public static IdpConfiguration anIdpConfiguration() {
         return Instancio.of(IdpConfiguration.class)
                 .create();
     }
 
+    public static IdpConfigurationBuilder create() {
+        return new IdpConfigurationBuilder();
+    }
+
     public IdpConfigurationBuilder withIssuer(String issuer) {
-        this.issuer = issuer;
+        partial.set(field(IdpConfiguration::issuer), issuer);
         return this;
     }
 
     public IdpConfigurationBuilder withAudience(String audience) {
-        this.audience = audience;
+        partial.set(field(IdpConfiguration::audience), audience);
         return this;
     }
 
     public IdpConfigurationBuilder withClockSkewSeconds(Duration clockSkewSeconds) {
-        this.clockSkewSeconds = clockSkewSeconds;
+        partial.set(field(IdpConfiguration::clockSkewSeconds), clockSkewSeconds);
+        return this;
+    }
+
+    public IdpConfigurationBuilder withUserInfoUrl(String userInfoUrl) {
+        partial.set(field(IdpConfiguration::userInfoUrl), userInfoUrl);
+        return this;
+    }
+
+    public IdpConfigurationBuilder withBaseUrl(String baseUrl) {
+        partial.set(field(IdpConfiguration::baseUrl), baseUrl);
+        return this;
+    }
+
+    public IdpConfigurationBuilder withJwksUri(String jwksUri) {
+        partial.set(field(IdpConfiguration::jwksUri), jwksUri);
+        return this;
+    }
+
+    public IdpConfigurationBuilder withTruststoreBundle(String truststoreBundle) {
+        partial.set(field(IdpConfiguration::truststoreBundle), truststoreBundle);
+        return this;
+    }
+
+    public IdpConfigurationBuilder withAuth(IdpClientAuth auth) {
+        partial.set(field(IdpConfiguration::client), auth);
         return this;
     }
 
     public IdpConfiguration build() {
-        var partial = Instancio.of(IdpConfiguration.class);
-        if (issuer != null) {
-            partial.set(field(IdpConfiguration::issuer), issuer);
-        }
-
-        if (audience != null) {
-            partial.set(field(IdpConfiguration::audience), audience);
-        }
-
-        if (clockSkewSeconds != null) {
-            partial.set(field(IdpConfiguration::clockSkewSeconds), clockSkewSeconds);
-        }
         return partial.create();
     }
 

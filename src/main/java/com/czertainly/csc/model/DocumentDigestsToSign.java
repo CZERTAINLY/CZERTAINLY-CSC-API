@@ -20,6 +20,6 @@ public record DocumentDigestsToSign(
         SignaturePackaging signaturePackaging
 ) {
     public SignatureAlgorithm signatureAlgorithm() {
-        return new SignatureAlgorithm(keyAlgorithm, digestAlgorithm);
+        return SignatureAlgorithm.of(keyAlgorithm, digestAlgorithm);
     }
 }

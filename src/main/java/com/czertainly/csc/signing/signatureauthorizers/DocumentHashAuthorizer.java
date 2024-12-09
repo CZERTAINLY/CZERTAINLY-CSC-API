@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class DocumentHashAuthorizer implements SignatureAuthorizer {
@@ -18,7 +19,7 @@ public class DocumentHashAuthorizer implements SignatureAuthorizer {
     public Result<Boolean, TextError> authorize(List<String> documentHashes, SignatureActivationData sad) {
         if (sad.getHashes().isEmpty() || !sad.getHashes().get().containsAll(documentHashes)) {
             logger.info("Some document hashes were not authorized by the SAD.");
-            logger.debug("Authorized document hashes: {}", sad.getHashes().get());
+            logger.debug("Authorized document hashes: {}", sad.getHashes().orElseGet(Set::of));
             logger.debug("Document hashes to Sign: {}", documentHashes);
             return Result.success(false);
         }

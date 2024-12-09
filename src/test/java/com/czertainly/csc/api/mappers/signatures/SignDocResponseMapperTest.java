@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.czertainly.csc.utils.assertions.CollectionAssertions.assertContainsExactlyInAnyOrder;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SignDocResponseMapperTest {
@@ -74,6 +75,7 @@ class SignDocResponseMapperTest {
         assertEquals(encodedDetached, response.getSignatureObject().getFirst());
     }
 
+    @Test
     void signaturesAreBase64Encoded() {
         // given
         List<Signature> signatures = List.of(
@@ -216,10 +218,6 @@ class SignDocResponseMapperTest {
                 Set.of(),
                 Set.of()
         );
-    }
-
-    void assertContainsExactlyInAnyOrder(List<String> expected, List<String> actual) {
-        assertEquals(new HashSet<>(expected), new HashSet<>(actual));
     }
 
 }

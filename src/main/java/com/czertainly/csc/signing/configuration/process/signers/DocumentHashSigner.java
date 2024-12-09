@@ -1,63 +1,62 @@
-package com.czertainly.csc.signing.configuration.process;
+package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.SignedDocuments;
 import com.czertainly.csc.signing.Signature;
-import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
-import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
-import com.czertainly.csc.signing.configuration.process.configuration.TokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
-import com.czertainly.csc.signing.configuration.process.token.TokenProvider;
-import com.czertainly.csc.signing.signatureauthorizers.SignatureAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class DocumentHashSignatureProcessTemplate<
-        TC extends TokenConfiguration,
-        C extends DocumentHashSignatureProcessConfiguration,
-        T extends SigningToken>
-        extends SignatureProcessTemplate<TC, C, T> {
+public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfiguration> implements DocumentSigner<C> {
 
-    public static final Logger logger = LoggerFactory.getLogger(DocumentHashSignatureProcessTemplate.class);
+    public static final Logger logger = LoggerFactory.getLogger(DocumentHashSigner.class);
+
     private final SignserverClient signserverClient;
 
-    public DocumentHashSignatureProcessTemplate(
-            SignatureAuthorizer signatureAuthorizer,
-            WorkerRepository workerRepository,
-            TokenProvider<TC, C, T> tokenProvider,
+    public DocumentHashSigner(
             SignserverClient signserverClient
     ) {
-        super(signatureAuthorizer, workerRepository, tokenProvider);
         this.signserverClient = signserverClient;
     }
 
     @Override
-    protected Result<SignedDocuments, TextError> sign(List<String> data, C configuration, T signingToken,
-                                                      WorkerWithCapabilities worker
+    public Result<SignedDocuments, TextError> sign(List<String> data, C configuration, SigningToken signingToken,
+                                                   WorkerWithCapabilities worker
     ) {
+        Result<SignedDocuments, TextError> result;
         if (data.size() == 1) {
             if (configuration.returnValidationInfo()) {
-                return signSingleHashWithValidationInfo(data, configuration, signingToken, worker);
+                result = signSingleHashWithValidationInfo(data, configuration, signingToken, worker);
             } else {
-                return signSingleHash(data, configuration, signingToken, worker);
+                result = signSingleHash(data, configuration, signingToken, worker);
             }
         } else {
             if (configuration.returnValidationInfo()) {
-                return signMultipleHashesWithValidationInfo(data, configuration, signingToken, worker);
+                result = signMultipleHashesWithValidationInfo(data, configuration, signingToken, worker);
             } else {
-                return signMultipleHashes(data, configuration, signingToken, worker);
+                result = signMultipleHashes(data, configuration, signingToken, worker);
             }
         }
+
+        return result.flatMap(signed -> verifyNumberOfSignatures(data, signed));
+    }
+
+    private Result<SignedDocuments, TextError> verifyNumberOfSignatures(List<String> data, SignedDocuments signed) {
+        if (signed.signatures().size() != data.size()) {
+            logger.error("The number of signatures does not match the number of documents.");
+            return Result.error(TextError.of("The number of signatures does not match the number of documents."));
+        }
+        return Result.success(signed);
     }
 
     private Result<SignedDocuments, TextError> signSingleHash(
-            List<String> data, C configuration, T signingToken, WorkerWithCapabilities worker
+            List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         try {
             Signature signature = signserverClient.signSingleHash(
@@ -74,7 +73,7 @@ public class DocumentHashSignatureProcessTemplate<
     }
 
     private Result<SignedDocuments, TextError> signSingleHashWithValidationInfo(
-            List<String> data, C configuration, T signingToken, WorkerWithCapabilities worker
+            List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         try {
             SignedDocuments signedDocuments = signserverClient.signSingleHashWithValidationData(
@@ -91,7 +90,7 @@ public class DocumentHashSignatureProcessTemplate<
     }
 
     private Result<SignedDocuments, TextError> signMultipleHashesWithValidationInfo(
-            List<String> data, C configuration, T signingToken, WorkerWithCapabilities worker
+            List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         try {
             SignedDocuments signedDocuments = signserverClient.signMultipleHashesWithValidationData(
@@ -108,7 +107,7 @@ public class DocumentHashSignatureProcessTemplate<
     }
 
     private Result<SignedDocuments, TextError> signMultipleHashes(
-            List<String> data, C configuration, T signingToken, WorkerWithCapabilities worker
+            List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         try {
             List<Signature> signatures = signserverClient.signMultipleHashes(

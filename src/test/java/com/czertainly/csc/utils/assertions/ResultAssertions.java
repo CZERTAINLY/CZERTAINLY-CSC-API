@@ -31,4 +31,11 @@ public class ResultAssertions {
             throw new AssertionError("Expected Error but got Success.");
         }
     }
+
+    public static void assertError(Result<?, TextError> result) {
+        if (result instanceof Error) {
+            return;
+        }
+        throw new AssertionError("Expected Error but got Success.");
+    }
 }

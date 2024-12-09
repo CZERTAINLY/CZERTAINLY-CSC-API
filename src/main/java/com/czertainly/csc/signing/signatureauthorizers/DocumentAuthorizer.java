@@ -41,7 +41,7 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
         }
     }
 
-    Result<MessageDigest, TextError> createMessageDigest(String digestAlgorithmOID) {
+    private Result<MessageDigest, TextError> createMessageDigest(String digestAlgorithmOID) {
         String digestAlgorithmName = algorithmHelper.getDigestAlgorithmName(digestAlgorithmOID);
         logger.trace("Digest algorithm name for OID '{}' is '{}'", digestAlgorithmOID, digestAlgorithmName);
 
@@ -56,7 +56,7 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
         }
     }
 
-    Result<List<String>, TextError> hashDocuments(List<String> documents, MessageDigest messageDigest) {
+    private Result<List<String>, TextError> hashDocuments(List<String> documents, MessageDigest messageDigest) {
         try {
             List<String> documentHashes = documents
                     .stream()
