@@ -1,5 +1,6 @@
 package com.czertainly.csc.utils.db;
 
+import com.zaxxer.hikari.HikariDataSource;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import org.junit.jupiter.api.AfterEach;
@@ -31,6 +32,8 @@ public class MysqlTest {
     @Autowired
     protected TestEntityManager testEntityManager;
 
+    @Autowired
+    HikariDataSource ds;
     private static final Network network = Network.newNetwork();
 
     @Container
@@ -45,7 +48,8 @@ public class MysqlTest {
     protected static Proxy proxy;
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() throws IOException, InterruptedException {
+        boolean hasToxics = !proxy.toxics().getAll().isEmpty();
         proxy.toxics().getAll().forEach(toxic -> {
             try {
                 logger.info("Removing toxic: {}", toxic.getName());
@@ -54,6 +58,10 @@ public class MysqlTest {
                 logger.error("Failed to remove toxic: {}", toxic.getName(), e);
             }
         });
+        if (hasToxics) {
+            Thread.sleep(1000);
+            ds.getHikariPoolMXBean().softEvictConnections();
+        }
     }
 
     @DynamicPropertySource
