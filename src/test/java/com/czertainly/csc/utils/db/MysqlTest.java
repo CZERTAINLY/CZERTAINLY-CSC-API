@@ -62,7 +62,7 @@ public class MysqlTest {
             }
         });
         if (hasToxics) {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
             ds.getHikariPoolMXBean().softEvictConnections();
         }
     }
