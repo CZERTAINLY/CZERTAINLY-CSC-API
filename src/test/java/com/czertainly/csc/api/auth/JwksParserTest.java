@@ -2,6 +2,7 @@ package com.czertainly.csc.api.auth;
 
 import org.junit.jupiter.api.Test;
 
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static com.czertainly.csc.utils.jwt.Constants.JWKS_STRING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,19 +14,19 @@ class JwksParserTest {
     @Test
     void canParseJwks() {
         // given
-        String jwks = JWKS_STRING;
+        String jwksString = JWKS_STRING;
 
         // when
-        var result = jwksParser.parse(jwks);
+        var parseResult = jwksParser.parse(jwksString);
 
         // then
-        assertEquals(2, result.size());
-        result.forEach(jwk -> {
+        var jwks = assertSuccessAndGet(parseResult);
+        assertEquals(2, jwks.size());
+        jwks.forEach(jwk -> {
             assertNotNull(jwk.getId());
             assertNotNull(jwk.getAlgorithm());
             assertNotNull(jwk.getPublicKeyUse());
             assertNotNull(jwk.getX509Chain());
         });
-
     }
 }

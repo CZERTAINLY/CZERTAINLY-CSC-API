@@ -97,23 +97,6 @@ public class ServerConfiguration {
         return marshaller;
     }
 
-    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor) {
-        TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
-        SocketConfig socketConfig = SocketConfig.custom().setSoTimeout(10, TimeUnit.SECONDS).build();
-        final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                                                                               .setDefaultSocketConfig(socketConfig)
-                                                                               .setTlsSocketStrategy(tlsSocketStrategy)
-                                                                               .build();
-
-        HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager);
-
-        if (interceptor != null) {
-            builder.addRequestInterceptorFirst(interceptor);
-        }
-
-        return builder.build();
-    }
-
     @Bean("signserverRequestFactory")
     public HttpComponentsClientHttpRequestFactory signserverRequestFactory(
             @Value("${signingProvider.signserver.client.authType}") SignApiAuthorization authzType,
@@ -202,6 +185,18 @@ public class ServerConfiguration {
         return new WorkerRepository(workers);
     }
 
+    @Bean
+    public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
+                                                 @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
+                                                 @Value("${signingProvider.signserver.url}") String signserverUrl
+    ) {
+        SignserverWsClient client = new SignserverWsClient(signserverUrl);
+        client.setMarshaller(marshaller);
+        client.setUnmarshaller(marshaller);
+        client.setMessageSender(httpComponentsMessageSender);
+        return client;
+    }
+
     private HttpComponents5MessageSender getHttpComponentsMessageSender(
             String keystoreBundleName,
             String truststoreBundleName,
@@ -234,34 +229,7 @@ public class ServerConfiguration {
         }
     }
 
-    @Bean
-    public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
-                                                 @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
-                                                 @Value("${signingProvider.signserver.url}") String signserverUrl
-    ) {
-        SignserverWsClient client = new SignserverWsClient(signserverUrl);
-        client.setMarshaller(marshaller);
-        client.setUnmarshaller(marshaller);
-        client.setMessageSender(httpComponentsMessageSender);
-        return client;
-    }
-
-    @Bean
-    public HttpClient getHttpClient(
-            @Value("${signingProvider.signserver.truststoreBundle:none}") String truststoreBundleName,
-            SslBundles sslBundles
-    ) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-
-        SSLContextBuilder builder = SSLContexts.custom();
-
-        if (!truststoreBundleName.equals("none") && !truststoreBundleName.isBlank()) {
-            SslBundle truststoreBundle = sslBundles.getBundle(truststoreBundleName);
-            KeyStore truststore = truststoreBundle.getStores().getTrustStore();
-            builder.loadTrustMaterial(truststore, null);
-        }
-
-        SSLContext sslContext = builder.build();
-
+    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor) {
         TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
         SocketConfig socketConfig = SocketConfig.custom().setSoTimeout(10, TimeUnit.SECONDS).build();
         final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
@@ -269,8 +237,12 @@ public class ServerConfiguration {
                                                                                .setTlsSocketStrategy(tlsSocketStrategy)
                                                                                .build();
 
-        HttpClientBuilder httpBuilder = HttpClients.custom().setConnectionManager(connectionManager);
+        HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager);
 
-        return httpBuilder.build();
+        if (interceptor != null) {
+            builder.addRequestInterceptorFirst(interceptor);
+        }
+
+        return builder.build();
     }
 }

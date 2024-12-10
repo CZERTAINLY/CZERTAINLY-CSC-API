@@ -3,15 +3,15 @@ package com.czertainly.csc.api.auth;
 import com.czertainly.csc.api.auth.exceptions.JwkLookupException;
 import com.czertainly.csc.api.auth.exceptions.JwksDownloadException;
 import com.czertainly.csc.clients.idp.IdpClient;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.TextError;
 import io.jsonwebtoken.security.PublicJwk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.security.PublicKey;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 public class JwksRepository {
@@ -48,29 +48,29 @@ public class JwksRepository {
         if (keyMap.containsKey(kid)) {
             return keyMap.get(kid);
         } else {
-            try {
-                refreshKeys();
-            } catch (JwksDownloadException e) {
-                throw new JwkLookupException("Failed to get key.", e);
-            }
+            refreshKeys();
             return keyMap.getOrDefault(kid, null);
         }
     }
 
-    private void refreshKeys() throws JwksDownloadException {
+    private Result<Void, TextError> refreshKeys() throws JwksDownloadException {
         logger.debug("Refreshing JWKs.");
-        String jwksString = idpClient.downloadJwks();
-        Set<PublicJwk<?>> keys = jwksParser.parse(jwksString);
-        signingKeys.clear();
-        encryptionKeys.clear();
-        for (PublicJwk<?> jwk : keys) {
-            if (jwk.getPublicKeyUse().equals("sig")) {
-                logger.trace("Registering signing key with kid: {}", jwk.getId());
-                this.signingKeys.put(jwk.getId(), jwk.toKey());
-            } else if (jwk.getPublicKeyUse().equals("enc")) {
-                logger.trace("Registering signing key with kid: {}", jwk.getId());
-                this.encryptionKeys.put(jwk.getId(), jwk.toKey());
-            }
-        }
+        return idpClient.downloadJwks()
+                        .flatMap(jwksParser::parse)
+                        .ifSuccess(signingKeys::clear)
+                        .ifSuccess(encryptionKeys::clear)
+                        .consume(keys -> {
+                            for (PublicJwk<?> jwk : keys) {
+                                if (jwk.getPublicKeyUse().equals("sig")) {
+                                    logger.trace("Registering signing key with kid: {}", jwk.getId());
+                                    this.signingKeys.put(jwk.getId(), jwk.toKey());
+                                } else if (jwk.getPublicKeyUse().equals("enc")) {
+                                    logger.trace("Registering signing key with kid: {}", jwk.getId());
+                                    this.encryptionKeys.put(jwk.getId(), jwk.toKey());
+                                }
+                            }
+                        })
+                        .flatMap((v) -> Result.emptySuccess())
+                        .consumeError(e -> logger.warn("Failed to refresh keys. " + e.getErrorText()));
     }
 }

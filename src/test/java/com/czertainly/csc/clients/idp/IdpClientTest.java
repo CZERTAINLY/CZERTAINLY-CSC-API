@@ -18,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Set;
 
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = {IdpClient.class, JwksParser.class, IdpClientTest.IdpClientTestContext.class})
@@ -47,9 +48,10 @@ public class IdpClientTest {
         String token = obtainAccessToken();
 
         // when
-        UserInfo userInfo = idpClient.downloadUserInfo(token);
+        var getUserInfoResult = idpClient.downloadUserInfo(token);
 
         // then
+        UserInfo userInfo = assertSuccessAndGet(getUserInfoResult);
         assertEquals(keycloak.getAdminUsername(), userInfo.getAttributes().get("preferred_username"));
     }
 
@@ -59,10 +61,11 @@ public class IdpClientTest {
         // IDP client setup
 
         // when
-        String token = idpClient.downloadJwks();
+        var downloadResult = idpClient.downloadJwks();
 
         // then
-        Set<PublicJwk<?>> parsed = jwksParser.parse(token);
+        String token = assertSuccessAndGet(downloadResult);
+        Set<PublicJwk<?>> parsed = jwksParser.parse(token).unwrap();
         assertEquals(2, parsed.size());
         boolean encKey = false;
         boolean sigKey = false;
