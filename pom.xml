@@ -29,7 +29,7 @@
         <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
         <version.postgresql>42.7.4</version.postgresql>
         <version.mysql>9.0.0</version.mysql>
-        <version.instacio>5.0.2</version.instacio>
+        <version.instacio>5.2.1</version.instacio>
     </properties>
     <dependencies>
         <dependency>
