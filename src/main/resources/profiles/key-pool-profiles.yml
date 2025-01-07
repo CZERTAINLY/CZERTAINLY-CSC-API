@@ -1,29 +1,19 @@
 keyPoolProfiles:
+  # The name of the profile that will be used in cryptoToken for reference
   - name: session-rsa
+    # Key algorithm to use when generating new private key. The key algorithm must be supported by the
+    # crypto token. See the documentation of the crypto token for supported key algorithms.
     keyAlgorithm: RSA
+    # Key specification to use when generating new private keys. The key specification must be supported
+    # by the crypto token. See the documentation of the crypto token for supported key specifications.
     keySpecification: 2048
+    # Key prefix to use when generating new signing key
     keyPrefix: session
+    # Number of pre-generated keys to keep in the pool, minimum 1
     desiredSize: 1
+    # Maximum number of keys to generate in a single replenish operation, minimum 1
     maxKeysGeneratedPerReplenish: 5
-    designatedUsage: SESSION_SIGNATURE # SESSION_SIGNATURE, ONE_TIME_SIGNATURE
-  - name: session-ecdsa
-    keyAlgorithm: ECDSA
-    keySpecification: prime256v1
-    keyPrefix: session
-    desiredSize: 1
-    maxKeysGeneratedPerReplenish: 5
+    # Designated usage of the keys in the pool
+    # SESSION_SIGNATURE: Keys are used for signing multiple times in a session
+    # ONE_TIME_SIGNATURE: Keys are used for signing only once
     designatedUsage: SESSION_SIGNATURE
-  - name: onetime-rsa
-    keyAlgorithm: RSA
-    keySpecification: 2048
-    keyPrefix: one-time
-    desiredSize: 1
-    maxKeysGeneratedPerReplenish: 5
-    designatedUsage: ONE_TIME_SIGNATURE
-  - name: onetime-ecdsa
-    keyAlgorithm: ECDSA
-    keySpecification: prime256v1
-    keyPrefix: one-time
-    desiredSize: 1
-    maxKeysGeneratedPerReplenish: 5
-    designatedUsage: ONE_TIME_SIGNATURE

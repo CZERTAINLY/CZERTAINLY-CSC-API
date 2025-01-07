@@ -8,9 +8,7 @@ cryptoTokens:
       id: 2
       keyPoolProfiles:
         - session-rsa
-        - session-ecdsa
-        - onetime-rsa
-        - onetime-ecdsa
+
 signers:
     # - name: Name of the Signer
     #   id: ID of the Signer
