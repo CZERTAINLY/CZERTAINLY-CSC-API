@@ -36,6 +36,7 @@ public class DocumentHashSigning {
     private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentHashSignatureProcessConfiguration, OneTimeToken> oneTimeHashSignature;
     private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentHashSignatureProcessConfiguration, LongTermToken> longTermHashSignature;
     private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentHashSignatureProcessConfiguration, SessionToken> sessionSignature;
+    private final SignatureTypeDecider signatureTypeDecider;
 
     public DocumentHashSigning(WorkerRepository workerRepository,
                                OneTimeKeySelector oneTimeKeySelector, SessionKeySelector sessionKeySelector,
@@ -44,8 +45,10 @@ public class DocumentHashSigning {
                                SignatureQualifierBasedCredentialFactory signatureQualifierBasedCredentialFactory,
                                SigningSessionsService signingSessionsService,
                                SessionCredentialsService sessionCredentialsService,
-                               CredentialProfileRepository credentialProfileRepository
+                               CredentialProfileRepository credentialProfileRepository,
+                               SignatureTypeDecider signatureTypeDecider
     ) {
+        this.signatureTypeDecider = signatureTypeDecider;
         DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
         OneTimeTokenProvider<DocumentHashSignatureProcessConfiguration> oneTimeTokenProvider = new OneTimeTokenProvider<>(
                 signatureQualifierBasedCredentialFactory, oneTimeKeySelector, oneTimeKeysService);
@@ -106,7 +109,12 @@ public class DocumentHashSigning {
             );
 
             Result<SignedDocuments, TextError> signatureResult = null;
-            switch (getSignatureType(parameters)) {
+            Result<SignatureType, TextError> getSignatureType = signatureTypeDecider.decideType(parameters);
+            if (getSignatureType instanceof Error(var err))
+                return Result.error(err.extend("Failed to determine signature type."));
+            SignatureType signatureType = getSignatureType.unwrap();
+
+            switch (signatureType) {
                 case LONG_TERM -> {
                     logger.info("Signing with long term token with credential ID: {}", parameters.credentialID());
                     LongTermTokenConfiguration tokenConfiguration = new LongTermTokenConfiguration(
@@ -140,21 +148,5 @@ public class DocumentHashSigning {
             signedDocuments.extend(docs);
         }
         return Result.success(signedDocuments);
-    }
-
-    private SignatureType getSignatureType(SignDocParameters parameters) {
-        if (parameters.sessionId().isPresent()) {
-            return SignatureType.SESSION;
-        } else if (parameters.credentialID() != null) {
-            return SignatureType.LONG_TERM;
-        } else {
-            return SignatureType.ONE_TIME;
-        }
-    }
-
-    private enum SignatureType {
-        LONG_TERM,
-        ONE_TIME,
-        SESSION
     }
 }
