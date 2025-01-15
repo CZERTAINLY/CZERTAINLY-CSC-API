@@ -27,7 +27,7 @@
         <version.springdoc>2.8.1</version.springdoc>
         <version.springfox>3.0.0</version.springfox>
         <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
-        <version.postgresql>42.7.4</version.postgresql>
+        <version.postgresql>42.7.5</version.postgresql>
         <version.mysql>9.1.0</version.mysql>
         <version.instacio>5.2.1</version.instacio>
     </properties>
