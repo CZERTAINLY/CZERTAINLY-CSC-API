@@ -63,9 +63,8 @@ public class SignserverClient {
     ) {
         Base64.Decoder decoder = Base64.getDecoder();
         return singleSign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
-                .flatMap(decodedSignatures -> mapToObject(
-                        decoder, decodedSignatures, EncodedValidationDataWrapper.class
+                .flatMap(encodedSignatures -> mapToObject(
+                        decoder, encodedSignatures, EncodedValidationDataWrapper.class
                 ))
                 .flatMap(signatureWithValidationData ->
                                  base64Decode(decoder, signatureWithValidationData.signatureData().getBytes())
@@ -84,8 +83,7 @@ public class SignserverClient {
     ) {
         Base64.Decoder decoder = Base64.getDecoder();
         return multisign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
-                .flatMap(decodedSignatures -> mapToObject(decoder, decodedSignatures, BatchSignaturesResponse.class))
+                .flatMap(encodedSignatures -> mapToObject(decoder, encodedSignatures, BatchSignaturesResponse.class))
                 .map(batchSignatures -> mapToSignaturesList(batchSignatures, decoder));
     }
 
@@ -94,8 +92,7 @@ public class SignserverClient {
     ) {
         Base64.Decoder decoder = Base64.getDecoder();
         return multisign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
-                .flatMap(decodedSignatures -> mapToObject(decoder, decodedSignatures,
+                .flatMap(encodedSignatures -> mapToObject(decoder, encodedSignatures,
                                                           BatchSignatureWithValidationData.class
                 ))
                 .map(batchSignatures -> {
@@ -263,8 +260,7 @@ public class SignserverClient {
                         SignserverProcessEncoding encoding
     ) {
         metadata.put("ALIAS", keyAlias);
-        return signserverRestClient.process(workerName, data, metadata, encoding)
-                                   .map(response -> response.data().getBytes());
+        return signserverRestClient.process(workerName, data, metadata, encoding);
     }
 
     private Result<String, TextError> extractKeyAlias(List<CryptoTokenKey> keys) {

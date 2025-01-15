@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
+import static com.czertainly.csc.utils.ResourceLoader.loadBytesFromResources;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -101,15 +102,6 @@ class CertificateParserTest {
             return new CertificateParser();
         } catch (CertificateException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private static byte[] loadBytesFromResources(String resourcePath) throws IOException {
-        try (InputStream inputStream = CertificateParserTest.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                throw new IOException("Certificate not found: " + resourcePath);
-            }
-            return inputStream.readAllBytes();
         }
     }
 }

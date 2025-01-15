@@ -54,7 +54,7 @@ public class SignserverRestClient {
         }
     }
 
-    public Result<WorkerProcessResponse, TextError> process(String workerName, byte[] data, Map<String, String> metadata,
+    public Result<byte[], TextError> process(String workerName, byte[] data, Map<String, String> metadata,
                                                             SignserverProcessEncoding encoding
     ) {
         logger.debug("Calling Signserver process API. WorkerName: {}, Encoding: {}, metadata: [{}]",
@@ -76,7 +76,11 @@ public class SignserverRestClient {
                              .header("Authorization", basicAuthHeader)
                              .accept(MediaType.APPLICATION_JSON).retrieve().body(WorkerProcessResponse.class);
 
-            return Result.success(response);
+            if (response == null) {
+                logger.error("Processing failed on worker {}. The response object is null.", workerName);
+                return Result.error(TextErrorWithRetryIndication.doNotRetry("Processing failed on worker " + workerName));
+            }
+            return Result.success(response.data().getBytes());
         } catch (ResourceAccessException e) {
             logger.error("Processing failed on worker {}", workerName, e);
             return Result.error(TextErrorWithRetryIndication.doRetry("Processing failed on worker " + workerName));
