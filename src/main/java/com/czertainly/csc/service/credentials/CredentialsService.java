@@ -178,12 +178,21 @@ public class CredentialsService {
                 .flatMap(credentialMetadata ->
                                  workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
                                                  .flatMap(token ->
-                                                                  signserverClient.removeKey(
+                                                                  signserverClient.removeKeyOkIfNotExists(
                                                                           token.id(),
                                                                           credentialMetadata.getKeyAlias()
                                                                   )
                                                  )
                 )
+                .flatMap(v -> {
+                    try {
+                        credentialsRepository.deleteById(credentialId);
+                        return Result.emptySuccess();
+                    } catch (Exception e) {
+                        logger.error("Failed to delete credential '{}'.", credentialId, e);
+                        return Result.error(TextError.of("Failed to delete credential '%s'.", credentialId));
+                    }
+                })
                 .ifSuccess(() -> logger.info("Credential '{}' was deleted.", credentialId));
 
     }
