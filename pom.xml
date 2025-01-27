@@ -24,7 +24,7 @@
         <version.commons-text>1.13.0</version.commons-text>
         <version.commons-lang3>3.17.0</version.commons-lang3>
         <version.snakeyaml>2.3</version.snakeyaml>
-        <version.springdoc>2.8.1</version.springdoc>
+        <version.springdoc>2.8.4</version.springdoc>
         <version.springfox>3.0.0</version.springfox>
         <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
         <version.postgresql>42.7.4</version.postgresql>
