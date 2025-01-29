@@ -2,7 +2,7 @@ version: '3'
 services:
   postgresql.csc.dev:
     container_name: csc-postgresql-db
-    image: postgres:16
+    image: postgres:17
     command: >
       -c ssl=on 
       -c ssl_cert_file=/var/lib/postgresql/server.crt 
@@ -26,7 +26,7 @@ services:
 
   mysql.csc.dev:
     container_name: csc-mysql-db
-    image: mysql:8.4
+    image: mysql:9.2
     command:
       #      - --ssl-ca=/etc/mysql/certs/ca.crt # CA certificate for mTLS
       - --ssl-cert=/etc/mysql/certs/mysql.crt
