@@ -13,5 +13,6 @@ public record CscConfiguration(
         @NotBlank String region,
         @NotBlank String workerConfigurationFile,
         @NotBlank String profilesConfigurationDirectory,
-        @NotNull SigningSessions signingSessions
+        @NotNull SigningSessions signingSessions,
+        @NotNull OneTimeKeysCleanupSettings oneTimeKeys
 ) {}

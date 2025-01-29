@@ -56,9 +56,7 @@ public class OneTimeTokenProvider<C extends SignatureProcessConfiguration> imple
 
     @Override
     public Result<Void, TextError> cleanup(OneTimeToken signingToken) {
-        return oneTimeKeysService.deleteKey(signingToken.key())
-                                 .consumeError(err -> logger.error("Failed to clean up key with alias '{}'. {}",
-                                                                 signingToken.getKeyAlias(), err.getErrorText()
-                                 ));
+        logger.info("Signature complete. Signing key '{}' will be deleted by periodic cleanup job.", signingToken.key().keyAlias());
+        return Result.emptySuccess();
     }
 }

@@ -23,9 +23,9 @@ import java.util.UUID;
 public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends SigningKey> implements KeysService<K> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSigningKeysService.class);
-    private final KeyRepository<E> keysRepository;
+    protected final KeyRepository<E> keysRepository;
     private final SignserverClient signserverClient;
-    private final WorkerRepository workerRepository;
+    protected final WorkerRepository workerRepository;
 
 
     public AbstractSigningKeysService(KeyRepository<E> keysRepository, SignserverClient signserverClient,
@@ -78,20 +78,22 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
         logger.debug("Acquiring a signing key of CryptoToken '{}' with algorithm '{}'",
                      cryptoToken.identifier(), keyAlgorithm
         );
-        return keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(
-                                     cryptoToken.id(), keyAlgorithm, false
-                             )
-                             .map(entity -> {
-                                 entity.setAcquiredAt(ZonedDateTime.now());
-                                 entity.setInUse(true);
-                                 return keysRepository.save(entity);
-                             })
-                             .map(keyEntity -> this.mapEntityToSigningKey(keyEntity, cryptoToken))
-                             .map(Result::<K, TextError>success)
-                             .orElseGet(() -> Result.error(TextError.of(
-                                     "No unused key with key algorithm '%s' belonging to Crypto Token '%s' was found.",
-                                     keyAlgorithm, cryptoToken.identifier()
-                             )));
+        synchronized (cryptoToken) {
+            return keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(
+                                         cryptoToken.id(), keyAlgorithm, false
+                                 )
+                                 .map(entity -> {
+                                     entity.setAcquiredAt(ZonedDateTime.now());
+                                     entity.setInUse(true);
+                                     return keysRepository.save(entity);
+                                 })
+                                 .map(keyEntity -> this.mapEntityToSigningKey(keyEntity, cryptoToken))
+                                 .map(Result::<K, TextError>success)
+                                 .orElseGet(() -> Result.error(TextError.of(
+                                         "No unused key with key algorithm '%s' belonging to Crypto Token '%s' was found.",
+                                         keyAlgorithm, cryptoToken.identifier()
+                                 )));
+        }
     }
 
     public Result<K, TextError> getKey(UUID keyId) {

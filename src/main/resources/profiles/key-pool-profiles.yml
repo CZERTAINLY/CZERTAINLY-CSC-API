@@ -1,6 +1,6 @@
 keyPoolProfiles:
   # The name of the profile that will be used in cryptoToken for reference
-  - name: session-rsa
+  - name: onetime-rsa
     # Key algorithm to use when generating new private key. The key algorithm must be supported by the
     # crypto token. See the documentation of the crypto token for supported key algorithms.
     keyAlgorithm: RSA
@@ -8,12 +8,12 @@ keyPoolProfiles:
     # by the crypto token. See the documentation of the crypto token for supported key specifications.
     keySpecification: 2048
     # Key prefix to use when generating new signing key
-    keyPrefix: session
+    keyPrefix: onetime
     # Number of pre-generated keys to keep in the pool, minimum 1
-    desiredSize: 1
+    desiredSize: 5
     # Maximum number of keys to generate in a single replenish operation, minimum 1
     maxKeysGeneratedPerReplenish: 5
     # Designated usage of the keys in the pool
     # SESSION_SIGNATURE: Keys are used for signing multiple times in a session
     # ONE_TIME_SIGNATURE: Keys are used for signing only once
-    designatedUsage: SESSION_SIGNATURE
+    designatedUsage: ONE_TIME_SIGNATURE

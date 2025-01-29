@@ -83,6 +83,24 @@ class SessionKeyRepositoryPostgresTest extends PostgresTest {
         assertEquals(1, count);
     }
 
+    @Test
+    void findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc() {
+        // given
+        insertKeyEntity("Key1", 1, "RSA", false, ZonedDateTime.now().minusHours(1));
+        insertKeyEntity("Key2", 1, "RSA", true, ZonedDateTime.now().minusHours(1));
+        insertKeyEntity("Key3", 2, "ECDSA", true, ZonedDateTime.now().minusHours(2));
+        insertKeyEntity("Key4", 2, "ECDSA", false, ZonedDateTime.now().minusHours(2));
+        insertKeyEntity("Key5", 3, "ECDSA", true, ZonedDateTime.now().minusHours(3));
+
+        // when
+        var keys = sessionKeyRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, ZonedDateTime.now().minusMinutes(90));
+
+        // then
+        assertEquals(2, keys.size());
+        assertEquals("Key5", keys.getFirst().getKeyAlias());
+        assertEquals("Key3", keys.getLast().getKeyAlias());
+    }
+
 
     UUID insertKeyEntity(String keyAlias, int cryptoTokenId, String keyAlgorithm, Boolean inUse,
                          ZonedDateTime acquiredAt

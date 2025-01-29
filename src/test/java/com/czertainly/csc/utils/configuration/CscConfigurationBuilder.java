@@ -1,6 +1,7 @@
 package com.czertainly.csc.utils.configuration;
 
 import com.czertainly.csc.configuration.csc.CscConfiguration;
+import com.czertainly.csc.configuration.csc.OneTimeKeysCleanupSettings;
 import com.czertainly.csc.configuration.csc.SigningSessions;
 import org.instancio.Instancio;
 import org.instancio.Select;
@@ -13,6 +14,7 @@ public class CscConfigurationBuilder {
     private String workerConfigurationFile;
     private String profilesConfigurationDirectory;
     private SigningSessions signingSessions;
+    private OneTimeKeysCleanupSettings oneTimeKeysCleanupSettings;
 
     public static CscConfiguration anCscConfiguration() {
         return Instancio.of(CscConfiguration.class)
@@ -48,6 +50,11 @@ public class CscConfigurationBuilder {
         this.signingSessions = signingSessions;
         return this;
     }
+    
+    public CscConfigurationBuilder withOneTimeKeysCleanupSettings(OneTimeKeysCleanupSettings oneTimeKeysCleanupSettings) {
+        this.oneTimeKeysCleanupSettings = oneTimeKeysCleanupSettings;
+        return this;
+    }
 
     public CscConfiguration build() {
         var partial = Instancio.of(CscConfiguration.class);
@@ -74,6 +81,11 @@ public class CscConfigurationBuilder {
         if (signingSessions != null) {
             partial.set(Select.field(CscConfiguration::signingSessions), signingSessions);
         }
+
+        if (oneTimeKeysCleanupSettings != null) {
+            partial.set(Select.field(CscConfiguration::oneTimeKeys), oneTimeKeysCleanupSettings);
+        }
+
         return partial.create();
     }
 

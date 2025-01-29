@@ -13,6 +13,8 @@ import org.springframework.transaction.CannotCreateTransactionException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLRecoverableException;
 import java.sql.SQLTransientException;
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,4 +36,6 @@ public interface KeyRepository<T extends KeyEntity> extends CrudRepository<T, UU
     Optional<T> findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(int cryptoTokenId, String keyAlgorithm, boolean inUse);
 
     int countByCryptoTokenIdAndKeyAlgorithmAndInUse(int cryptoTokenId, String keyAlgorithm, boolean inUse);
+
+    List<T> findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(boolean inUse, ZonedDateTime instant);
 }

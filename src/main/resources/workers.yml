@@ -7,7 +7,7 @@ cryptoTokens:
     - name: "EntrustSAMCryptoToken"
       id: 2
       keyPoolProfiles:
-        - session-rsa
+        - onetime-rsa
 
 signers:
     # - name: Name of the Signer
@@ -34,3 +34,33 @@ signers:
           - SHA384withRSA
           - SHA512withRSA
         returnsValidationInfo: false
+    - name: "CAdES-Baseline-BWithValidationInfo"
+      id: 301
+      cryptoToken: "SigningToken01"
+      capabilities:
+        signatureQualifiers:
+          - eu_eidas_qes
+          - eu_eidas_aes
+        signatureFormat: C
+        conformanceLevel: Ades-B-B
+        signaturePackaging: Detached
+        signatureAlgorithms:
+          - SHA256withRSA
+          - SHA384withRSA
+          - SHA512withRSA
+        returnsValidationInfo: true
+    - name: "CAdES-Baseline-B"
+      id: 302
+      cryptoToken: "SigningToken01"
+      capabilities:
+       signatureQualifiers:
+         - eu_eidas_qes
+         - eu_eidas_aes
+       signatureFormat: C
+       conformanceLevel: Ades-B-B
+       signaturePackaging: Detached
+       signatureAlgorithms:
+         - SHA256withRSA
+         - SHA384withRSA
+         - SHA512withRSA
+       returnsValidationInfo: false

@@ -1,21 +1,52 @@
 package com.czertainly.csc.service.keys;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
+import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.common.result.Error;
+import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.repository.KeyRepository;
 import com.czertainly.csc.repository.entities.OneTimeKeyEntity;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Component
 public class OneTimeKeysService extends AbstractSigningKeysService<OneTimeKeyEntity, OneTimeKey> {
 
+    private static final Logger logger = LoggerFactory.getLogger(OneTimeKeysService.class);
+
     public OneTimeKeysService(KeyRepository<OneTimeKeyEntity> keysRepository,
                               SignserverClient signserverClient, WorkerRepository workerRepository
     ) {
         super(keysRepository, signserverClient, workerRepository);
+    }
+
+    public Result<List<OneTimeKey>, TextError> getKeysAcquiredBefore(ZonedDateTime before) {
+        try {
+            List<OneTimeKeyEntity> keyEntities = keysRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, before);
+
+            List<OneTimeKey> keys = new ArrayList<>();
+            for (OneTimeKeyEntity keyEntity : keyEntities) {
+                var getCryptoTokenResult = workerRepository.getCryptoToken(keyEntity.getCryptoTokenId());
+                if (getCryptoTokenResult instanceof Error(var err)) {
+                    logger.error("Failed to get CryptoToken '{}'. Key '{}' can't be added to a list of keys for deletion. '{}'", keyEntity.getCryptoTokenId(), keyEntity.getKeyAlias(), err);
+                    continue;
+                }
+                CryptoToken cryptoToken = getCryptoTokenResult.unwrap();
+                keys.add(mapEntityToSigningKey(keyEntity, cryptoToken));
+            }
+            return Result.success(keys);
+        } catch (Exception e) {
+            logger.error("An error occurred while retrieving keys acquired before '{}'.", before, e);
+            return Result.error(TextError.of("An error occurred while retrieving keys acquired before '%s'.", before));
+        }
     }
 
     @Override
