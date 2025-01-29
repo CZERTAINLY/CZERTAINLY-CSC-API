@@ -42,6 +42,7 @@ class OneTimeKeysServiceTest {
 
     CryptoToken cryptoToken1 = new CryptoToken("CryptoToken1", 1, List.of());
 
+    @Test
     public void getKeysAcquiredBeforeReturnsNoKeysWhenNonExpiredBefore() {
 
         // given
