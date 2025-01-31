@@ -6,7 +6,7 @@ RUN mvn -f /home/app/pom.xml clean package -DskipTests
 COPY docker /home/app/docker
 
 # Package stage
-FROM eclipse-temurin:21.0.5_11-jre-alpine
+FROM eclipse-temurin:21.0.6_7-jre-alpine
 
 # add non root user cscapi
 RUN addgroup --system --gid 10001 cscapi && adduser --system --home /opt/cscapi --uid 10001 --ingroup cscapi cscapi
