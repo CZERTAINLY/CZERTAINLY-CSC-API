@@ -30,7 +30,7 @@
         <version.postgresql>42.7.5</version.postgresql>
         <version.mysql>9.2.0</version.mysql>
         <version.instacio>5.2.1</version.instacio>
-        <version.testcontainers>1.20.4</version.testcontainers>
+        <version.testcontainers>1.20.6</version.testcontainers>
     </properties>
     <dependencies>
         <dependency>
