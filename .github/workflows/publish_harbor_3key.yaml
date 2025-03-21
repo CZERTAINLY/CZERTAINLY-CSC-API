@@ -56,7 +56,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Push README to 3Key Harbor
-        uses: christian-korneck/update-container-description-action@d36005551adeaba9698d8d67a296bd16fa91f8e8
+        uses: christian-korneck/update-container-description-action@cf2977b0f3d189227f140ecbc6402c5a042b34e4
         env:
           DOCKER_USER: ${{ secrets.HARBOR_USERNAME }}
           DOCKER_PASS: ${{ secrets.HARBOR_PASSWORD }}
