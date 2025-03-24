@@ -5,15 +5,36 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import jakarta.annotation.PostConstruct;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @Configuration
 public class OpenApiConfiguration {
+
+    private String appVersion;
+
+    @PostConstruct
+    public void init() throws IOException {
+        Properties props = new Properties();
+        props.load(new ClassPathResource("version.properties").getInputStream());
+        appVersion = props.getProperty("app.version");
+        System.out.println("App Version: " + appVersion);
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
 
     @Bean
     public GroupedOpenApi cscApis() {
@@ -34,10 +55,10 @@ public class OpenApiConfiguration {
         return new OpenAPI()
                 .info(new Info().title("CZERTAINLY CSC API")
                         .description("CZERTAINLY CSC API Documentation")
-                        .version("v2.0.0.2")
+                        .version(getAppVersion())
                         .license(new License()
                                 .name("MIT License")
-                                .url("https://github.com/3KeyCompany/CZERTAINLY/blob/develop/LICENSE.md"))
+                                .url("https://github.com/CZERTAINLY/CZERTAINLY/blob/develop/LICENSE.md"))
                         .extensions(logoExtension)
                         .contact(new Contact()
                                 .name("CZERTAINLY")
@@ -46,7 +67,37 @@ public class OpenApiConfiguration {
                 .externalDocs(new ExternalDocumentation()
                         .description("CZERTAINLY Documentation")
                         .url("https://docs.czertainly.com"))
-                .servers(null);
+                .servers(List.of(new Server().url("https://csc.czertainly.online")))
+                .schemaRequirement(
+                        "BearerAuthSignature",
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .description("""
+                        Bearer authentication with `credential` or `service` scope. If the access token passed
+                        in the `Authorization` HTTP header has scope `service`, the signing application MUST pass an
+                        access token with scope `credential` in the `SAD` request parameter. This is not required,
+                        if the the access token passed in the `Authorization` HTTP header has scope `credential`.
+                        """)
+                )
+                .schemaRequirement(
+                        "BearerAuthCredential",
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .description("""
+                        Bearer authentication with `credential` or `service` scope.
+                        """)
+                )
+                .schemaRequirement(
+                        "BearerAuthCredentialManagement",
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .description("""
+                        Bearer authentication with `manageCredentials` scope.
+                        """)
+                );
     }
 
 }

@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,9 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAuthority('SCOPE_credential') || hasAuthority('SCOPE_service')")
 @Tag(name = "Credentials", description = "Credentials API as defined in the CSC API v2.0.0.2 specification. " +
         "This API is used to get information about the existing user credentials.")
+@SecurityRequirements(value = {
+        @SecurityRequirement(name = "BearerAuthCredential"),
+})
 public class CredentialsController {
 
     private static final Logger logger = LoggerFactory.getLogger(CredentialsController.class);

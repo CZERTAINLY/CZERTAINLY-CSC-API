@@ -12,7 +12,6 @@ import com.czertainly.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.csc.api.signhash.SignHashResponseDto;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.controllers.exceptions.BadRequestException;
 import com.czertainly.csc.controllers.exceptions.InternalErrorException;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.model.SignHashParameters;
@@ -22,6 +21,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,9 @@ import java.util.List;
                         content = @Content
                 ),
         })
+@SecurityRequirements(value = {
+        @SecurityRequirement(name = "BearerAuthSignature"),
+})
 public class SignatureController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignatureController.class);

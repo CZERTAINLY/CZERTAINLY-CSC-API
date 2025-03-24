@@ -46,7 +46,7 @@ public class InfoService {
                 idbBaseUri,
                 null,
                 false,
-                List.of("info", "signatures/signDoc"),
+                List.of("info", "credential/list", "credential/info", "signatures/signDoc"),
                 true,
                 new SignatureAlgorithmsDto(
                         getSupportedSignatureAlgorithms(),
