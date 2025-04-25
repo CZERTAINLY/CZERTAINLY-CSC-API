@@ -4,6 +4,7 @@ import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
 import com.czertainly.csc.service.keys.OneTimeKey;
+import com.czertainly.csc.service.keys.OneTimeKeyAsyncDeletionService;
 import com.czertainly.csc.service.keys.OneTimeKeysService;
 import com.czertainly.csc.signing.KeySelector;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
@@ -19,15 +20,18 @@ public class OneTimeTokenProvider<C extends SignatureProcessConfiguration> imple
     private final SignatureQualifierBasedCredentialFactory signatureQualifierBasedCredentialFactory;
     private final KeySelector<OneTimeKey> keySelector;
     private final OneTimeKeysService oneTimeKeysService;
+    private final OneTimeKeyAsyncDeletionService asyncDeletionService;
 
     public OneTimeTokenProvider(
             SignatureQualifierBasedCredentialFactory signatureQualifierBasedCredentialFactory,
             KeySelector<OneTimeKey> keySelector,
-            OneTimeKeysService oneTimeKeysService
+            OneTimeKeysService oneTimeKeysService,
+            OneTimeKeyAsyncDeletionService asyncDeletionService
     ) {
         this.signatureQualifierBasedCredentialFactory = signatureQualifierBasedCredentialFactory;
         this.keySelector = keySelector;
         this.oneTimeKeysService = oneTimeKeysService;
+        this.asyncDeletionService = asyncDeletionService;
     }
 
 
@@ -56,7 +60,8 @@ public class OneTimeTokenProvider<C extends SignatureProcessConfiguration> imple
 
     @Override
     public Result<Void, TextError> cleanup(OneTimeToken signingToken) {
-        logger.info("Signature complete. Signing key '{}' will be deleted by periodic cleanup job.", signingToken.key().keyAlias());
+        logger.info("Signature complete. Scheduling async deletion for one-time key '{}'", signingToken.key().keyAlias());
+        asyncDeletionService.deleteKeyAsync(signingToken.key());
         return Result.emptySuccess();
     }
 }

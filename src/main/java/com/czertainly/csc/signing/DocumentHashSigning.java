@@ -12,6 +12,7 @@ import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.service.credentials.SessionCredentialsService;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
 import com.czertainly.csc.service.credentials.SigningSessionsService;
+import com.czertainly.csc.service.keys.OneTimeKeyAsyncDeletionService;
 import com.czertainly.csc.service.keys.OneTimeKeysService;
 import com.czertainly.csc.service.keys.SessionKeysService;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
@@ -41,6 +42,7 @@ public class DocumentHashSigning {
     public DocumentHashSigning(WorkerRepository workerRepository,
                                OneTimeKeySelector oneTimeKeySelector, SessionKeySelector sessionKeySelector,
                                OneTimeKeysService oneTimeKeysService, SessionKeysService sessionKeysService,
+                               OneTimeKeyAsyncDeletionService asyncDeletionService,
                                SignserverClient signserverClient, CredentialsService credentialsService,
                                SignatureQualifierBasedCredentialFactory signatureQualifierBasedCredentialFactory,
                                SigningSessionsService signingSessionsService,
@@ -51,7 +53,7 @@ public class DocumentHashSigning {
         this.signatureTypeDecider = signatureTypeDecider;
         DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
         OneTimeTokenProvider<DocumentHashSignatureProcessConfiguration> oneTimeTokenProvider = new OneTimeTokenProvider<>(
-                signatureQualifierBasedCredentialFactory, oneTimeKeySelector, oneTimeKeysService);
+                signatureQualifierBasedCredentialFactory, oneTimeKeySelector, oneTimeKeysService, asyncDeletionService);
         LongTermTokenProvider<DocumentHashSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(
                 credentialsService);
 
