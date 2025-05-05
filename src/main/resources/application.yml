@@ -49,7 +49,6 @@ csc:
             # Prefix for the thread names
             thread-name-prefix: "OneTimeKeyAsync-"
 
-
 # IDP configuration
 idp:
     # Base URL of the IDP OpenID Connect endpoint
