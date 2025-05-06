@@ -40,12 +40,12 @@ public class KeyPoolReplenishTrigger {
         oneTimeKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForOneTimeSignatures, oneTimeKeysService, keyGenerationExecutor);
     }
 
-    @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 0)
+    @Scheduled(cron = "${csc.signingSessions.generateCronExpression}")
     public void replenishSessionPools() {
         sessionKeyPoolReplenisher.replenishPools();
     }
 
-    @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 5)
+    @Scheduled(cron = "${csc.oneTimeKeys.generateCronExpression}")
     public void replenishOneTimePools() {
         oneTimeKeyPoolReplenisher.replenishPools();
     }
