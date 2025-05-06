@@ -37,17 +37,6 @@ csc:
         # How often will the cleaning of the used-up keys be performed according to the specified cron expression
         # The cron expression is in the UN*X definition format: second, minute, hour, day of month, month, and day of week
         cleanupCronExpression: "0 0 * * * *"
-        # Configuration of the executor for the one-time key cleanup that is triggered after the key is used
-        # and signature provided back to the client
-        cleanupExecutor:
-            # Minimum number of threads in the pool
-            core-size: 5
-            # Maximum number of threads in the pool
-            max-size: 10
-            # Queue size before new threads are spawned
-            queue-capacity: 50
-            # Prefix for the thread names
-            thread-name-prefix: "OneTimeKeyAsync-"
 
 # IDP configuration
 idp:
@@ -199,6 +188,9 @@ spring:
         table: "csc_schema_history"
         schemas: "csc"
         locations: "classpath:db/migration,classpath:db/specific/{vendor}"
+    threads:
+        virtual:
+            enabled: true
 
 # Logging configuration
 logging:
