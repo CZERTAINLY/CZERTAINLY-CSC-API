@@ -188,8 +188,8 @@ class KeyPoolReplenisherTest {
         keyPoolReplenisher.replenishPools();
 
         // then
-        // 5 keys wanted, but failed on first generation -> called only once
-        verify(keysService, times(5))   // ← change 1 → 5
+        // 5 keys wanted, all key generation attempts are made concurrently regardless of failures
+        verify(keysService, times(5))
                 .generateKey(eq(ct1), contains(profile.keyPrefix()),
                         eq(profile.keyAlgorithm()), eq(profile.keySpecification()));
     }
