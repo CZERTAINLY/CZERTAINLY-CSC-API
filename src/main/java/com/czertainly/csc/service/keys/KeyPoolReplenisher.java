@@ -1,6 +1,5 @@
 package com.czertainly.csc.service.keys;
 
-import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.configuration.keypools.KeyPoolProfile;
@@ -10,16 +9,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class KeyPoolReplenisher<K extends SigningKey> {
 
     private static final Logger logger = LoggerFactory.getLogger(KeyPoolReplenisher.class);
     private final KeysService<K> keysService;
     private final List<CryptoToken> cryptoTokens;
+    private final ExecutorService keyGenerationExecutor;
 
-    public KeyPoolReplenisher(List<CryptoToken> cryptoTokens, KeysService<K> keysService) {
+    public KeyPoolReplenisher(List<CryptoToken> cryptoTokens, KeysService<K> keysService, ExecutorService keyGenerationExecutor) {
         this.keysService = keysService;
         this.cryptoTokens = cryptoTokens;
+        this.keyGenerationExecutor = keyGenerationExecutor;
     }
 
     public void replenishPools() {
@@ -28,15 +30,13 @@ public class KeyPoolReplenisher<K extends SigningKey> {
                 keysService.getNumberOfUsableKeys(cryptoToken, keyPoolProfile.keyAlgorithm())
                            .flatMap(numOfFreeKeys -> replenishPool(cryptoToken, keyPoolProfile, numOfFreeKeys))
                            .consume(numberOfKeysGenerated -> logger.debug(
-                                   "Replenished Key Pool of CryptoToken '{}' with algorithm '{}' and usage '{}'. Generated {} new keys.",
-                                   cryptoToken.name(), keyPoolProfile.keyAlgorithm(),
-                                   keyPoolProfile.designatedUsage(), numberOfKeysGenerated
+                                   "Triggered replenishment of {} new keys from Key Pool of CryptoToken '{}' with algorithm '{}' and usage '{}'.",
+                                   numberOfKeysGenerated, cryptoToken.name(), keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage()
                            ))
                            .consumeError(error ->
                                                  logger.error(
-                                                         "Failed to replenish Key Pool of CryptoToken '{}'  with algorithm '{}' and usage '{}'. {}",
-                                                         cryptoToken.name(), keyPoolProfile.keyAlgorithm(),
-                                                         keyPoolProfile.designatedUsage(), error.getErrorText()
+                                                         "Failed to trigger replenishment from Key Pool of CryptoToken '{}'  with algorithm '{}' and usage '{}'. {}",
+                                                         cryptoToken.name(), keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage(), error.getErrorText()
                                                  )
                            );
             }
@@ -70,26 +70,25 @@ public class KeyPoolReplenisher<K extends SigningKey> {
         }
 
         for (int i = 0; i < numOfKeysToGenerate; i++) {
-            logger.info("Replenishing key pool of CryptoToken '{}' with algorithm '{}' and usage '{}'.",
+            keyGenerationExecutor.execute(() -> {
+                logger.info("Replenishing key pool of CryptoToken '{}' with algorithm '{}' and usage '{}'.",
                         cryptoToken.name(),
                         keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage()
-            );
-            String keyAlias = getUniqueKeyAlias(keyPoolProfile.keyPrefix());
-            var generateKeyResult = keysService.generateKey(
-                                                       cryptoToken, keyAlias, keyPoolProfile.keyAlgorithm(),
-                                                       keyPoolProfile.keySpecification()
-                                               )
-                                               .mapError(error -> error.extend(
-                                                                 "Generation of a key '%s' for key poll of CryptoToken '%s' has failed.",
-                                                                 keyAlias, cryptoToken.name()
-                                                         )
-                                               )
-                                               .consumeError(error -> logger.error(error.getErrorText()));
-            if (generateKeyResult instanceof Error(var err)) {
-                return Result.error(err.extend("Pool only replenished with %d keys.", i));
-            }
-
+                );
+                String keyAlias = getUniqueKeyAlias(keyPoolProfile.keyPrefix());
+                var generateKeyResult = keysService.generateKey(
+                                cryptoToken, keyAlias, keyPoolProfile.keyAlgorithm(),
+                                keyPoolProfile.keySpecification()
+                        )
+                        .mapError(error -> error.extend(
+                                        "Generation of a key '%s' for key poll of CryptoToken '%s' has failed.",
+                                        keyAlias, cryptoToken.name()
+                                )
+                        )
+                        .consumeError(error -> logger.error(error.getErrorText()));
+            });
         }
+
         return Result.success(numOfKeysToGenerate);
     }
 

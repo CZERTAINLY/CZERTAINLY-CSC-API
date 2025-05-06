@@ -22,6 +22,21 @@ public class AsyncConfig {
     public ExecutorService oneTimeKeyDeletionExecutor() {
         ThreadFactory tf = Thread.ofVirtual()
                 .name("key-del-", 0)
+                .uncaughtExceptionHandler(
+                        (t, e) -> logger.error("Uncaught exception in one-time key deletion thread: {}",
+                                t.getName(), e))
+                .factory();
+        ExecutorService base = Executors.newThreadPerTaskExecutor(tf);
+        return new DelegatingSecurityContextExecutorService(base);
+    }
+
+    @Bean(name = "keyGenerationExecutor", destroyMethod = "close")
+    public ExecutorService keyGenerationExecutor() {
+        ThreadFactory tf = Thread.ofVirtual()
+                .name("key-gen-", 0)
+                .uncaughtExceptionHandler(
+                        (t, e) -> logger.error("Uncaught exception in key generation thread: {}",
+                                t.getName(), e))
                 .factory();
         ExecutorService base = Executors.newThreadPerTaskExecutor(tf);
         return new DelegatingSecurityContextExecutorService(base);

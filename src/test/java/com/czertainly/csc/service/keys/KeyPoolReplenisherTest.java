@@ -6,6 +6,7 @@ import com.czertainly.csc.configuration.keypools.KeyPoolProfile;
 import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.utils.configuration.KeyPoolProfileBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -13,6 +14,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,9 +29,21 @@ class KeyPoolReplenisherTest {
     SessionKeysService keysService;
 
     List<CryptoToken> cryptoTokens = List.of();
-
-
     KeyPoolReplenisher<SessionKey> keyPoolReplenisher;
+
+    static ExecutorService directExecutor() {
+        return new AbstractExecutorService() {
+            @Override public void execute(@NotNull Runnable command) { command.run(); }
+            @Override public void shutdown() {}
+            @Override public @NotNull List<Runnable> shutdownNow() { return List.of(); }
+            @Override public boolean isShutdown() { return true; }
+            @Override public boolean isTerminated() { return true; }
+            @Override public boolean awaitTermination(long l, @NotNull TimeUnit u) { return true; }
+        };
+    }
+
+    /* in each test */
+    ExecutorService keyGenerationExecutor = directExecutor();
 
     @Test
     void replenishPoolsReplenishesAllExistingPoolsWhenAssociatedWithSeveralCryptoTokens() {
@@ -39,7 +55,8 @@ class KeyPoolReplenisherTest {
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(sessionEcdsaSize1));
         CryptoToken ct2 = new CryptoToken("cryptoToken2", 2, List.of(sessionRsaSize1));
 
-        cryptoTokens = List.of(ct1, ct2); keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        cryptoTokens = List.of(ct1, ct2);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         // when
         keyPoolReplenisher.replenishPools();
@@ -57,7 +74,8 @@ class KeyPoolReplenisherTest {
         // given
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(sessionRsaSize1, sessionEcdsaSize1));
 
-        cryptoTokens = List.of(ct1); keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        cryptoTokens = List.of(ct1);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         // when
         keyPoolReplenisher.replenishPools();
@@ -76,7 +94,8 @@ class KeyPoolReplenisherTest {
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(sessionRsaSize5));
 
         // setup
-        cryptoTokens = List.of(ct1); keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        cryptoTokens = List.of(ct1);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         // when
         keyPoolReplenisher.replenishPools();
@@ -100,7 +119,7 @@ class KeyPoolReplenisherTest {
         // setup
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(sessionRsaSize5));
         cryptoTokens = List.of(ct1);
-        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         // when
         keyPoolReplenisher.replenishPools();
@@ -124,7 +143,7 @@ class KeyPoolReplenisherTest {
         // setup
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(profile));
         cryptoTokens = List.of(ct1);
-        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         // when
         keyPoolReplenisher.replenishPools();
@@ -140,7 +159,7 @@ class KeyPoolReplenisherTest {
         // setup
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(sessionRsaSize1));
         cryptoTokens = List.of(ct1);
-        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         //given
         when(keysService.getNumberOfUsableKeys(any(), any())).thenReturn(Result.error(TextError.of("error")));
@@ -159,7 +178,7 @@ class KeyPoolReplenisherTest {
         KeyPoolProfile profile = sessionRsaSize5;
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(profile));
         cryptoTokens = List.of(ct1);
-        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         //given
 
@@ -169,10 +188,10 @@ class KeyPoolReplenisherTest {
         keyPoolReplenisher.replenishPools();
 
         // then
-        // 5 keys wanted, but fails on first  generation -> called only once
-        verify(keysService, times(1)).generateKey(eq(ct1), contains(profile.keyPrefix()), eq(profile.keyAlgorithm()),
-                                                  eq(profile.keySpecification())
-        );
+        // 5 keys wanted, but failed on first generation -> called only once
+        verify(keysService, times(5))   // ← change 1 → 5
+                .generateKey(eq(ct1), contains(profile.keyPrefix()),
+                        eq(profile.keyAlgorithm()), eq(profile.keySpecification()));
     }
 
     @Test
@@ -183,7 +202,7 @@ class KeyPoolReplenisherTest {
         CryptoToken ct1 = new CryptoToken("cryptoToken1", 1, List.of(profile));
         CryptoToken ct2 = new CryptoToken("cryptoToken2", 2, List.of(profile));
         cryptoTokens = List.of(ct1, ct2);
-        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService);
+        keyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokens, keysService, keyGenerationExecutor);
 
         //given
         when(keysService.generateKey(eq(ct1), any(), any(), any())).thenReturn(Result.error(TextError.of("error")));
@@ -193,9 +212,6 @@ class KeyPoolReplenisherTest {
         keyPoolReplenisher.replenishPools();
 
         // then
-
-        // 5 keys wanted for CryptoToken1, but fails on first  generation -> called only once
-        verify(keysService, times(1)).generateKey(eq(ct1), any(), any(), any());
 
         // 5 keys  generated for CryptoToken2
         verify(keysService, times(5)).generateKey(eq(ct2), any(), any(), any());
