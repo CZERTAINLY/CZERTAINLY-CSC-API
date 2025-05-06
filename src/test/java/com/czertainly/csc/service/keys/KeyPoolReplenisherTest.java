@@ -213,7 +213,7 @@ class KeyPoolReplenisherTest {
 
         // then
 
-        // 5 keys  generated for CryptoToken2
+        // 5 keys generated for CryptoToken2
         verify(keysService, times(5)).generateKey(eq(ct2), any(), any(), any());
     }
 
