@@ -5,7 +5,6 @@ import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.service.keys.*;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,21 +12,17 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Profile("keys-generator")
 public class KeyPoolReplenishTrigger {
 
-    @Autowired
-    @Qualifier("keyGenerationExecutor")
-    private ExecutorService keyGenerationExecutor;
-
     private final KeyPoolReplenisher<SessionKey> sessionKeyPoolReplenisher;
     private final KeyPoolReplenisher<OneTimeKey> oneTimeKeyPoolReplenisher;
 
     public KeyPoolReplenishTrigger(WorkerRepository repository, SessionKeysService sessionKeysService,
-                                   OneTimeKeysService oneTimeKeysService) {
+                                   OneTimeKeysService oneTimeKeysService,
+                                   @Qualifier("keyGenerationExecutor") ExecutorService keyGenerationExecutor) {
 
         List<CryptoToken> cryptoTokensForSessionSignatures = getCryptoTokensWithDesignatedUsage(
                 repository, KeyUsageDesignation.SESSION_SIGNATURE
@@ -40,12 +35,12 @@ public class KeyPoolReplenishTrigger {
         oneTimeKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForOneTimeSignatures, oneTimeKeysService, keyGenerationExecutor);
     }
 
-    @Scheduled(cron = "${csc.signingSessions.generateCronExpression}")
+    @Scheduled(cron = "${csc.signingSessions.generateCronExpression:30 */1 * * * *}")
     public void replenishSessionPools() {
         sessionKeyPoolReplenisher.replenishPools();
     }
 
-    @Scheduled(cron = "${csc.oneTimeKeys.generateCronExpression}")
+    @Scheduled(cron = "${csc.oneTimeKeys.generateCronExpression:0 */1 * * * *}")
     public void replenishOneTimePools() {
         oneTimeKeyPoolReplenisher.replenishPools();
     }

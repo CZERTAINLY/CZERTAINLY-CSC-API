@@ -13,7 +13,7 @@ public class SigningSessionsCleanupTrigger {
         this.signingSessionsService = signingSessionsService;
     }
 
-    @Scheduled(cron = "${csc.signingSessions.cleanupCronExpression}")
+    @Scheduled(cron = "${csc.signingSessions.cleanupCronExpression:0 0 * * * *}")
     public void cleanExpiredSessions() {
         signingSessionsService.cleanExpiredSessions();
     }

@@ -15,7 +15,7 @@ public class OneTimeKeysCleanupTrigger {
         this.oneTimeKeyCleanupService = oneTimeKeyCleanupService;
     }
 
-    @Scheduled(cron = "${csc.oneTimeKeys.cleanupCronExpression}")
+    @Scheduled(cron = "${csc.oneTimeKeys.cleanupCronExpression:0 0 * * * *}")
     public void cleanExpiredSessions() {
         oneTimeKeyCleanupService.cleanUsedUpKeys();
     }
