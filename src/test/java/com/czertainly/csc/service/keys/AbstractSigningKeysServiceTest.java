@@ -181,8 +181,8 @@ class AbstractSigningKeysServiceTest {
 
         // then
         assertErrorContains(result, String.format(
-                "No unused key with key algorithm '%s' belonging to Crypto Token '%s' was found", keyAlgorithm,
-                cryptoToken.identifier()
+                "New key couldn't be acquired from CryptoToken '%s'.: No KeyPoolProfile found for key algorithm '%s' in CryptoToken '%s'.",
+                cryptoToken.identifier(), keyAlgorithm, cryptoToken.identifier()
         ));
     }
 
