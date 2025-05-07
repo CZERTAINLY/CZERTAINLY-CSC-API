@@ -57,6 +57,21 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
         }
     }
 
+    private Result<K, TextError> generateKey(CryptoToken cryptoToken, String keyAlgorithm) {
+        // Select the first KeyPoolProfile that matches the key algorithm.
+        // If no KeyPoolProfile is found, return Result with an error.
+        return cryptoToken.keyPoolProfiles().stream()
+                .filter(kpp -> kpp.keyAlgorithm().equals(keyAlgorithm))
+                .findFirst()
+                .map(kpp -> {
+                    String keyAlias = kpp.keyPrefix() + "-" + UUID.randomUUID();
+                    return generateKey(cryptoToken, keyAlias, keyAlgorithm, kpp.keySpecification());
+                })
+                .orElseGet(() -> Result.error(TextError.of(
+                        "No KeyPoolProfile found for key algorithm '%s' in CryptoToken '%s'.",
+                                keyAlgorithm, cryptoToken.identifier())));
+    }
+
     @Override
     public Result<K, TextError> generateKey(
             CryptoToken cryptoToken, String keyAlias, String keyAlgorithm, String keySpec
@@ -89,10 +104,21 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                                  })
                                  .map(keyEntity -> this.mapEntityToSigningKey(keyEntity, cryptoToken))
                                  .map(Result::<K, TextError>success)
-                                 .orElseGet(() -> Result.error(TextError.of(
-                                         "No unused key with key algorithm '%s' belonging to Crypto Token '%s' was found.",
-                                         keyAlgorithm, cryptoToken.identifier()
-                                 )));
+                                 // If no key is found, try to generate a new one
+                                 .orElseGet(() -> generateKey(cryptoToken, keyAlgorithm)
+                                         .flatMap(k -> {
+                                                 keysRepository.findById(k.id()).ifPresent(e -> {
+                                                     e.setAcquiredAt(ZonedDateTime.now());
+                                                     e.setInUse(true);
+                                                     keysRepository.save(e);
+                                                 });
+                                             return Result.success(k);
+                                         })
+                                         .mapError(e -> e.extend(
+                                                 "New key couldn't be acquired from CryptoToken '%s'.",
+                                                 cryptoToken.identifier()
+                                         ))
+                                 );
         }
     }
 

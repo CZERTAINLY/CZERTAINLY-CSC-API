@@ -61,9 +61,16 @@ public class SignatureProcessTemplate<
                 return Result.error(TextError.of("Selected signing token cannot sign the requested data."));
             }
 
-            return signer.sign(data, configuration, signingToken, worker)
-                    .mapError(err -> err.extend("Error occurred during signing."))
-                    .run(() -> tokenProvider.cleanup(signingToken));
+            // Here we can assume that the signing token is valid and can be used for signing.
+            // Therefore, we can clean up the signing token after the signing process independently of the result
+            Result<SignedDocuments, TextError> result;
+            try {
+                result = signer.sign(data, configuration, signingToken, worker)
+                        .mapError(err -> err.extend("Error occurred during signing."));
+            } finally {
+                tokenProvider.cleanup(signingToken);
+            }
+            return result;
         } else {
             return Result.error(TextError.of("Signature request was not authorized."));
         }

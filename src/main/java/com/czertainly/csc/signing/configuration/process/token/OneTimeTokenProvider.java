@@ -45,17 +45,25 @@ public class OneTimeTokenProvider<C extends SignatureProcessConfiguration> imple
                                   worker.worker().workerId(),
                                   signatureConfiguration.signatureAlgorithm().keyAlgorithm()
                           )
-                          .flatMap(key -> signatureQualifierBasedCredentialFactory.createCredential(
-                                  key,
-                                  signatureConfiguration.signatureQualifier(),
-                                  signatureConfiguration.userID(),
-                                  signatureConfiguration.sad(),
-                                  tokenConfiguration.cscAuthenticationToken()
-                          ))
-                          .map(credential -> new OneTimeToken(
-                                  credential.key(), credential.multisign()
-                          ))
-                          .mapError(e -> e.extend("Failed to create One Time Token"));
+                          .flatMap(key ->
+                                  signatureQualifierBasedCredentialFactory.createCredential(
+                                          key,
+                                          signatureConfiguration.signatureQualifier(),
+                                          signatureConfiguration.userID(),
+                                          signatureConfiguration.sad(),
+                                          tokenConfiguration.cscAuthenticationToken()
+                                  )
+                                  .map(credential -> new OneTimeToken(
+                                          credential.key(), credential.multisign()
+                                  ))
+                                  .mapError(err -> {
+                                      logger.warn("Assign credential to one-time key failed, " +
+                                                      "scheduling deletion for one‑time key '{}': {}",
+                                              key.keyAlias(), err);
+                                      asyncDeletionService.deleteKeyAsync(key);
+                                      return err.extend("Failed to create One‑Time Token");
+                                  })
+                          );
     }
 
     @Override
