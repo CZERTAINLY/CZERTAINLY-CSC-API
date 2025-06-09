@@ -26,7 +26,7 @@ services:
 
   mysql.csc.dev:
     container_name: csc-mysql-db
-    image: mysql:9.2
+    image: mysql:9.3
     command:
       #      - --ssl-ca=/etc/mysql/certs/ca.crt # CA certificate for mTLS
       - --ssl-cert=/etc/mysql/certs/mysql.crt
