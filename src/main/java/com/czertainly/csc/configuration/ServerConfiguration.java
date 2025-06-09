@@ -35,7 +35,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.ws.transport.http.HttpComponents5ClientFactory;
 import org.springframework.ws.transport.http.HttpComponents5MessageSender;
+import org.springframework.ws.transport.http.SimpleHttpComponents5MessageSender;
 
 import javax.net.ssl.SSLContext;
 import java.security.*;
@@ -66,7 +68,7 @@ public class ServerConfiguration {
     }
 
     @Bean("signserverMessageSender")
-    public HttpComponents5MessageSender signserverHttpComponentsMessageSender(
+    public SimpleHttpComponents5MessageSender signserverHttpComponentsMessageSender(
             @Value("${signingProvider.signserver.admin.keystoreBundle:none}") String keystoreBundleName,
             @Value("${signingProvider.signserver.truststoreBundle:none}") String truststoreBundleName,
             SslBundles sslBundles
@@ -75,7 +77,7 @@ public class ServerConfiguration {
     }
 
     @Bean("ejbcaMessageSender")
-    public HttpComponents5MessageSender ejbcaHttpComponentsMessageSender(
+    public SimpleHttpComponents5MessageSender ejbcaHttpComponentsMessageSender(
             @Value("${caProvider.ejbca.admin.keystoreBundle:none}") String keystoreBundleName,
             @Value("${caProvider.ejbca.truststoreBundle:none}") String truststoreBundleName,
             SslBundles sslBundles
@@ -167,7 +169,7 @@ public class ServerConfiguration {
 
     @Bean
     public EjbcaWsClient ejbcaWsClient(@Qualifier("ejbcaWsMarshaller") Jaxb2Marshaller marshaller,
-                                       @Qualifier("ejbcaMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
+                                       @Qualifier("ejbcaMessageSender") SimpleHttpComponents5MessageSender httpComponentsMessageSender,
                                        @Value("${caProvider.ejbca.url}") String ejbcaUrl
 
     ) {
@@ -187,7 +189,7 @@ public class ServerConfiguration {
 
     @Bean
     public SignserverWsClient signserverWSClient(@Qualifier("signserverWsMarshaller") Jaxb2Marshaller marshaller,
-                                                 @Qualifier("signserverMessageSender") HttpComponents5MessageSender httpComponentsMessageSender,
+                                                 @Qualifier("signserverMessageSender") SimpleHttpComponents5MessageSender httpComponentsMessageSender,
                                                  @Value("${signingProvider.signserver.url}") String signserverUrl
     ) {
         SignserverWsClient client = new SignserverWsClient(signserverUrl);
@@ -197,7 +199,7 @@ public class ServerConfiguration {
         return client;
     }
 
-    private HttpComponents5MessageSender getHttpComponentsMessageSender(
+    private SimpleHttpComponents5MessageSender getHttpComponentsMessageSender(
             String keystoreBundleName,
             String truststoreBundleName,
             SslBundles sslBundles
@@ -221,9 +223,9 @@ public class ServerConfiguration {
 
             SSLContext sslContext = builder.build();
 
-           final HttpClient httpClient = getHttpClient(sslContext, new HttpComponents5MessageSender.RemoveSoapHeadersInterceptor());
+           final HttpClient httpClient = getHttpClient(sslContext, new HttpComponents5ClientFactory.RemoveSoapHeadersInterceptor());
 
-            return new HttpComponents5MessageSender(httpClient);
+            return new SimpleHttpComponents5MessageSender(httpClient);
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | KeyManagementException e) {
             throw new ApplicationConfigurationException("Failed to configure application." + e.getMessage());
         }
