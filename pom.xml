@@ -30,6 +30,7 @@
 
         <version.springdoc-openapi-maven-plugin>1.5</version.springdoc-openapi-maven-plugin>
     </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
