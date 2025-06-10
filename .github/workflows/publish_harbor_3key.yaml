@@ -43,6 +43,7 @@ jobs:
             type=ref,event=tag
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
+            type=semver,value=latest
             type=raw,value=develop-latest
             type=sha,prefix=develop-,format=long
 
