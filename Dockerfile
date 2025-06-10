@@ -50,9 +50,6 @@ RUN addgroup --system --gid 10001 cscapi && adduser --system --home /opt/cscapi 
 COPY --from=build /home/app/docker /
 COPY --from=build /home/app/target/*.jar /opt/cscapi/app.jar
 
-COPY --from=build /home/app/docker /
-COPY --from=build /home/app/target/*.jar /opt/cscapi/app.jar
-
 WORKDIR /opt/cscapi
 
 ENV PORT=8080
