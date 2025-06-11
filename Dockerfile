@@ -17,21 +17,21 @@ WORKDIR /app
 # List jar modules
 RUN jar xf app.jar
 RUN jdeps \
-    --ignore-missing-deps \
-    --print-module-deps \
-    --multi-release 21 \
-    --recursive \
-    --class-path 'BOOT-INF/lib/*' \
-    app.jar > modules.txt
+  --ignore-missing-deps \
+  --print-module-deps \
+  --multi-release 21 \
+  --recursive \
+  --class-path 'BOOT-INF/lib/*' \
+  app.jar > modules.txt
 
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
-         --add-modules $(cat modules.txt) \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /javaruntime
+  --add-modules $(cat modules.txt),jdk.crypto.ec \
+  --strip-debug \
+  --no-man-pages \
+  --no-header-files \
+  --compress=2 \
+  --output /javaruntime
 
 # Package stage
 FROM alpine:latest
