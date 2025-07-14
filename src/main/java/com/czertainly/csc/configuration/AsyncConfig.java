@@ -3,6 +3,7 @@ package com.czertainly.csc.configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -19,26 +20,30 @@ public class AsyncConfig {
     private static final Logger logger = LoggerFactory.getLogger(AsyncConfig.class);
 
     @Bean(name = "oneTimeKeyDeletionExecutor", destroyMethod = "close")
-    public ExecutorService oneTimeKeyDeletionExecutor() {
+    public ExecutorService oneTimeKeyDeletionExecutor(
+            @Value("${csc.concurrency.maxKeyDeletion:10}") int concurrency
+    ) {
         ThreadFactory tf = Thread.ofVirtual()
                 .name("key-del-", 0)
                 .uncaughtExceptionHandler(
                         (t, e) -> logger.error("Uncaught exception in one-time key deletion thread: {}",
                                 t.getName(), e))
                 .factory();
-        ExecutorService base = Executors.newThreadPerTaskExecutor(tf);
+        ExecutorService base = Executors.newFixedThreadPool(concurrency, tf);
         return new DelegatingSecurityContextExecutorService(base);
     }
 
     @Bean(name = "keyGenerationExecutor", destroyMethod = "close")
-    public ExecutorService keyGenerationExecutor() {
+    public ExecutorService keyGenerationExecutor(
+            @Value("${csc.concurrency.maxKeyGeneration:10}") int concurrency
+    ) {
         ThreadFactory tf = Thread.ofVirtual()
                 .name("key-gen-", 0)
                 .uncaughtExceptionHandler(
                         (t, e) -> logger.error("Uncaught exception in key generation thread: {}",
                                 t.getName(), e))
                 .factory();
-        ExecutorService base = Executors.newThreadPerTaskExecutor(tf);
+        ExecutorService base = Executors.newFixedThreadPool(concurrency, tf);
         return new DelegatingSecurityContextExecutorService(base);
     }
 
