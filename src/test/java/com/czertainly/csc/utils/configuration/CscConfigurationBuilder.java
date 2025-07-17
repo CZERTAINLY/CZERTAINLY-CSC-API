@@ -1,5 +1,6 @@
 package com.czertainly.csc.utils.configuration;
 
+import com.czertainly.csc.configuration.csc.ConcurrencySettings;
 import com.czertainly.csc.configuration.csc.CscConfiguration;
 import com.czertainly.csc.configuration.csc.OneTimeKeysCleanupSettings;
 import com.czertainly.csc.configuration.csc.SigningSessions;
@@ -15,6 +16,7 @@ public class CscConfigurationBuilder {
     private String profilesConfigurationDirectory;
     private SigningSessions signingSessions;
     private OneTimeKeysCleanupSettings oneTimeKeysCleanupSettings;
+    private ConcurrencySettings concurrency;
 
     public static CscConfiguration anCscConfiguration() {
         return Instancio.of(CscConfiguration.class)
@@ -56,6 +58,11 @@ public class CscConfigurationBuilder {
         return this;
     }
 
+    public CscConfigurationBuilder withConcurrencySettings(ConcurrencySettings concurrency) {
+        this.concurrency = concurrency;
+        return this;
+    }
+
     public CscConfiguration build() {
         var partial = Instancio.of(CscConfiguration.class);
         if (name != null) {
@@ -84,6 +91,10 @@ public class CscConfigurationBuilder {
 
         if (oneTimeKeysCleanupSettings != null) {
             partial.set(Select.field(CscConfiguration::oneTimeKeys), oneTimeKeysCleanupSettings);
+        }
+
+        if (concurrency != null) {
+            partial.set(Select.field(CscConfiguration::concurrency), concurrency);
         }
 
         return partial.create();
