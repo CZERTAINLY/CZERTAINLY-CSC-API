@@ -6,8 +6,8 @@ public record ConcurrencySettings(
         @Min(1) Integer maxKeyGeneration,
         @Min(1) Integer maxKeyDeletion
 ) {
-    public ConcurrencySettings {
-        if (maxKeyGeneration == null) maxKeyGeneration = 10;
-        if (maxKeyDeletion == null) maxKeyDeletion = 10;
+    public ConcurrencySettings(@Min(1) Integer maxKeyGeneration, @Min(1) Integer maxKeyDeletion) {
+        this.maxKeyGeneration = (maxKeyGeneration == null) ? 10 : maxKeyGeneration;
+        this.maxKeyDeletion = (maxKeyDeletion == null) ? 10 : maxKeyDeletion;
     }
 }
