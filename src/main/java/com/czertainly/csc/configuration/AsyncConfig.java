@@ -24,7 +24,6 @@ public class AsyncConfig {
 
     private final CscConfiguration cscConfig;
 
-    @Autowired
     public AsyncConfig(CscConfiguration cscConfig) {
         this.cscConfig = cscConfig;
     }
