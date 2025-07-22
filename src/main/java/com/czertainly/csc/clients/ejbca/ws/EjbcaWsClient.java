@@ -123,7 +123,7 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
 
             var request = new RevokeCert(); request.setArg0(issuerDN); // certificateSerialNumberHex
             request.setArg1(certificateSerialNumberHex); // issuerDN
-            request.setArg2(revocationReason.getReasonCode()); // reason Unspecified
+            request.setArg2(revocationReason.getReasonCode()); // reason
 
             getWebServiceTemplate().marshalSendAndReceive(request);
             return Result.emptySuccess();

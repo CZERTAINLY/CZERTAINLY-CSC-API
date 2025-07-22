@@ -18,7 +18,7 @@ public enum CertificateRevocationReason {
     CESSATION_OF_OPERATION("cessationOfOperation", "Cessation of operation", 5, CRLReason.CESSATION_OF_OPERATION),
     CERTIFICATE_HOLD("certificateHold", "Certificate hold", 6, CRLReason.CERTIFICATE_HOLD),
     PRIVILEGES_WITHDRAWN("privilegeWithdrawn", "Privilege withdrawn", 9, CRLReason.PRIVILEGE_WITHDRAWN),
-    AA_COMPROMISE("aACompromise", "AA compromise", 10, CRLReason.CA_COMPROMISE);
+    AA_COMPROMISE("aACompromise", "AA compromise", 10, CRLReason.AA_COMPROMISE);
 
     private static final CertificateRevocationReason[] VALUES;
 
@@ -70,10 +70,6 @@ public enum CertificateRevocationReason {
 
     public String getLabel() {
         return this.label;
-    }
-
-    public String getDescription() {
-        return null;
     }
 
     public int getReasonCode() {
