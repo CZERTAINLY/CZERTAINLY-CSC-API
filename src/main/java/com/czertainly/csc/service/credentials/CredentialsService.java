@@ -11,11 +11,9 @@ import com.czertainly.csc.components.DateConverter;
 import com.czertainly.csc.crypto.AlgorithmHelper;
 import com.czertainly.csc.crypto.CertificateParser;
 import com.czertainly.csc.crypto.PasswordGenerator;
+import com.czertainly.csc.model.CertificateRevocationReason;
 import com.czertainly.csc.model.csc.*;
-import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
-import com.czertainly.csc.model.csc.requests.CredentialInfoRequest;
-import com.czertainly.csc.model.csc.requests.ListCredentialsRequest;
-import com.czertainly.csc.model.csc.requests.RekeyCredentialRequest;
+import com.czertainly.csc.model.csc.requests.*;
 import com.czertainly.csc.model.ejbca.EndEntity;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
@@ -100,7 +98,7 @@ public class CredentialsService {
                         credentialProfile.getKeySpecification()
                 )
                 .mapError(e -> e.extend(
-                        "Key couldn't be generated on Signserver CryptoToken %s(%s).",
+                        "Key couldn't be generated on SignServer CryptoToken %s(%s).",
                         token.name(), token.id()
                 ));
         if (generateKeyResult instanceof Error(var err)) return Result.error(err);
@@ -170,19 +168,33 @@ public class CredentialsService {
                 .ifError(() -> revokeCertificate(endCertificate));
     }
 
+    public Result<Void, TextError> deleteCredential(RemoveCredentialRequest removeCredentialRequest) {
+        return deleteCredential(removeCredentialRequest.credentialID(), removeCredentialRequest.revocationReason());
+    }
 
-    public Result<Void, TextError> deleteCredential(UUID credentialId) {
+    private Result<Void, TextError> deleteCredential(UUID credentialId,
+                                                             CertificateRevocationReason revocationReason) {
         logger.info("Deleting credential with ID '{}'.", credentialId);
+
         return getCredentialMetadataEntity(credentialId, null)
                 .mapError(e -> e.extend("Failed to obtain credential metadata."))
+                .flatMap(credentialMetadata -> {
+                    if (revocationReason == null) {
+                        return Result.success(credentialMetadata);
+                    }
+
+                    // Revoke certificate if revocationReason is provided
+                    return getCredential(credentialMetadata, CertificateReturnType.END_CERTIFICATE)
+                            .map(credential -> {
+                                revokeCertificate(credential.cert().serialNumber(), credential.cert().issuerDN(), revocationReason);
+                                return credentialMetadata;
+                            });
+                })
                 .flatMap(credentialMetadata ->
-                                 workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
-                                                 .flatMap(token ->
-                                                                  signserverClient.removeKeyOkIfNotExists(
-                                                                          token.id(),
-                                                                          credentialMetadata.getKeyAlias()
-                                                                  )
-                                                 )
+                        workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
+                                .flatMap(token ->
+                                        signserverClient.removeKeyOkIfNotExists(token.id(), credentialMetadata.getKeyAlias())
+                                )
                 )
                 .flatMap(v -> {
                     try {
@@ -194,7 +206,6 @@ public class CredentialsService {
                     }
                 })
                 .ifSuccess(() -> logger.info("Credential '{}' was deleted.", credentialId));
-
     }
 
     public Result<Void, TextError> disableCredential(UUID credentialId) {
@@ -653,7 +664,7 @@ public class CredentialsService {
 
     private void rollbackKeyCreation(CryptoToken token, String keyAlias) {
         logger.info(
-                "Rollbacking creation of a key {} in crypto token {}({}) due to an error during credential creation.",
+                "Rollback creation of a key {} in crypto token {}({}) due to an error during credential creation.",
                 keyAlias, token.name(), token.id()
         );
         signserverClient.removeKey(token.id(), keyAlias)
@@ -667,10 +678,19 @@ public class CredentialsService {
         logger.info("Revoking certificate {} due to an error during credential creation.",
                     certificate.getSerialNumber()
         );
-        ejbcaClient.revokeCertificate(certificate.getSerialNumber().toString(16), certificate.getIssuer().toString())
+        ejbcaClient.revokeCertificate(certificate.getSerialNumber().toString(16), certificate.getIssuer().toString(),
+                        CertificateRevocationReason.UNSPECIFIED)
                    .consumeError(e -> logger.error(
                            "Failed to revoke certificate '{}'. The certificate should be revoked manually.",
                            certificate.getSerialNumber()
+                   ));
+    }
+
+    private void revokeCertificate(String serialNumber, String issuerDN, CertificateRevocationReason revocationReason) {
+        ejbcaClient.revokeCertificate(serialNumber, issuerDN, revocationReason)
+                   .consumeError(e -> logger.error(
+                           "Failed to revoke certificate with serial number '{}' and issuer '{}'. The certificate should be revoked manually.",
+                           serialNumber, issuerDN
                    ));
     }
 }

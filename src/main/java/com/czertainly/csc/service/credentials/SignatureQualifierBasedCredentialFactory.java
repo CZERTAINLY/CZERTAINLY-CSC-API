@@ -9,6 +9,7 @@ import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.CertificateParser;
 import com.czertainly.csc.crypto.PasswordGenerator;
+import com.czertainly.csc.model.CertificateRevocationReason;
 import com.czertainly.csc.model.UserInfo;
 import com.czertainly.csc.model.csc.SignatureQualifierBasedCredentialMetadata;
 import com.czertainly.csc.model.ejbca.EndEntity;
@@ -165,14 +166,15 @@ public class SignatureQualifierBasedCredentialFactory {
                     certificate.getSerialNumber()
         );
         ejbcaClient.revokeCertificate(
-                           certificate.getSerialNumber().toString(16), certificate.getIssuer().toString()
-                   )
-                   .consumeError(e -> logger.error(
-                           e.extend(
-                                   "Failed to revoke certificate '%s'. The certificate should be revoked manually.",
-                                   certificate.getSerialNumber()
-                           ).getErrorText()
-                   ));
+                        certificate.getSerialNumber().toString(16), certificate.getIssuer().toString(),
+                        CertificateRevocationReason.UNSPECIFIED
+                )
+                .consumeError(e -> logger.error(
+                        e.extend(
+                                "Failed to revoke certificate '%s'. The certificate should be revoked manually.",
+                                certificate.getSerialNumber()
+                        ).getErrorText()
+                ));
 
     }
 }

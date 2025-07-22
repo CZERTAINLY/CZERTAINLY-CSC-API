@@ -5,6 +5,7 @@ import com.czertainly.csc.common.errorhandling.ErrorResultRetryException;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.common.result.TextErrorWithRetryIndication;
+import com.czertainly.csc.model.CertificateRevocationReason;
 import jakarta.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,15 +114,16 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         }
     }
 
-    public Result<Void, TextError> revokeCertificate(String certificateSerialNumberHex, String issuerDN) {
+    public Result<Void, TextError> revokeCertificate(String certificateSerialNumberHex, String issuerDN,
+                                                     CertificateRevocationReason revocationReason) {
         try {
             logger.info("Revoking certificate with serial number '{}' issued by '{}' because of a reason '{}'.",
-                        certificateSerialNumberHex, issuerDN, "unspecified"
+                        certificateSerialNumberHex, issuerDN, revocationReason
             );
 
             var request = new RevokeCert(); request.setArg0(issuerDN); // certificateSerialNumberHex
             request.setArg1(certificateSerialNumberHex); // issuerDN
-            request.setArg2(0); // reason Unspecified
+            request.setArg2(revocationReason.getReasonCode()); // reason Unspecified
 
             getWebServiceTemplate().marshalSendAndReceive(request);
             return Result.emptySuccess();

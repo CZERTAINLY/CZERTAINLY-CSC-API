@@ -1,17 +1,16 @@
 package com.czertainly.csc.controllers.noncsc.v1;
 
 import com.czertainly.csc.api.common.ErrorDto;
-import com.czertainly.csc.api.management.CreateCredentialDto;
-import com.czertainly.csc.api.management.CredentialIdDto;
-import com.czertainly.csc.api.management.RekeyCredentialDto;
-import com.czertainly.csc.api.management.SelectCredentialDto;
+import com.czertainly.csc.api.management.*;
 import com.czertainly.csc.api.mappers.credentials.CreateCredentialRequestMapper;
 import com.czertainly.csc.api.mappers.credentials.CredentialUUIDMapper;
 import com.czertainly.csc.api.mappers.credentials.RekeyCertificateRequestMapper;
+import com.czertainly.csc.api.mappers.credentials.RemoveCredentialRequestMapper;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.controllers.exceptions.InternalErrorException;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
 import com.czertainly.csc.model.csc.requests.RekeyCredentialRequest;
+import com.czertainly.csc.model.csc.requests.RemoveCredentialRequest;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -66,16 +65,19 @@ public class CredentialManagementController {
     private final CreateCredentialRequestMapper createCredentialRequestMapper;
     private final CredentialUUIDMapper credentialUUIDMapper;
     private final RekeyCertificateRequestMapper rekeyCertificateRequestMapper;
+    private final RemoveCredentialRequestMapper removeCredentialRequestMapper;
 
     public CredentialManagementController(@Autowired CredentialsService credentialsService,
                                           CreateCredentialRequestMapper createCredentialRequestMapper,
                                           CredentialUUIDMapper credentialUUIDMapper,
-                                          RekeyCertificateRequestMapper rekeyCertificateRequestMapper
+                                          RekeyCertificateRequestMapper rekeyCertificateRequestMapper,
+                                          RemoveCredentialRequestMapper removeCredentialRequestMapper
     ) {
         this.credentialsService = credentialsService;
         this.createCredentialRequestMapper = createCredentialRequestMapper;
         this.credentialUUIDMapper = credentialUUIDMapper;
         this.rekeyCertificateRequestMapper = rekeyCertificateRequestMapper;
+        this.removeCredentialRequestMapper = removeCredentialRequestMapper;
     }
 
     @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json")
@@ -114,11 +116,11 @@ public class CredentialManagementController {
                     )
             }
     )
-    public void deleteCredential(@RequestBody SelectCredentialDto selectCredentialDto) {
-        UUID credentialId = credentialUUIDMapper.map(selectCredentialDto, null);
-        this.credentialsService.deleteCredential(credentialId)
+    public void deleteCredential(@RequestBody RemoveCredentialDto removeCredentialDto) {
+        RemoveCredentialRequest request = removeCredentialRequestMapper.map(removeCredentialDto);
+        this.credentialsService.deleteCredential(request)
                                .mapError(e -> e.extend("Failed to delete credential %s",
-                                                       selectCredentialDto.credentialID()
+                                                       request.credentialID()
                                ))
                                .consumeError(this::logAndThrowError);
 

@@ -5,6 +5,7 @@ import com.czertainly.csc.clients.ejbca.ws.EjbcaWsClient;
 import com.czertainly.csc.clients.ejbca.ws.dto.CertificateResponse;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.model.CertificateRevocationReason;
 import com.czertainly.csc.model.RevocationStatus;
 import com.czertainly.csc.model.ejbca.EndEntity;
 import com.czertainly.csc.signing.configuration.profiles.Profile;
@@ -115,8 +116,9 @@ public class EjbcaClient {
                 ));
     }
 
-    public Result<?, TextError> revokeCertificate(String certificateSerialNumberHex, String issuerDN) {
-        return ejbcaWsClient.revokeCertificate(issuerDN, certificateSerialNumberHex)
+    public Result<?, TextError> revokeCertificate(String certificateSerialNumberHex, String issuerDN,
+                                                  CertificateRevocationReason revocationReason) {
+        return ejbcaWsClient.revokeCertificate(certificateSerialNumberHex, issuerDN, revocationReason)
                             .mapError(e -> e.extend("Failed to revoke certificate '%s' issued by '%s'",
                                                    certificateSerialNumberHex, issuerDN
                             ));
