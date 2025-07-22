@@ -54,17 +54,17 @@ signers:
       id: 302
       cryptoToken: "SigningToken01"
       capabilities:
-       signatureQualifiers:
-         - eu_eidas_qes
-         - eu_eidas_aes
-       signatureFormat: C
-       conformanceLevel: Ades-B-B
-       signaturePackaging: Detached
-       signatureAlgorithms:
-         - SHA256withRSA
-         - SHA384withRSA
-         - SHA512withRSA
-       returnsValidationInfo: false
-       documentTypes:
-         - FULL
-         - HASH
+        signatureQualifiers:
+          - eu_eidas_qes
+          - eu_eidas_aes
+        signatureFormat: C
+        conformanceLevel: Ades-B-B
+        signaturePackaging: Detached
+        signatureAlgorithms:
+          - SHA256withRSA
+          - SHA384withRSA
+          - SHA512withRSA
+        returnsValidationInfo: false
+        documentTypes:
+          - FULL
+          - HASH
