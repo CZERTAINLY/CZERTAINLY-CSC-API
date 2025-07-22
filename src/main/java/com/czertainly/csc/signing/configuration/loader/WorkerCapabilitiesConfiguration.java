@@ -63,10 +63,6 @@ public class WorkerCapabilitiesConfiguration{
     }
 
     public List<DocumentType> getDocumentTypes() {
-        // Default to HASH if not specified
-        if (documentTypes == null || documentTypes.isEmpty()) {
-            return Collections.singletonList(DocumentType.HASH);
-        }
         return documentTypes;
     }
 

@@ -59,7 +59,7 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
     ) {
         return signserverClient.signSingleContentWithValidationData(
                 worker.worker().workerName(),
-                data.getFirst().getBytes(),
+                Base64.getDecoder().decode(data.getFirst().getBytes()),
                 signingToken.getKeyAlias(),
                 configuration.signaturePackaging()
         );
