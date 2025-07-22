@@ -49,6 +49,47 @@ public class SignserverClient {
         this.certificateParser = certificateParser;
     }
 
+    public Result<Signature, TextError> signSingleContent(
+            String workerName, byte[] data, String keyAlias, SignaturePackaging signaturePackaging
+    ) {
+        Base64.Decoder decoder = Base64.getDecoder();
+
+        var metadata = new HashMap<String, String>();
+        // metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
+        // metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+
+        // SignserverProcessEncoding.NONE is used as content is already base64 encoded, so no need to encode it again
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.BASE64)
+                .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
+                .map(signatureBytes -> new Signature(signatureBytes, signaturePackaging));
+    }
+
+    public Result<SignedDocuments, TextError> signSingleContentWithValidationData(
+            String workerName, byte[] data, String keyAlias, SignaturePackaging signaturePackaging
+    ) {
+        Base64.Decoder decoder = Base64.getDecoder();
+
+        var metadata = new HashMap<String, String>();
+        // metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
+        // metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+
+        // SignserverProcessEncoding.NONE is used as content is already base64 encoded, so no need to encode it again
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE)
+                .flatMap(encodedSignatures -> mapToObject(
+                        decoder, encodedSignatures, EncodedValidationDataWrapper.class
+                ))
+                .flatMap(signatureWithValidationData ->
+                        base64Decode(decoder, signatureWithValidationData.signatureData().getBytes())
+                                .map(signatureBytes -> new SignedDocuments(
+                                        List.of(new Signature(signatureBytes, signaturePackaging)),
+                                        new HashSet<>(signatureWithValidationData.validationData().crl()),
+                                        new HashSet<>(signatureWithValidationData.validationData().ocsp()),
+                                        new HashSet<>(
+                                                signatureWithValidationData.validationData().certificates())
+                                ))
+                );
+    }
+
     public Result<Signature, TextError> signSingleHash(
             String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {

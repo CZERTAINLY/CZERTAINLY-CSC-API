@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class SignatureFacade {
 
-    DocumentSigning documentSigning;
+    DocumentContentSigning documentSigning;
     DocumentHashSigning documentHashSigning;
 
-    public SignatureFacade(DocumentSigning documentSigning, DocumentHashSigning documentHashSigning) {
+    public SignatureFacade(DocumentContentSigning documentSigning, DocumentHashSigning documentHashSigning) {
         this.documentSigning = documentSigning;
         this.documentHashSigning = documentHashSigning;
     }
@@ -25,7 +25,7 @@ public class SignatureFacade {
     ) {
 
         if (!signDocParameters.documentsToSign().isEmpty()) {
-            return documentSigning.sign(signDocParameters);
+            return documentSigning.sign(signDocParameters, cscAuthenticationToken);
         } else if (!signDocParameters.documentDigestsToSign().isEmpty()) {
             return documentHashSigning.sign(signDocParameters, cscAuthenticationToken);
         } else {

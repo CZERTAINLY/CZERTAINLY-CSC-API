@@ -1,7 +1,6 @@
 package com.czertainly.csc.signing.configuration;
 
 import com.czertainly.csc.signing.filter.*;
-import com.czertainly.csc.signing.filter.*;
 
 import java.util.StringJoiner;
 
@@ -14,6 +13,7 @@ public class CapabilitiesFilter {
     private String signatureAlgorithm;
     private String signatureAlgorithmParameters;
     private boolean returnValidationInfo;
+    private DocumentType documentType;
 
     public static CapabilitiesFilter configure() {
         return new CapabilitiesFilter();
@@ -54,6 +54,11 @@ public class CapabilitiesFilter {
         return this;
     }
 
+    public CapabilitiesFilter withDocumentType(DocumentType documentType) {
+        this.documentType = documentType;
+        return this;
+    }
+
     public Criterion<WorkerCapabilities> build() {
         var andCriterion = new AndCriterion<WorkerCapabilities>();
         if (signatureQualifier != null) {
@@ -82,6 +87,9 @@ public class CapabilitiesFilter {
 
         andCriterion.add(new ValidationInfoCriterion(returnValidationInfo));
 
+        if (documentType != null) {
+            andCriterion.add(new DocumentTypeCriterion(documentType));
+        }
 
         return andCriterion;
     }
@@ -96,6 +104,7 @@ public class CapabilitiesFilter {
                 .add("signatureAlgorithm='" + signatureAlgorithm + "'")
                 .add("signatureAlgorithmParameters='" + signatureAlgorithmParameters + "'")
                 .add("returnValidationInfo=" + returnValidationInfo)
+                .add("documentType=" + documentType)
                 .toString();
     }
 }

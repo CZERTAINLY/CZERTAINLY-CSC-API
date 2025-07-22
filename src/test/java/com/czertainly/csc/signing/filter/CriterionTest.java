@@ -1,9 +1,6 @@
 package com.czertainly.csc.signing.filter;
 
-import com.czertainly.csc.signing.configuration.ConformanceLevel;
-import com.czertainly.csc.signing.configuration.SignatureFormat;
-import com.czertainly.csc.signing.configuration.SignaturePackaging;
-import com.czertainly.csc.signing.configuration.WorkerCapabilities;
+import com.czertainly.csc.signing.configuration.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,7 +18,8 @@ class CriterionTest {
             ConformanceLevel.AdES_B_B,
             SignaturePackaging.DETACHED,
             List.of("SHA256withRSA", "SHA384withRSA", "SHA512withRSA"),
-            false
+            false,
+            List.of(DocumentType.HASH)
     );
 
     @ParameterizedTest

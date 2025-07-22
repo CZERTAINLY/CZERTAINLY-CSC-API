@@ -10,7 +10,7 @@ import java.util.UUID;
 public record SignDocParameters(
         String userID,
         OperationMode operationMode,
-        List<DocumentToSign> documentsToSign,
+        List<DocumentContentToSign> documentsToSign,
         List<DocumentDigestsToSign> documentDigestsToSign,
         UUID credentialID,
         String signatureQualifier,

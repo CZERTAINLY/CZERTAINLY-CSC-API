@@ -20,6 +20,7 @@ signers:
     #     signaturePackaging: Signature packaging
     #     signatureAlgorithms: List of signature algorithms
     #     returnsValidationInfo: Flag to return validation info
+    #     documentTypes: Optional list of document types signer supports (e.g., FULL, HASH). Default is HASH.
     - name: "ExtCMS-Long"
       id: 2005
       cryptoToken: "EntrustSAMCryptoToken"
@@ -64,3 +65,6 @@ signers:
          - SHA384withRSA
          - SHA512withRSA
        returnsValidationInfo: false
+       documentTypes:
+         - FULL
+         - HASH

@@ -11,7 +11,7 @@ import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.crypto.AlgorithmPair;
 import com.czertainly.csc.crypto.AlgorithmUnifier;
 import com.czertainly.csc.model.DocumentDigestsToSign;
-import com.czertainly.csc.model.DocumentToSign;
+import com.czertainly.csc.model.DocumentContentToSign;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
 import com.czertainly.csc.signing.configuration.SignatureFormat;
@@ -71,7 +71,7 @@ public class SignDocValidatingRequestMapper {
             sad = sadParser.parse(sadString);
         }
 
-        final List<DocumentToSign> documentsToSign;
+        final List<DocumentContentToSign> documentsToSign;
         final List<DocumentDigestsToSign> documentDigestsToSign;
         if (dto.getDocuments().isEmpty() && dto.getDocumentDigests().isEmpty()) {
             throw InvalidInputDataException.of("Either documentDigests or documents must be present in the request.");
@@ -79,8 +79,9 @@ public class SignDocValidatingRequestMapper {
             throw InvalidInputDataException.of("Cannot provide both documentDigests and documents parameters simultaneously.");
         }
 
-            documentsToSign = dto.getDocuments().stream()
-                                 .map(this::mapDocument)
+        SignatureActivationData finalSad = sad;
+        documentsToSign = dto.getDocuments().stream()
+                                 .map(doc -> mapDocument(doc, finalSad))
                                  .toList();
             documentDigestsToSign = dto.getDocumentDigests().stream()
                                  .map(this::mapDocumentDigests)
@@ -119,7 +120,7 @@ public class SignDocValidatingRequestMapper {
         );
     }
 
-    private DocumentToSign mapDocument(DocumentDto dto) {
+    private DocumentContentToSign mapDocument(DocumentDto dto, SignatureActivationData sad) {
         final String document;
         if (dto.getDocument().isEmpty()) {
             throw new InvalidInputDataException("Invalid Base64 documents string parameter");
@@ -148,7 +149,7 @@ public class SignDocValidatingRequestMapper {
         }
 
         AlgorithmPair algorithmPair = algorithmUnifier
-                .unify(dto.getSignAlgo().get(), null)
+                .unify(dto.getSignAlgo().get(), sad.getHashAlgorithmOID().orElse(null))
                 .consumeError(e -> {throw new InvalidInputDataException(e.toString());})
                 .unwrap();
         final String keyAlgo = algorithmPair.keyAlgo();
@@ -172,7 +173,7 @@ public class SignDocValidatingRequestMapper {
         }
 
         // TODO: Implement signedAttributes
-        return new DocumentToSign(document, signatureFormat, conformanceLevel, keyAlgo, digestAlgo, signAlgoParams,
+        return new DocumentContentToSign(document, signatureFormat, conformanceLevel, keyAlgo, digestAlgo, signAlgoParams,
                                   new HashMap<>(), signaturePackaging
         );
     }

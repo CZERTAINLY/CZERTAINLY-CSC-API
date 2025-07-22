@@ -3,6 +3,7 @@ package com.czertainly.csc.signing.configuration.process.configuration;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.crypto.SignatureAlgorithm;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
+import com.czertainly.csc.signing.configuration.DocumentType;
 import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 
@@ -16,11 +17,13 @@ public class SignatureProcessConfiguration {
     private final SignaturePackaging signaturePackaging;
     private final SignatureAlgorithm signatureAlgorithm;
     private final boolean returnValidationInfo;
+    private final DocumentType documentType;
 
     public SignatureProcessConfiguration(String userID, SignatureActivationData sad,
                                          String signatureQualifier, SignatureFormat signatureFormat,
                                          ConformanceLevel conformanceLevel, SignaturePackaging signaturePackaging,
-                                         SignatureAlgorithm signatureAlgorithm, boolean returnValidationInfo
+                                         SignatureAlgorithm signatureAlgorithm, boolean returnValidationInfo,
+                                         DocumentType documentType
     ) {
         this.userID = userID;
         this.sad = sad;
@@ -30,6 +33,7 @@ public class SignatureProcessConfiguration {
         this.signaturePackaging = signaturePackaging;
         this.signatureAlgorithm = signatureAlgorithm;
         this.returnValidationInfo = returnValidationInfo;
+        this.documentType = documentType;
     }
 
     public String userID() {
@@ -62,5 +66,9 @@ public class SignatureProcessConfiguration {
 
     public boolean returnValidationInfo() {
         return returnValidationInfo;
+    }
+
+    public DocumentType documentType() {
+        return documentType;
     }
 }

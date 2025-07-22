@@ -3,6 +3,7 @@ package com.czertainly.csc.utils.signing.process;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.crypto.SignatureAlgorithm;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
+import com.czertainly.csc.signing.configuration.DocumentType;
 import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
@@ -21,11 +22,11 @@ public class TestSignatureProcessConfiguration extends SignatureProcessConfigura
                                              ConformanceLevel conformanceLevel,
                                              SignaturePackaging signaturePackaging,
                                              SignatureAlgorithm signatureAlgorithm,
-                                             boolean returnValidationInfo
+                                             boolean returnValidationInfo,
+                                             DocumentType documentType
     ) {
         super(userID, sad, signatureQualifier, signatureFormat, conformanceLevel, signaturePackaging,
-              signatureAlgorithm,
-              returnValidationInfo
+                signatureAlgorithm, returnValidationInfo, DocumentType.HASH
         );
     }
 
@@ -42,6 +43,7 @@ public class TestSignatureProcessConfiguration extends SignatureProcessConfigura
         private SignaturePackaging signaturePackaging;
         private SignatureAlgorithm signatureAlgorithm;
         private boolean returnValidationInfo;
+        private DocumentType documentType;
 
         public Builder withUserID(String userID) {
             this.userID = userID;
@@ -83,10 +85,15 @@ public class TestSignatureProcessConfiguration extends SignatureProcessConfigura
             return this;
         }
 
+        public Builder withDocumentType(DocumentType documentType) {
+            this.documentType = documentType;
+            return this;
+        }
+
         public TestSignatureProcessConfiguration build() {
             return new TestSignatureProcessConfiguration(userID, sad, signatureQualifier, signatureFormat,
                                                          conformanceLevel, signaturePackaging, signatureAlgorithm,
-                                                         returnValidationInfo
+                                                         returnValidationInfo, documentType
             );
         }
     }

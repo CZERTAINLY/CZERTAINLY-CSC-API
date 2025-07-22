@@ -34,7 +34,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("management/v1/credentials")
-@PreAuthorize("hasAuthority('SCOPE_manageCredentials')")
+//@PreAuthorize("hasAuthority('SCOPE_manageCredentials')")
 @Tag(name = "Credentials Management", description = "An API for managing credentials. This API is not part of the CSC API specification.")
 @ApiResponses(
         value = {

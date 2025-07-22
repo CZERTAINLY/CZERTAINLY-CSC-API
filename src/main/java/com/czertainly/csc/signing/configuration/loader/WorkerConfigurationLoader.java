@@ -114,11 +114,17 @@ public class WorkerConfigurationLoader {
 
         boolean returnsValidationInfo = capabilitiesConfiguration.isReturnsValidationInfo();
 
+        if (capabilitiesConfiguration.getDocumentTypes() == null || capabilitiesConfiguration.getDocumentTypes().isEmpty()) {
+            capabilitiesConfiguration.setDocumentTypes(List.of(DocumentType.HASH));
+        }
+
         try {
-            return new WorkerCapabilities(signatureQualifiers, SignatureFormat.fromString(signatureFormat),
-                                          ConformanceLevel.fromString(conformanceLevel),
-                                          SignaturePackaging.fromString(signaturePackaging),
-                                          supportedSignatureAlgorithms, returnsValidationInfo
+            return new WorkerCapabilities(
+                    signatureQualifiers, SignatureFormat.fromString(signatureFormat),
+                    ConformanceLevel.fromString(conformanceLevel),
+                    SignaturePackaging.fromString(signaturePackaging),
+                    supportedSignatureAlgorithms, returnsValidationInfo,
+                    capabilitiesConfiguration.getDocumentTypes()
             );
         } catch (IllegalArgumentException e) {
             throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);

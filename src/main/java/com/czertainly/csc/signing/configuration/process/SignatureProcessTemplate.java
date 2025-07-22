@@ -87,6 +87,7 @@ public class SignatureProcessTemplate<
                 .withSignatureAlgorithm(configuration.signatureAlgorithm().toJavaName())
                 .withSignaturePackaging(configuration.signaturePackaging())
                 .withReturnValidationInfo(configuration.returnValidationInfo())
+                .withDocumentType(configuration.documentType())
                 .build();
 
         WorkerWithCapabilities worker = workerRepository.selectWorker(requiredWorkerCapabilities);

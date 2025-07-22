@@ -50,6 +50,11 @@ public class WorkerCapabilitiesBuilder {
         return this;
     }
 
+    public WorkerCapabilitiesBuilder withDocumentTypes(List<DocumentType> documentTypes) {
+        partial.set(field(WorkerCapabilities::documentTypes), documentTypes);
+        return this;
+    }
+
     public WorkerCapabilities build() {
         return partial.create();
     }

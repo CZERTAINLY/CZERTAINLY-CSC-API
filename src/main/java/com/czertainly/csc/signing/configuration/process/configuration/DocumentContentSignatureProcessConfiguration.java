@@ -7,10 +7,9 @@ import com.czertainly.csc.signing.configuration.DocumentType;
 import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 
-public class DocumentHashSignatureProcessConfiguration extends SignatureProcessConfiguration {
+public class DocumentContentSignatureProcessConfiguration extends SignatureProcessConfiguration {
 
-
-    public DocumentHashSignatureProcessConfiguration(
+    public DocumentContentSignatureProcessConfiguration(
             String userID, SignatureActivationData sad,
             String signatureQualifier, SignatureFormat signatureFormat,
             ConformanceLevel conformanceLevel,
@@ -18,7 +17,7 @@ public class DocumentHashSignatureProcessConfiguration extends SignatureProcessC
             boolean returnValidationInfo
     ) {
         super(userID, sad, signatureQualifier, signatureFormat, conformanceLevel, signaturePackaging,
-              signatureAlgorithm, returnValidationInfo, DocumentType.HASH
+              signatureAlgorithm, returnValidationInfo, DocumentType.FULL
         );
     }
 
