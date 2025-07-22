@@ -49,7 +49,7 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
     ) {
         return signserverClient.signSingleContent(
                 worker.worker().workerName(),
-                BASE64_DECODER.decode(data.getFirst().getBytes()),
+                BASE64_DECODER.decode(data.getFirst()),
                 signingToken.getKeyAlias(),
                 configuration.signaturePackaging()
         ).map(SignedDocuments::of);
@@ -60,7 +60,7 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
     ) {
         return signserverClient.signSingleContentWithValidationData(
                 worker.worker().workerName(),
-                BASE64_DECODER.decode(data.getFirst().getBytes()),
+                BASE64_DECODER.decode(data.getFirst()),
                 signingToken.getKeyAlias(),
                 configuration.signaturePackaging()
         );

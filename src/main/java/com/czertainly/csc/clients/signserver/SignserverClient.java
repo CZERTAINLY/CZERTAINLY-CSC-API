@@ -54,11 +54,9 @@ public class SignserverClient {
     ) {
         Base64.Decoder decoder = Base64.getDecoder();
 
+        // Metadata can be used to pass additional information to the signing process
         var metadata = new HashMap<String, String>();
-        // metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
-        // metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
 
-        // SignserverProcessEncoding.NONE is used as content is already base64 encoded, so no need to encode it again
         return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.BASE64)
                 .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
                 .map(signatureBytes -> new Signature(signatureBytes, signaturePackaging));
@@ -69,12 +67,10 @@ public class SignserverClient {
     ) {
         Base64.Decoder decoder = Base64.getDecoder();
 
+        // Metadata can be used to pass additional information to the signing process
         var metadata = new HashMap<String, String>();
-        // metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
-        // metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
 
-        // SignserverProcessEncoding.NONE is used as content is already base64 encoded, so no need to encode it again
-        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE)
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.BASE64)
                 .flatMap(encodedSignatures -> mapToObject(
                         decoder, encodedSignatures, EncodedValidationDataWrapper.class
                 ))
