@@ -16,6 +16,7 @@ import java.util.List;
 public class DocumentContentSigner<C extends DocumentContentSignatureProcessConfiguration> implements DocumentSigner<C> {
 
     public static final Logger logger = LoggerFactory.getLogger(DocumentContentSigner.class);
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
 
     private final SignserverClient signserverClient;
 
@@ -48,7 +49,7 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
     ) {
         return signserverClient.signSingleContent(
                 worker.worker().workerName(),
-                Base64.getDecoder().decode(data.getFirst().getBytes()),
+                BASE64_DECODER.decode(data.getFirst().getBytes()),
                 signingToken.getKeyAlias(),
                 configuration.signaturePackaging()
         ).map(SignedDocuments::of);
@@ -59,7 +60,7 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
     ) {
         return signserverClient.signSingleContentWithValidationData(
                 worker.worker().workerName(),
-                Base64.getDecoder().decode(data.getFirst().getBytes()),
+                BASE64_DECODER.decode(data.getFirst().getBytes()),
                 signingToken.getKeyAlias(),
                 configuration.signaturePackaging()
         );
