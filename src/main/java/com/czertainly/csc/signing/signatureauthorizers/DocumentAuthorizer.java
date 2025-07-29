@@ -22,6 +22,7 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
     private final AlgorithmHelper algorithmHelper;
     private final DocumentHashAuthorizer documentHashAuthorizer;
     private final Base64.Encoder base64Encoder = Base64.getEncoder();
+    private final Base64.Decoder base64Decoder = Base64.getDecoder();
 
     public DocumentAuthorizer(AlgorithmHelper algorithmHelper, DocumentHashAuthorizer documentHashAuthorizer) {
         this.algorithmHelper = algorithmHelper;
@@ -60,7 +61,7 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
         try {
             List<String> documentHashes = documents
                     .stream()
-                    .map(document -> messageDigest.digest(document.getBytes()))
+                    .map(document -> messageDigest.digest(base64Decoder.decode(document)))
                     .map(base64Encoder::encodeToString)
                     .toList();
             return Result.success(documentHashes);

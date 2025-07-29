@@ -35,6 +35,8 @@ class DocumentAuthorizerTest {
     @Mock
     private SignatureActivationData sad;
 
+    private final Base64.Encoder base64Encoder = Base64.getEncoder();
+
     @Test
     void authorizeSuccess() {
         // given
@@ -43,7 +45,7 @@ class DocumentAuthorizerTest {
         when(sad.getHashes()).thenReturn(Optional.of(Set.of("g+SxeJMG09HJkUDfOCfWAA==", "JxVZ7CUmi7m7Ktf9i0z3Gg==")));
         when(sad.getNumSignatures()).thenReturn(2);
         when(algorithmHelper.getDigestAlgorithmName(oid)).thenReturn("MD5");
-        List<String> documents = Arrays.asList("doc1", "doc2");
+        List<String> documents = Arrays.asList(base64Encoder.encodeToString("doc1".getBytes()), base64Encoder.encodeToString("doc2".getBytes()));
 
         // when
         Result<Boolean, TextError> result = documentAuthorizer.authorize(documents, sad);
@@ -85,7 +87,7 @@ class DocumentAuthorizerTest {
         String oid = "1.2.3.4.5.6";
         when(sad.getHashAlgorithmOID()).thenReturn(Optional.of(oid));
         when(algorithmHelper.getDigestAlgorithmName(oid)).thenReturn("FOOBAR");
-        List<String> documents = Arrays.asList("doc1", "doc2");
+        List<String> documents = Arrays.asList(base64Encoder.encodeToString("doc1".getBytes()), base64Encoder.encodeToString("doc2".getBytes()));
 
         // when
         Result<Boolean, TextError> result = documentAuthorizer.authorize(documents, sad);
