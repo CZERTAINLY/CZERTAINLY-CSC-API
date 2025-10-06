@@ -8,9 +8,12 @@ import java.util.Map;
 public class CustomAlgorithmNameFinder extends DefaultAlgorithmNameFinder {
 
     public ASN1ObjectIdentifier getKeyAlgorithmIdentifier(String algorithmName) {
-        for (Map.Entry<ASN1ObjectIdentifier, String> entry : getAlgorithmsMap().entrySet()) {
-            if (entry.getValue().equals(algorithmName)) {
-                return entry.getKey();
+        if (algorithmName != null) {
+            String algNameUpperCase = algorithmName.toUpperCase();
+            for (Map.Entry<ASN1ObjectIdentifier, String> entry : getAlgorithmsMap().entrySet()) {
+                if (entry.getValue().equals(algNameUpperCase)) {
+                    return entry.getKey();
+                }
             }
         }
         return null;

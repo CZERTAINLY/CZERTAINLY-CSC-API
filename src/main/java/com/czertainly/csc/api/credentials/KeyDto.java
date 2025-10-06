@@ -3,6 +3,7 @@ package com.czertainly.csc.api.credentials;
 import com.czertainly.csc.model.csc.KeyInfo;
 import com.czertainly.csc.model.csc.KeyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -36,9 +37,9 @@ public record KeyDto(
                         The length of the cryptographic key in bits.
                         """,
                 implementation = String.class,
-                requiredMode = Schema.RequiredMode.REQUIRED
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
-        int len,
+        @Nullable Integer len,
 
         @Schema(
                 description = """
@@ -46,15 +47,15 @@ public record KeyDto(
                         keyAlgo is based on ECDSA.
                         """,
                 implementation = String.class,
-                requiredMode = Schema.RequiredMode.REQUIRED
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
-        String curve
+        @Nullable String curve
 ) {
 
     public static KeyDto fromModel(KeyInfo keyInfo) {
         return new KeyDto(
                 keyStatusToString(keyInfo.status()),
-                List.of(keyInfo.algo().getId()),
+                keyInfo.algo().stream().map(Object::toString).toList(),
                 keyInfo.len(),
                 keyInfo.curve()
         );

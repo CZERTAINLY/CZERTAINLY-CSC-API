@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -546,9 +547,21 @@ public class CredentialsService {
                 return Result.error(TextError.of("Unsupported key algorithm '%s'.", key.keyAlgorithm()));
             }
         }
+
+        var getAvailableAlgorithmsResult = workerRepository.getAvailableSignatureAlgorithmsForToken(credentialMetadata.getCryptoTokenName());
+        if (getAvailableAlgorithmsResult instanceof Error) {
+            TextError e = getAvailableAlgorithmsResult.unwrapError();
+            return Result.error(e.extend("Failed to retrieve available signature algorithms for crypto token '%s'.", credentialMetadata.getCryptoTokenName()));
+        }
+        List<String> algorithms = getAvailableAlgorithmsResult.unwrap();
+
         return Result.success(new KeyInfo(
                 keyStatus,
-                algorithmHelper.getKeyAlgorithmIdentifier(key.keyAlgorithm()),
+                algorithms.stream()
+                          .filter(algorithm -> algorithm.contains(key.keyAlgorithm().toUpperCase()))
+                          .map(algorithmHelper::getKeyAlgorithmIdentifier)
+                          .filter(Objects::nonNull)
+                          .toList(),
                 keyLength,
                 curve
         ));

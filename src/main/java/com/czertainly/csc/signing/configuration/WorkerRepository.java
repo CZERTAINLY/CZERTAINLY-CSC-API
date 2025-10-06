@@ -80,5 +80,14 @@ public class WorkerRepository {
         return Result.success(tokens);
     }
 
-
+    public Result<List<String>, TextError> getAvailableSignatureAlgorithmsForToken(String tokenName) {
+        var algorithms = workersWithCapabilities
+                .stream()
+                .filter(workerWithCaps -> workerWithCaps.worker().cryptoToken().name().equals(tokenName))
+                .map(workerWithCaps -> workerWithCaps.capabilities().supportedSignatureAlgorithms())
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
+        return Result.success(algorithms);
+    }
 }

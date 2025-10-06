@@ -50,12 +50,14 @@ class WorkerRepositoryTest {
     Worker w1 = new Worker("worker1", 1, ct1);
     Worker w2 = new Worker("worker2", 2, ct2);
     Worker w3 = new Worker("worker3", 3, ct3);
+    Worker w4 = new Worker("worker4", 4, ct1);
 
     WorkerWithCapabilities wcap1 = new WorkerWithCapabilities(
             w1,
             WorkerCapabilitiesBuilder.create()
                                      .withConformanceLevel(ConformanceLevel.AdES_B_B)
                                      .withSignaturePackaging(SignaturePackaging.DETACHED)
+                                     .withSupportedSignatureAlgorithms(List.of("SHA256withRSA", "SHA384withRSA"))
                                      .build()
     );
 
@@ -75,7 +77,16 @@ class WorkerRepositoryTest {
                                      .build()
     );
 
-    List<WorkerWithCapabilities> workersWithCapabilities = List.of(wcap1, wcap2, wcap3);
+    WorkerWithCapabilities wcap4 = new WorkerWithCapabilities(
+            w4,
+            WorkerCapabilitiesBuilder.create()
+                                     .withConformanceLevel(ConformanceLevel.AdES_B_B)
+                                     .withSignaturePackaging(SignaturePackaging.DETACHED)
+                                     .withSupportedSignatureAlgorithms(List.of("SHA256withRSA", "SHA256withECDSA", "SHA512withECDSA"))
+                                     .build()
+    );
+
+    List<WorkerWithCapabilities> workersWithCapabilities = List.of(wcap1, wcap2, wcap3, wcap4);
     WorkerRepository workerRepository = new WorkerRepository(workersWithCapabilities);
 
     @Test
@@ -119,10 +130,10 @@ class WorkerRepositoryTest {
     @Test
     void getWorkerReturnsNullOnNonExistingWorker() {
         // given
-        // Worker repository is set up that no worker with id 4 exists (see initialization at the top)
+        // Worker repository is set up that no worker with id 5 exists (see initialization at the top)
 
         // when
-        var w = workerRepository.getWorker(4);
+        var w = workerRepository.getWorker(5);
 
         // then
         assertNull(w);
@@ -208,4 +219,32 @@ class WorkerRepositoryTest {
         assertEquals("cryptoToken3", tokens.getFirst().name());
         assertEquals(2, tokens.getFirst().keyPoolProfiles().size());
     }
+
+    @Test
+    void getAvailableSignatureAlgorithmsForTokenReturnsAlgorithmsForGivenToken() {
+        // given
+        // Worker repository is set up that token with name "cryptoToken1" exists (see initialization at the top)
+
+        // when
+        var result = workerRepository.getAvailableSignatureAlgorithmsForToken("cryptoToken1");
+
+        // then
+        List<String> algorithms = assertSuccessAndGet(result);
+        assertEquals(List.of("SHA256withRSA", "SHA384withRSA", "SHA256withECDSA", "SHA512withECDSA"), algorithms);
+    }
+
+    @Test
+    void getAvailableSignatureAlgorithmsForTokenReturnsEmptyListForNonExistingToken() {
+        // given
+        // Worker repository is set up that no token with name "cryptoToken4" exists (see initialization at the top)
+
+        // when
+        var result = workerRepository.getAvailableSignatureAlgorithmsForToken("cryptoToken4");
+
+        // then
+        List<String> algorithms = assertSuccessAndGet(result);
+        assertEquals(List.of(), algorithms);
+    }
+
+
 }
