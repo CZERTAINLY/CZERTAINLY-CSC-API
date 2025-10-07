@@ -536,13 +536,16 @@ public class CredentialsService {
         KeyStatus keyStatus = credentialMetadata.isDisabled() ? KeyStatus.DISABLED : KeyStatus.ENABLED;
         final String curve;
         final Integer keyLength;
-        if (key.keyAlgorithm().equalsIgnoreCase("ECDSA")) {
+        final String keyAlgorithm;
+        if (key.keyAlgorithm().equalsIgnoreCase("ECDSA") || key.keyAlgorithm().equalsIgnoreCase("EC")) {
             keyLength = null;
             curve = key.keySpecification();
+            keyAlgorithm = "ECDSA";
         } else {
             curve = null;
             if (key.keyAlgorithm().equalsIgnoreCase("RSA")) {
                 keyLength = Integer.parseInt(key.keySpecification());
+                keyAlgorithm = "RSA";
             } else {
                 return Result.error(TextError.of("Unsupported key algorithm '%s'.", key.keyAlgorithm()));
             }
@@ -558,7 +561,7 @@ public class CredentialsService {
         return Result.success(new KeyInfo(
                 keyStatus,
                 algorithms.stream()
-                          .filter(algorithm -> algorithm.contains(key.keyAlgorithm().toUpperCase()))
+                          .filter(algorithm -> algorithm.contains(keyAlgorithm))
                           .map(algorithmHelper::getKeyAlgorithmIdentifier)
                           .filter(Objects::nonNull)
                           .toList(),
