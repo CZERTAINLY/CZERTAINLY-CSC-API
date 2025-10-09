@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "http.client")
-public class HttpClientProperties
-{
+public class HttpClientProperties {
 
     /**
      * Maximum total connections in the connection pool.
@@ -44,53 +43,43 @@ public class HttpClientProperties
      */
     private int responseTimeoutSeconds = 30;
 
-    public int getMaxTotal()
-    {
+    public int getMaxTotal() {
         return maxTotal;
     }
 
-    public void setMaxTotal(int maxTotal)
-    {
+    public void setMaxTotal(int maxTotal) {
         this.maxTotal = maxTotal;
     }
 
-    public int getDefaultMaxPerRoute()
-    {
+    public int getDefaultMaxPerRoute() {
         return defaultMaxPerRoute;
     }
 
-    public void setDefaultMaxPerRoute(int defaultMaxPerRoute)
-    {
+    public void setDefaultMaxPerRoute(int defaultMaxPerRoute) {
         this.defaultMaxPerRoute = defaultMaxPerRoute;
     }
 
-    public int getConnectionRequestTimeoutSeconds()
-    {
+    public int getConnectionRequestTimeoutSeconds() {
         return connectionRequestTimeoutSeconds;
     }
 
-    public void setConnectionRequestTimeoutSeconds(int connectionRequestTimeoutSeconds)
-    {
+    public void setConnectionRequestTimeoutSeconds(int connectionRequestTimeoutSeconds) {
         this.connectionRequestTimeoutSeconds = connectionRequestTimeoutSeconds;
     }
 
-    public int getReadTimeoutSeconds()
-    {
+    public int getReadTimeoutSeconds() {
         return readTimeoutSeconds;
     }
 
-    public void setReadTimeoutSeconds(int readTimeoutSeconds)
-    {
+    public void setReadTimeoutSeconds(int readTimeoutSeconds) {
         this.readTimeoutSeconds = readTimeoutSeconds;
     }
 
-    public int getResponseTimeoutSeconds()
-    {
+    public int getResponseTimeoutSeconds() {
         return responseTimeoutSeconds;
     }
 
-    public void setResponseTimeoutSeconds(int responseTimeoutSeconds)
-    {
+    public void setResponseTimeoutSeconds(int responseTimeoutSeconds) {
         this.responseTimeoutSeconds = responseTimeoutSeconds;
     }
 }
