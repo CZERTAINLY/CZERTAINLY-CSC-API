@@ -10,6 +10,7 @@ import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.loader.WorkerConfigurationLoader;
 import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
@@ -19,6 +20,7 @@ import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ssl.SslBundle;
@@ -36,7 +38,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.ws.transport.http.HttpComponents5ClientFactory;
-import org.springframework.ws.transport.http.HttpComponents5MessageSender;
 import org.springframework.ws.transport.http.SimpleHttpComponents5MessageSender;
 
 import javax.net.ssl.SSLContext;
@@ -51,6 +52,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 @PropertySource(value = "file:${csc.profilesConfigurationDirectory}/key-pool-profiles.yml", factory = MultipleYamlPropertySourceFactory.class)
 public class ServerConfiguration {
+
+    private final HttpClientProperties httpClientProperties;
+
+    public ServerConfiguration(HttpClientProperties httpClientProperties) {
+        this.httpClientProperties = httpClientProperties;
+    }
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -127,7 +134,7 @@ public class ServerConfiguration {
 
             SSLContext sslContext = builder.build();
 
-            final HttpClient httpClient = getHttpClient(sslContext, null);
+            final HttpClient httpClient = getHttpClient(sslContext, null, httpClientProperties);
 
             return new HttpComponentsClientHttpRequestFactory(httpClient);
         } catch (Exception e) {
@@ -159,7 +166,7 @@ public class ServerConfiguration {
 
             SSLContext sslContext = builder.build();
 
-            final HttpClient httpClient = getHttpClient(sslContext, null);
+            final HttpClient httpClient = getHttpClient(sslContext, null, httpClientProperties);
 
             return new HttpComponentsClientHttpRequestFactory(httpClient);
         } catch (Exception e) {
@@ -223,7 +230,7 @@ public class ServerConfiguration {
 
             SSLContext sslContext = builder.build();
 
-           final HttpClient httpClient = getHttpClient(sslContext, new HttpComponents5ClientFactory.RemoveSoapHeadersInterceptor());
+           final HttpClient httpClient = getHttpClient(sslContext, new HttpComponents5ClientFactory.RemoveSoapHeadersInterceptor(), httpClientProperties);
 
             return new SimpleHttpComponents5MessageSender(httpClient);
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | KeyManagementException e) {
@@ -231,15 +238,26 @@ public class ServerConfiguration {
         }
     }
 
-    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor) {
+    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor, HttpClientProperties properties) {
         TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
-        SocketConfig socketConfig = SocketConfig.custom().setSoTimeout(10, TimeUnit.SECONDS).build();
+        SocketConfig socketConfig = SocketConfig.custom()
+                .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
+                .build();
         final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                                                                                .setDefaultSocketConfig(socketConfig)
                                                                                .setTlsSocketStrategy(tlsSocketStrategy)
+                                                                               .setMaxConnTotal(properties.getMaxTotal())
+                                                                               .setMaxConnPerRoute(properties.getDefaultMaxPerRoute())
                                                                                .build();
 
-        HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager);
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(Timeout.ofSeconds(properties.getConnectionRequestTimeoutSeconds()))
+                .setResponseTimeout(Timeout.ofSeconds(properties.getResponseTimeoutSeconds()))
+                .build();
+
+        HttpClientBuilder builder = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig);
 
         if (interceptor != null) {
             builder.addRequestInterceptorFirst(interceptor);
