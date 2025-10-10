@@ -1,11 +1,13 @@
 package com.czertainly.csc.service.keys;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
+import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.repository.KeyRepository;
 import com.czertainly.csc.repository.entities.SessionKeyEntity;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.UUID;
 
@@ -13,9 +15,10 @@ import java.util.UUID;
 public class SessionKeysService extends AbstractSigningKeysService<SessionKeyEntity, SessionKey> {
 
     public SessionKeysService(KeyRepository<SessionKeyEntity> keysRepository,
-                              SignserverClient signserverClient, WorkerRepository workerRepository
+                              SignserverClient signserverClient, WorkerRepository workerRepository,
+                              TransactionTemplate transactionTemplate
     ) {
-        super(keysRepository, signserverClient, workerRepository);
+        super(keysRepository, signserverClient, workerRepository, transactionTemplate);
     }
 
     @Override
@@ -40,5 +43,10 @@ public class SessionKeysService extends AbstractSigningKeysService<SessionKeyEnt
                 false,
                 null
         );
+    }
+
+    @Override
+    public KeyUsageDesignation getKeyUsageDesignation() {
+        return KeyUsageDesignation.SESSION_SIGNATURE;
     }
 }
