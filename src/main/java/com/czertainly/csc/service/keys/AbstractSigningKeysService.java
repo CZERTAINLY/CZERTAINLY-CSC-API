@@ -1,6 +1,7 @@
 package com.czertainly.csc.service.keys;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
+import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.signserver.CryptoToken;
@@ -10,11 +11,13 @@ import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Allows to generate new signing keys on Signserver and stores them in database.
@@ -27,17 +30,19 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
     protected final KeyRepository<E> keysRepository;
     private final SignserverClient signserverClient;
     protected final WorkerRepository workerRepository;
-    
-    // Lock objects per crypto token ID to ensure proper synchronization across different CryptoToken instances
-    private static final ConcurrentHashMap<Integer, Object> cryptoTokenLocks = new ConcurrentHashMap<>();
+    private final TransactionTemplate transactionTemplate;
+
+    // ReentrantLock per crypto token ID to prevent duplicate key generation while allowing virtual threads to unmount
+    private static final ConcurrentHashMap<Integer, ReentrantLock> cryptoTokenLocks = new ConcurrentHashMap<>();
 
 
     public AbstractSigningKeysService(KeyRepository<E> keysRepository, SignserverClient signserverClient,
-                                      WorkerRepository workerRepository
+                                      WorkerRepository workerRepository, TransactionTemplate transactionTemplate
     ) {
         this.keysRepository = keysRepository;
         this.signserverClient = signserverClient;
         this.workerRepository = workerRepository;
+        this.transactionTemplate = transactionTemplate;
     }
 
     @Override
@@ -61,20 +66,6 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
         }
     }
 
-    private Result<K, TextError> generateKey(CryptoToken cryptoToken, String keyAlgorithm) {
-        // Select the first KeyPoolProfile that matches the key algorithm.
-        // If no KeyPoolProfile is found, return Result with an error.
-        return cryptoToken.keyPoolProfiles().stream()
-                .filter(kpp -> kpp.keyAlgorithm().equals(keyAlgorithm))
-                .findFirst()
-                .map(kpp -> {
-                    String keyAlias = kpp.keyPrefix() + "-" + UUID.randomUUID();
-                    return generateKey(cryptoToken, keyAlias, keyAlgorithm, kpp.keySpecification());
-                })
-                .orElseGet(() -> Result.error(TextError.of(
-                        "No KeyPoolProfile found for key algorithm '%s' in CryptoToken '%s'.",
-                                keyAlgorithm, cryptoToken.identifier())));
-    }
 
     @Override
     public Result<K, TextError> generateKey(
@@ -97,38 +88,144 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
         logger.debug("Acquiring a signing key of CryptoToken '{}' with algorithm '{}'",
                      cryptoToken.identifier(), keyAlgorithm
         );
-        // Get or create a lock object for this specific crypto token ID
-        // This ensures all threads trying to acquire keys for the same crypto token
-        // will synchronize on the same lock object, even if they have different CryptoToken instances
-        Object lock = cryptoTokenLocks.computeIfAbsent(cryptoToken.id(), id -> new Object());
-        
-        synchronized (lock) {
-            return keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(
-                                         cryptoToken.id(), keyAlgorithm, false
-                                 )
-                                 .map(entity -> {
-                                     entity.setAcquiredAt(ZonedDateTime.now());
-                                     entity.setInUse(true);
-                                     return keysRepository.save(entity);
-                                 })
-                                 .map(keyEntity -> this.mapEntityToSigningKey(keyEntity, cryptoToken))
-                                 .map(Result::<K, TextError>success)
-                                 // If no key is found, try to generate a new one
-                                 .orElseGet(() -> generateKey(cryptoToken, keyAlgorithm)
-                                         .flatMap(k -> {
-                                                 keysRepository.findById(k.id()).ifPresent(e -> {
-                                                     e.setAcquiredAt(ZonedDateTime.now());
-                                                     e.setInUse(true);
-                                                     keysRepository.save(e);
-                                                 });
-                                             return Result.success(k);
-                                         })
-                                         .mapError(e -> e.extend(
-                                                 "New key couldn't be acquired from CryptoToken '%s'.",
-                                                 cryptoToken.identifier()
-                                         ))
+        // Use ReentrantLock instead of synchronized to allow virtual threads to unmount during blocking I/O
+        ReentrantLock lock = cryptoTokenLocks.computeIfAbsent(cryptoToken.id(), id -> new ReentrantLock());
+        lock.lock();
+
+        try {
+            // Execute database operations inside a transaction, but only after acquiring the lock
+            // This ensures threads wait for the lock WITHOUT holding a database connection
+            return acquireKeyInTransaction(cryptoToken, keyAlgorithm)
+                    .flatMap(key ->
+                             key.map(acquiredKey -> {
+                                 logger.info("Signing key acquired for CryptoToken '{}' with algorithm '{}'",
+                                              cryptoToken.identifier(), keyAlgorithm
                                  );
+                                 return Result.<K, TextError>success(acquiredKey);
+                             }).orElseGet(() -> {
+                                 logger.debug(
+                                         "No Signing key found for CryptoToken '{}' with algorithm '{}'. Will generate a new one on the fly.",
+                                         cryptoToken.identifier(), keyAlgorithm
+                                 );
+                                 var genKeyResult = findKeyProfileAndGenerateKeyOnSignserver(cryptoToken, keyAlgorithm)
+                                         .mapError(e -> e.extend(
+                                                 "Couldn't generate a new signing key for CryptoToken '%s.",
+                                                 cryptoToken.identifier()
+                                         ));
+
+                                 if (genKeyResult instanceof Error(var err)) {
+                                     return Result.error(err.extend(
+                                             "'.",
+                                             cryptoToken.identifier()
+                                     ));
+                                 }
+
+                                 String generatedKeyAlias = genKeyResult.unwrap();
+                                 return saveAndAcquireKeyInTransaction(cryptoToken, keyAlgorithm, generatedKeyAlias);
+                             })
+                    );
+        } catch (Exception e) {
+            logger.error("An exception occurred while acquiring a signing key for CryptoToken '{}' with algorithm '{}'.",
+                         cryptoToken.identifier(), keyAlgorithm, e
+            );
+            return Result.error(
+                TextError.of(
+                    "Transaction failed while acquiring a signing key for Crypto Token '%s'.",
+                    cryptoToken.identifier()
+                )
+            );
+        } finally {
+            lock.unlock();
         }
+    }
+
+    private Result<Optional<K>, TextError> acquireKeyInTransaction(CryptoToken cryptoToken, String keyAlgorithm) {
+        return transactionTemplate.execute(status -> {
+            try {
+                Optional<K> key = keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(cryptoToken.id(),
+                                                                                                 keyAlgorithm,
+                                                                                                 false
+                                                )
+                                                .map(entity -> {
+                                                    entity.setAcquiredAt(ZonedDateTime.now());
+                                                    entity.setInUse(true);
+                                                    E savedEntity = keysRepository.save(entity);
+                                                    return this.mapEntityToSigningKey(savedEntity, cryptoToken);
+                                                });
+                return Result.success(key);
+            } catch (Exception e) {
+                status.setRollbackOnly();
+                logger.error(
+                        "Couldn't acquire a signing key of CryptoToken '{}' with algorithm '{}'.",
+                        cryptoToken.identifier(), keyAlgorithm, e
+                );
+                return Result.error(
+                        TextError.of("Couldn't acquire a signing key of CryptoToken '%s'.", cryptoToken.identifier())
+                );
+            }
+        });
+    }
+
+    private Result<K, TextError> saveAndAcquireKeyInTransaction(CryptoToken cryptoToken, String keyAlgorithm,
+                                                                String generatedKeyAlias
+    ) {
+        try {
+            return transactionTemplate.execute(status ->
+                   saveKey(cryptoToken, generatedKeyAlias, keyAlgorithm)
+                       .flatMap(entity -> {
+                           try {
+                               entity.setAcquiredAt(ZonedDateTime.now());
+                               entity.setInUse(true);
+                               E savedEntity = keysRepository.save(entity);
+
+                               logger.debug(
+                                       "Acquired a newly generated signing key '{}'",
+                                       savedEntity.getId()
+                               );
+                               return Result.success(savedEntity);
+                           } catch (Exception e) {
+                               status.setRollbackOnly();
+                               logger.error("Couldn't mark the newly generated key as acquired in the database.", e);
+                               return Result.error(
+                                       TextError.of("Couldn't mark the newly generated key as acquired in the database.")
+                               );
+                           }
+                       })
+                       .map(savedEntity -> this.mapEntityToSigningKey(savedEntity, cryptoToken))
+                       .mapError(e -> e.extend(
+                               "Couldn't acquire newly generated signing key for CryptoToken '%s'.",
+                               cryptoToken.identifier()
+                       ))
+               );
+            } catch (Exception e) {
+                logger.error("Couldn't save the newly generated key to the database. Going to remove the key '{}' from signserver.", generatedKeyAlias, e);
+                signserverClient.removeKey(cryptoToken.id(), generatedKeyAlias)
+                                .ifError(() -> logger.warn("Couldn't remove the newly generated key {} from signserver.", generatedKeyAlias, e))
+                                .ifSuccess(() -> logger.info("The newly generated key {} was removed from signserver.", generatedKeyAlias));
+                return Result.error(TextError.of("Couldn't save the newly generated key %s to the database.", generatedKeyAlias));
+            }
+
+    }
+
+    private Result<String, TextError> findKeyProfileAndGenerateKeyOnSignserver(CryptoToken cryptoToken, String keyAlgorithm) {
+        // Select the first KeyPoolProfile that matches the key algorithm and designated usage.
+        // If no KeyPoolProfile is found, return Result with an error.
+        return cryptoToken.keyPoolProfiles().stream()
+                          .filter(kpp -> kpp.keyAlgorithm().equals(keyAlgorithm) && kpp.designatedUsage() == this.getKeyUsageDesignation())
+                          .findFirst()
+                          .map(kpp -> {
+                              String keyAlias = String.format("%s-%s", kpp.keyPrefix(), UUID.randomUUID());
+                              return signserverClient.generateKey(cryptoToken, keyAlias, keyAlgorithm, kpp.keySpecification());
+                          })
+                          .orElseGet(() -> {
+                              logger.error("No KeyPoolProfile found for key algorithm '{}' in CryptoToken '{}' and usage '{}'.",
+                                           keyAlgorithm, cryptoToken.identifier(), this.getKeyUsageDesignation()
+                              );
+                              return Result.error(TextError.of(
+                                      "No KeyPoolProfile found for key algorithm '%s' in CryptoToken '%s' and usage  '%s'.",
+                                      keyAlgorithm, cryptoToken.identifier(), this.getKeyUsageDesignation())
+                              );
+                          });
     }
 
     public Result<K, TextError> getKey(UUID keyId) {
@@ -178,15 +275,14 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
 
     private Result<E, TextError> saveKey(CryptoToken cryptoToken, String keyAlias, String keyAlgorithm) {
         E newEntity = createNewKeyEntity(cryptoToken, keyAlias, keyAlgorithm);
-
         try {
-            logger.debug("Saving new session key '{}' to the database.", newEntity.getId());
-            logger.trace("Session key: {}", newEntity);
+            logger.debug("Saving new signing key '{}' to the database.", newEntity.getId());
+            logger.trace("Signing key: {}", newEntity);
             E savedEntity = keysRepository.save(newEntity);
-            logger.info("New session key '{}' was saved to the database.", savedEntity.getId());
+            logger.info("New signing key '{}' was saved to the database.", savedEntity.getId());
             return Result.success(savedEntity);
         } catch (Exception e) {
-            logger.error("SessionKey couldn't be saved to the database.", e);
+            logger.error("Signing key couldn't be saved to the database.", e);
             return Result.error(new TextError("Key couldn't be saved to the database."));
         }
     }

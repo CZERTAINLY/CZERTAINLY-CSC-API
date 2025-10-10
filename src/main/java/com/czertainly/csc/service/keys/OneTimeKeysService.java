@@ -4,6 +4,7 @@ import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.repository.KeyRepository;
 import com.czertainly.csc.repository.entities.OneTimeKeyEntity;
@@ -11,6 +12,7 @@ import com.czertainly.csc.signing.configuration.WorkerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -23,9 +25,10 @@ public class OneTimeKeysService extends AbstractSigningKeysService<OneTimeKeyEnt
     private static final Logger logger = LoggerFactory.getLogger(OneTimeKeysService.class);
 
     public OneTimeKeysService(KeyRepository<OneTimeKeyEntity> keysRepository,
-                              SignserverClient signserverClient, WorkerRepository workerRepository
+                              SignserverClient signserverClient, WorkerRepository workerRepository,
+                              TransactionTemplate transactionTemplate
     ) {
-        super(keysRepository, signserverClient, workerRepository);
+        super(keysRepository, signserverClient, workerRepository, transactionTemplate);
     }
 
     public Result<List<OneTimeKey>, TextError> getKeysAcquiredBefore(ZonedDateTime before) {
@@ -71,5 +74,10 @@ public class OneTimeKeysService extends AbstractSigningKeysService<OneTimeKeyEnt
                 false,
                 null
         );
+    }
+
+    @Override
+    public KeyUsageDesignation getKeyUsageDesignation() {
+        return KeyUsageDesignation.ONE_TIME_SIGNATURE;
     }
 }
