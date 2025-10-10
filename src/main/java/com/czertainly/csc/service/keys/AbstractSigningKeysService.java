@@ -193,7 +193,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                        })
                        .map(savedEntity -> this.mapEntityToSigningKey(savedEntity, cryptoToken))
                        .mapError(e -> e.extend(
-                               "Couldn't acquire newly generate signing key for CryptoToken '%s'.",
+                               "Couldn't acquire newly generated signing key for CryptoToken '%s'.",
                                cryptoToken.identifier()
                        ))
                );
