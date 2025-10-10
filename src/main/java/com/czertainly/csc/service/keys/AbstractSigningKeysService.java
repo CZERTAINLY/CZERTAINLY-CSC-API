@@ -200,7 +200,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
             } catch (Exception e) {
                 logger.error("Couldn't save the newly generated key to the database. Going to remove the key '{}' from signserver.", generatedKeyAlias, e);
                 signserverClient.removeKey(cryptoToken.id(), generatedKeyAlias)
-                                .ifError(() -> logger.warn("Couldn't remove the newly generated key {} from signserver.",generatedKeyAlias,  e))
+                                .ifError(() -> logger.warn("Couldn't remove the newly generated key {} from signserver.", generatedKeyAlias,  e))
                                 .ifSuccess(() -> logger.info("The newly generated key {} was removed from signserver.", generatedKeyAlias));
                 return Result.error(TextError.of("Couldn't save the newly generated key %s to the database.", generatedKeyAlias));
             }
