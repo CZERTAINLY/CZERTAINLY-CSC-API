@@ -11,6 +11,7 @@ import com.czertainly.csc.model.SignHashParameters;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class SignHashValidatingRequestMapper {
@@ -31,6 +32,24 @@ public class SignHashValidatingRequestMapper {
         final String clientData;
 
         if (dto == null) throw InvalidInputDataException.of("Missing request parameters.");
+
+        if (dto.getCredentialID().isEmpty()) {
+            throw InvalidInputDataException.of("Empty credentialID.");
+        }
+
+        final String credentialId = dto.getCredentialID().orElse(null);
+
+        final UUID credentialIdUUID;
+        try {
+            if (credentialId != null) {
+                credentialIdUUID = UUID.fromString(credentialId);
+            }
+            else {
+                credentialIdUUID = null;
+            }
+        } catch (IllegalArgumentException e) {
+            throw InvalidInputDataException.of("Invalid string parameter credentialID");
+        }
 
         if (dto.getSAD().isEmpty() && sad == null) {
             throw InvalidInputDataException.of("Missing (or invalid type) string parameter SAD");
@@ -73,6 +92,6 @@ public class SignHashValidatingRequestMapper {
 
         clientData = dto.getClientData().orElse("");
 
-        return new SignHashParameters(userID, hashes, keyAlgo, digestAlgo, sad, operationMode, clientData);
+        return new SignHashParameters(credentialIdUUID, userID, hashes, keyAlgo, digestAlgo, sad, operationMode, clientData);
     }
 }

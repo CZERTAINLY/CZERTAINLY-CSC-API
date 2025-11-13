@@ -56,7 +56,7 @@ public class SignDocValidatingRequestMapper {
                 credentialIdUUID = null;
             }
         } catch (IllegalArgumentException e) {
-            throw InvalidInputDataException.of("Invalid string parameter SAD");
+            throw InvalidInputDataException.of("Invalid string parameter credentialID");
         }
 
         final String signatureQualifier = dto.getSignatureQualifier().orElse(null);

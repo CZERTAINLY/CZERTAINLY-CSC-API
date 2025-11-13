@@ -5,9 +5,7 @@ import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.model.DocumentDigestsToSign;
-import com.czertainly.csc.model.SignDocParameters;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.*;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.service.credentials.SessionCredentialsService;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
@@ -34,9 +32,9 @@ public class DocumentHashSigning {
 
     private final static Logger logger = LoggerFactory.getLogger(DocumentHashSigning.class);
 
-    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentHashSignatureProcessConfiguration, OneTimeToken> oneTimeHashSignature;
-    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentHashSignatureProcessConfiguration, LongTermToken> longTermHashSignature;
-    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentHashSignatureProcessConfiguration, SessionToken> sessionSignature;
+    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentHashSignatureProcessConfiguration, OneTimeToken, DocumentSignature> oneTimeHashSignature;
+    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentHashSignatureProcessConfiguration, LongTermToken, DocumentSignature> longTermHashSignature;
+    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentHashSignatureProcessConfiguration, SessionToken, DocumentSignature> sessionSignature;
     private final SignatureTypeDecider signatureTypeDecider;
 
     public DocumentHashSigning(WorkerRepository workerRepository,
@@ -90,14 +88,14 @@ public class DocumentHashSigning {
         );
     }
 
-    public Result<SignedDocuments, TextError> sign(
+    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(
             SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken
     ) {
 
         if (parameters.documentDigestsToSign().isEmpty()) {
             return Result.error(TextError.of("No document digests to sign."));
         }
-        SignedDocuments signedDocuments = SignedDocuments.empty();
+        SignaturesContainer<DocumentSignature> signatures = null;
         for (DocumentDigestsToSign digestsToSign : parameters.documentDigestsToSign()) {
             DocumentHashSignatureProcessConfiguration configuration = new DocumentHashSignatureProcessConfiguration(
                     parameters.userID(),
@@ -110,7 +108,7 @@ public class DocumentHashSigning {
                     parameters.returnValidationInfo()
             );
 
-            Result<SignedDocuments, TextError> signatureResult = null;
+            Result<SignaturesContainer<DocumentSignature>, TextError> signatureResult = null;
             Result<SignatureType, TextError> getSignatureType = signatureTypeDecider.decideType(parameters);
             if (getSignatureType instanceof Error(var err))
                 return Result.error(err.extend("Failed to determine signature type."));
@@ -146,9 +144,13 @@ public class DocumentHashSigning {
 
             if (signatureResult instanceof Error(var err))
                 return Result.error(err.extend("Failed to sign one of the document digest to sign."));
-            SignedDocuments docs = signatureResult.unwrap();
-            signedDocuments.extend(docs);
+            SignaturesContainer<DocumentSignature> docs = signatureResult.unwrap();
+            if (signatures != null) {
+                signatures.extend(docs);
+            } else {
+                signatures = docs;
+            }
         }
-        return Result.success(signedDocuments);
+        return Result.success(signatures);
     }
 }

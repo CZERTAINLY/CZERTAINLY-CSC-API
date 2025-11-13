@@ -2,16 +2,15 @@ package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
-import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.signing.Signature;
+import com.czertainly.csc.model.Signatures;
+import com.czertainly.csc.model.SignaturesWithValidationInfo;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentContentSignatureProcessConfiguration;
-import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
 import com.czertainly.csc.utils.configuration.WorkerCapabilitiesBuilder;
 import com.czertainly.csc.utils.signing.DocumentContentSignatureProcessConfigurationBuilder;
-import com.czertainly.csc.utils.signing.DocumentHashSignatureProcessConfigurationBuilder;
 import com.czertainly.csc.utils.signing.process.TestSigningToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +42,14 @@ class DocumentContentSignerTest {
 
     @Test
     void signCanSignSingleContent() {
-        when(signserverClient.signSingleContent(any(), any(), any(), any()))
-                .thenReturn(Result.success(Signature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION)));
+        when(signserverClient.signSingleDocument(any(), any(), any(), any()))
+                .thenReturn(
+                        Result.success(
+                                Signatures.of(
+                                    DocumentSignature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION)
+                                )
+                        )
+                );
 
         // given
         String dataB64 = BASE64_ENCODER.encodeToString("data".getBytes());
@@ -61,7 +66,7 @@ class DocumentContentSignerTest {
 
         // then
         assertSuccess(result);
-        verify(signserverClient).signSingleContent(
+        verify(signserverClient).signSingleDocument(
                 eq(worker.worker().workerName()),
                 eq(BASE64_DECODER.decode(dataB64)),
                 eq(signingToken.getKeyAlias()),
@@ -71,9 +76,9 @@ class DocumentContentSignerTest {
 
     @Test
     void signCanSignSingleContentWithValidationInfo() {
-        when(signserverClient.signSingleContentWithValidationData(any(), any(), any(), any()))
+        when(signserverClient.signSingleDocumentWithValidationData(any(), any(), any(), any()))
                 .thenReturn(Result.success(
-                        SignedDocuments.of(Signature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION))));
+                        SignaturesWithValidationInfo.of(DocumentSignature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION))));
 
         // given
         String dataB64 = BASE64_ENCODER.encodeToString("data".getBytes());
@@ -90,7 +95,7 @@ class DocumentContentSignerTest {
 
         // then
         assertSuccess(result);
-        verify(signserverClient).signSingleContentWithValidationData(
+        verify(signserverClient).signSingleDocumentWithValidationData(
                 eq(worker.worker().workerName()),
                 eq(BASE64_DECODER.decode(dataB64)),
                 eq(signingToken.getKeyAlias()),

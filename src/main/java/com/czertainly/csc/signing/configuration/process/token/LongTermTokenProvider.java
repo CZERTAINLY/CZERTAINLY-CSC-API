@@ -8,7 +8,6 @@ import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.LongTermTokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
-import org.springframework.stereotype.Component;
 
 public class LongTermTokenProvider<C extends SignatureProcessConfiguration> implements TokenProvider<LongTermTokenConfiguration, C, LongTermToken> {
 
@@ -30,7 +29,7 @@ public class LongTermTokenProvider<C extends SignatureProcessConfiguration> impl
         if (getCredentialresult instanceof Error(var err)) return Result.error(err);
         CredentialMetadata credential = getCredentialresult.unwrap();
 
-        if (credential.signatureQualifier().isPresent()) {
+        if (credential.signatureQualifier().isPresent() && configuration.signatureQualifier() != null) {
             String signatureQualifier = credential.signatureQualifier().orElseThrow();
             if (!signatureQualifier.equals(configuration.signatureQualifier())) {
                 return Result.error(TextError.of(

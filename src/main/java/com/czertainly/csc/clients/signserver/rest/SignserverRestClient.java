@@ -64,11 +64,8 @@ public class SignserverRestClient {
                           .collect(Collectors.joining(", "))
         );
         final String requestData;
-        if (encoding == SignserverProcessEncoding.BASE64) {
-            requestData = Base64.getEncoder().encodeToString(data);
-        } else {
-            requestData = new String(data);
-        }
+        requestData = new String(data);
+
         WorkerProcessRequest workerProcessRequest = new WorkerProcessRequest(requestData, metadata, encoding);
         try {
             WorkerProcessResponse response = restClient.post().uri(WORKER_PROCESS_REST_API_PATH, workerName).body(workerProcessRequest)

@@ -4,8 +4,9 @@ import com.czertainly.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.csc.api.signdoc.ValidationInfo;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.signing.Signature;
+import com.czertainly.csc.model.Signatures;
+import com.czertainly.csc.model.SignaturesWithValidationInfo;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ class SignDocResponseMapperTest {
     @Test
     void canMapRequest() {
         // given
-        SignedDocuments model = aSignedDocuments();
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments();
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -37,10 +38,10 @@ class SignDocResponseMapperTest {
     @Test
     void canMapValidationInfo() {
         // given
-        List<String> crls = List.of("crl1", "crl2");
-        List<String> ocsps = List.of("ocsp1", "ocsp2");
-        List<String> certs = List.of("cert1", "cert2");
-        SignedDocuments model = aSignedDocuments(crls, ocsps, certs);
+        Set<String> crls = Set.of("crl1", "crl2");
+        Set<String> ocsps = Set.of("ocsp1", "ocsp2");
+        Set<String> certs = Set.of("cert1", "cert2");
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments(crls, ocsps, certs);
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -56,13 +57,13 @@ class SignDocResponseMapperTest {
     @Test
     void splitsSignaturesToDocumentWithSignaturesAndStandaloneSignatures() {
         // given
-        List<Signature> signatures = List.of(
-                new Signature("enveloped".getBytes(), SignaturePackaging.ENVELOPED),
-                new Signature("detached".getBytes(), SignaturePackaging.DETACHED)
+        List<DocumentSignature> signatures = List.of(
+                new DocumentSignature("enveloped".getBytes(), SignaturePackaging.ENVELOPED),
+                new DocumentSignature("detached".getBytes(), SignaturePackaging.DETACHED)
         );
         String encodedEnveloped = encoder.encodeToString("enveloped".getBytes());
         String encodedDetached = encoder.encodeToString("detached".getBytes());
-        SignedDocuments model = aSignedDocuments(signatures);
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments(signatures);
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -78,13 +79,13 @@ class SignDocResponseMapperTest {
     @Test
     void signaturesAreBase64Encoded() {
         // given
-        List<Signature> signatures = List.of(
-                new Signature("enveloped".getBytes(), SignaturePackaging.ENVELOPED),
-                new Signature("detached".getBytes(), SignaturePackaging.DETACHED)
+        List<DocumentSignature> signatures = List.of(
+                new DocumentSignature("enveloped".getBytes(), SignaturePackaging.ENVELOPED),
+                new DocumentSignature("detached".getBytes(), SignaturePackaging.DETACHED)
         );
         String encodedEnveloped = encoder.encodeToString("enveloped".getBytes());
         String encodedDetached = encoder.encodeToString("detached".getBytes());
-        SignedDocuments model = aSignedDocuments(signatures);
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments(signatures);
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -98,10 +99,10 @@ class SignDocResponseMapperTest {
     @Test
     void canMapValidationInfoWithEmptyCerts() {
         // given
-        List<String> crls = List.of("crl1", "crl2");
-        List<String> ocsps = List.of("ocsp1", "ocsp2");
-        List<String> certs = List.of();
-        SignedDocuments model = aSignedDocuments(crls, ocsps, certs);
+        Set<String> crls = Set.of("crl1", "crl2");
+        Set<String> ocsps = Set.of("ocsp1", "ocsp2");
+        Set<String> certs = Set.of();
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments(crls, ocsps, certs);
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -117,10 +118,10 @@ class SignDocResponseMapperTest {
     @Test
     void canMapValidationInfoWithEmptyOcsps() {
         // given
-        List<String> crls = List.of("crl1", "crl2");
-        List<String> ocsps = List.of();
-        List<String> certs = List.of("cert1", "cert2");
-        SignedDocuments model = aSignedDocuments(crls, ocsps, certs);
+        Set<String> crls = Set.of("crl1", "crl2");
+        Set<String> ocsps = Set.of();
+        Set<String> certs = Set.of("cert1", "cert2");
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments(crls, ocsps, certs);
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -136,10 +137,10 @@ class SignDocResponseMapperTest {
     @Test
     void canMapValidationInfoWithEmptyCrls() {
         // given
-        List<String> crls = List.of();
-        List<String> ocsps = List.of("ocsp1", "ocsp2");
-        List<String> certs = List.of("cert1", "cert2");
-        SignedDocuments model = aSignedDocuments(crls, ocsps, certs);
+        Set<String> crls = Set.of();
+        Set<String> ocsps = Set.of("ocsp1", "ocsp2");
+        Set<String> certs = Set.of("cert1", "cert2");
+        SignaturesWithValidationInfo<DocumentSignature> model = aSignedDocuments(crls, ocsps, certs);
 
         // when
         Result<SignDocResponseDto, TextError> result = mapper.map(model);
@@ -156,16 +157,13 @@ class SignDocResponseMapperTest {
     @Test
     void canMapRequestWithEmptyCertsCrlsOcsps() {
         // given
-        SignedDocuments model = new SignedDocuments(
+        Signatures<DocumentSignature> model = new Signatures<>( // Signatures container does not have validation info
                 List.of(
-                        new Signature(
+                        new DocumentSignature(
                                 new byte[]{1, 2, 3},
                                 SignaturePackaging.ENVELOPED
                         )
-                ),
-                Set.of(),
-                Set.of(),
-                Set.of()
+                )
         );
 
         // when
@@ -175,14 +173,14 @@ class SignDocResponseMapperTest {
         assertNull(result.unwrap().getValidationInfo());
     }
 
-    SignedDocuments aSignedDocuments() {
-        return new SignedDocuments(
+    SignaturesWithValidationInfo<DocumentSignature> aSignedDocuments() {
+        return new SignaturesWithValidationInfo<>(
                 List.of(
-                        new Signature(
+                        new DocumentSignature(
                                 new byte[]{1, 2, 3},
                                 SignaturePackaging.ENVELOPED
                         ),
-                        new Signature(
+                        new DocumentSignature(
                                 new byte[]{4, 5, 6},
                                 SignaturePackaging.DETACHED
                         )
@@ -193,14 +191,14 @@ class SignDocResponseMapperTest {
             );
     }
 
-    SignedDocuments aSignedDocuments(List<String> crls, List<String> ocsps, List<String> certs) {
-        return new SignedDocuments(
+    SignaturesWithValidationInfo<DocumentSignature> aSignedDocuments(Set<String> crls, Set<String> ocsps, Set<String> certs) {
+        return new SignaturesWithValidationInfo<>(
                 List.of(
-                        new Signature(
+                        new DocumentSignature(
                                 new byte[]{1, 2, 3},
                                 SignaturePackaging.ENVELOPED
                         ),
-                        new Signature(
+                        new DocumentSignature(
                                 new byte[]{4, 5, 6},
                                 SignaturePackaging.DETACHED
                         )
@@ -211,8 +209,8 @@ class SignDocResponseMapperTest {
         );
     }
 
-    SignedDocuments aSignedDocuments(List<Signature> signatures) {
-        return new SignedDocuments(
+    SignaturesWithValidationInfo<DocumentSignature> aSignedDocuments(List<DocumentSignature> signatures) {
+        return new SignaturesWithValidationInfo<>(
                 signatures,
                 Set.of(),
                 Set.of(),

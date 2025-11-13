@@ -6,6 +6,7 @@ import com.czertainly.csc.api.auth.TokenValidator;
 import com.czertainly.csc.api.common.ErrorDto;
 import com.czertainly.csc.api.mappers.signatures.SignDocResponseMapper;
 import com.czertainly.csc.api.mappers.signatures.SignDocValidatingRequestMapper;
+import com.czertainly.csc.api.mappers.signatures.SignHashResponseMapper;
 import com.czertainly.csc.api.mappers.signatures.SignHashValidatingRequestMapper;
 import com.czertainly.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.csc.api.signdoc.SignDocResponseDto;
@@ -76,19 +77,22 @@ public class SignatureController {
     final SignHashValidatingRequestMapper signHashValidationRequestMapper;
     final SignDocValidatingRequestMapper signDocValidatingRequestMapper;
     final SignDocResponseMapper signDocResponseMapper;
+    private final SignHashResponseMapper signHashResponseMapper;
 
 
     public SignatureController(
             SignHashValidatingRequestMapper signHashValidationRequestMapper,
             TokenValidator tokenValidator, SignatureFacade signatureFacade,
             SignDocValidatingRequestMapper signDocValidatingRequestMapper,
-            SignDocResponseMapper signDocResponseMapper
+            SignDocResponseMapper signDocResponseMapper,
+            SignHashResponseMapper signHashResponseMapper
     ) {
         this.tokenValidator = tokenValidator;
         this.signHashValidationRequestMapper = signHashValidationRequestMapper;
         this.signatureFacade = signatureFacade;
         this.signDocValidatingRequestMapper = signDocValidatingRequestMapper;
         this.signDocResponseMapper = signDocResponseMapper;
+        this.signHashResponseMapper = signHashResponseMapper;
     }
 
     @RequestMapping(
@@ -117,10 +121,11 @@ public class SignatureController {
         SignHashParameters parameters = signHashValidationRequestMapper
                     .map(signHashRequest, getSadIfAvailable(authentication));
 
-                    return new SignHashResponseDto(
-                                    List.of("signature1", "signature2"), null);
-
-
+        return signatureFacade.signHashes(parameters)
+                              .flatMap(signHashResponseMapper::map)
+                              .mapError(e -> e.extend("Failed to sign the document."))
+                              .consumeError(this::logAndThrowError)
+                              .unwrap();
     }
 
     @RequestMapping(

@@ -3,13 +3,14 @@ package com.czertainly.csc.signing.configuration.process;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.Signature;
+import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.signing.configuration.CapabilitiesFilter;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.TokenConfiguration;
-import com.czertainly.csc.signing.configuration.process.signers.DocumentSigner;
+import com.czertainly.csc.signing.configuration.process.signers.Signer;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
 import com.czertainly.csc.signing.configuration.process.token.TokenProvider;
 import com.czertainly.csc.signing.signatureauthorizers.SignatureAuthorizer;
@@ -20,19 +21,20 @@ import java.util.List;
 
 public class SignatureProcessTemplate<
         TC extends TokenConfiguration,
-        C extends SignatureProcessConfiguration,
-        T extends SigningToken
+        SC extends SignatureProcessConfiguration,
+        T extends SigningToken,
+        S extends Signature
         > {
 
     private static final Logger logger = LoggerFactory.getLogger(SignatureProcessTemplate.class);
     private final SignatureAuthorizer signatureAuthorizer;
     private final WorkerRepository workerRepository;
-    private final TokenProvider<TC, C, T> tokenProvider;
-    private final DocumentSigner<C> signer;
+    private final TokenProvider<TC, SC, T> tokenProvider;
+    private final Signer<SC, S> signer;
 
     public SignatureProcessTemplate(SignatureAuthorizer signatureAuthorizer,
-                                       WorkerRepository workerRepository, TokenProvider<TC, C, T> tokenProvider,
-                                       DocumentSigner<C> signer
+                                    WorkerRepository workerRepository, TokenProvider<TC, SC, T> tokenProvider,
+                                    Signer<SC, S> signer
     ) {
         this.signatureAuthorizer = signatureAuthorizer;
         this.workerRepository = workerRepository;
@@ -40,7 +42,7 @@ public class SignatureProcessTemplate<
         this.signer = signer;
     }
 
-    public Result<SignedDocuments, TextError> sign(C configuration, TC tokenConfiguration,  List<String> data) {
+    public Result<SignaturesContainer<S>, TextError> sign(SC configuration, TC tokenConfiguration, List<String> data) {
         var authorizationResult = signatureAuthorizer.authorize(data, configuration.sad());
         if (authorizationResult instanceof Error(var err))
             return Result.error(err.extend("Failed to authorize signature request."));
@@ -63,7 +65,7 @@ public class SignatureProcessTemplate<
 
             // Here we can assume that the signing token is valid and can be used for signing.
             // Therefore, we can clean up the signing token after the signing process independently of the result
-            Result<SignedDocuments, TextError> result;
+            Result<SignaturesContainer<S>, TextError> result;
             try {
                 result = signer.sign(data, configuration, signingToken, worker)
                         .mapError(err -> err.extend("Error occurred during signing."));

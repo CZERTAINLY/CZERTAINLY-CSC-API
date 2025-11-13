@@ -3,9 +3,11 @@ package com.czertainly.csc.signing.configuration.process;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.SignatureAlgorithm;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.DocumentSignature;
+import com.czertainly.csc.model.SignaturesContainer;
+import com.czertainly.csc.model.SignaturesWithValidationInfo;
 import com.czertainly.csc.signing.configuration.*;
-import com.czertainly.csc.signing.configuration.process.signers.DocumentSigner;
+import com.czertainly.csc.signing.configuration.process.signers.Signer;
 import com.czertainly.csc.signing.configuration.process.token.TokenProvider;
 import com.czertainly.csc.signing.filter.Criterion;
 import com.czertainly.csc.signing.signatureauthorizers.SignatureAuthorizer;
@@ -43,10 +45,10 @@ class SignatureProcessTemplateTest {
     TokenProvider<TestTokenConfiguration, TestSignatureProcessConfiguration, TestSigningToken> testTokenProvider;
 
     @Mock
-    DocumentSigner<TestSignatureProcessConfiguration> documentSigner;
+    Signer<TestSignatureProcessConfiguration, DocumentSignature> signer;
 
     @InjectMocks
-    SignatureProcessTemplate<TestTokenConfiguration, TestSignatureProcessConfiguration, TestSigningToken> testSignatureProcessTemplate;
+    SignatureProcessTemplate<TestTokenConfiguration, TestSignatureProcessConfiguration, TestSigningToken, DocumentSignature> testSignatureProcessTemplate;
 
     List<String> dataToSign = List.of("data");
 
@@ -200,7 +202,7 @@ class SignatureProcessTemplateTest {
         when(testTokenProvider.getSigningToken(any(), any(), any())).thenReturn(Result.success(TestSigningToken.any()));
 
         // given
-        when(documentSigner.sign(any(), any(), any(), any())).thenReturn(Result.error(TextError.of("Some error")));
+        when(signer.sign(any(), any(), any(), any())).thenReturn(Result.error(TextError.of("Some error")));
 
         // when
         var result = testSignatureProcessTemplate.sign(processConfiguration, testTokenConfiguration, dataToSign);
@@ -223,15 +225,15 @@ class SignatureProcessTemplateTest {
                 Result.success(signingToken));
 
         // given
-        SignedDocuments docs = Mockito.mock(SignedDocuments.class);
-        when(documentSigner.sign(dataToSign, processConfiguration, signingToken, woker))
+        SignaturesContainer<DocumentSignature> docs = Mockito.mock(SignaturesWithValidationInfo.class);
+        when(signer.sign(dataToSign, processConfiguration, signingToken, woker))
                 .thenReturn(Result.success(docs));
 
         // when
         var result = testSignatureProcessTemplate.sign(processConfiguration, testTokenConfiguration, dataToSign);
 
         // then
-        SignedDocuments signedDocs = assertSuccessAndGet(result);
+        SignaturesContainer<DocumentSignature> signedDocs = assertSuccessAndGet(result);
         assertEquals(docs, signedDocs);
     }
 

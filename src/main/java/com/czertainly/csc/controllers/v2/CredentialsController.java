@@ -122,7 +122,7 @@ public class CredentialsController {
         if (authentication instanceof CscAuthenticationToken) {
             token = (CscAuthenticationToken) authentication;
         } else {
-            throw new InternalErrorException("Failed to authenticate list credentials request because authentication" +
+            throw new InternalErrorException("Failed to authenticate the request because authentication" +
                                                      " object must be of type CscAuthenticationToken but was " +
                                                      authentication.getClass().getSimpleName());
         }

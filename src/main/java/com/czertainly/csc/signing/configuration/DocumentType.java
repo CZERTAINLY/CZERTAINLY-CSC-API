@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum DocumentType {
     HASH("hash"),
-    FULL("full");
+    FULL("full"),
+    RAW("raw");
 
     private final String value;
 

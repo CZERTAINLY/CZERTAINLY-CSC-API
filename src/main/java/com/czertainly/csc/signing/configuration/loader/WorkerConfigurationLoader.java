@@ -70,7 +70,13 @@ public class WorkerConfigurationLoader {
                         "Worker configuration is not valid. Worker '" + workerName + "' references an unknown CryptoToken '" + tokenName + "'.");
             }
 
-            WorkerCapabilities capabilities = getCapabilities(workerConfiguration.getCapabilities(), workerName);
+            WorkerCapabilities capabilities;
+            if (workerConfiguration.getCapabilities().getDocumentTypes() != null && workerConfiguration.getCapabilities().getDocumentTypes().contains(DocumentType.RAW)) {
+                capabilities = getRawSignerCapabilities(workerConfiguration.getCapabilities(), workerName);
+            } else {
+                capabilities = getDocumentSignerCapabilities(workerConfiguration.getCapabilities(), workerName);
+            }
+
             Worker worker = new Worker(workerName, workerId, cryptoToken);
 
             workersWithCapabilities.add(new WorkerWithCapabilities(worker, capabilities));
@@ -79,8 +85,8 @@ public class WorkerConfigurationLoader {
         return workersWithCapabilities;
     }
 
-    private WorkerCapabilities getCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
-                                               String workerName
+    private WorkerCapabilities getDocumentSignerCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
+                                                             String workerName
     ) {
         List<String> signatureQualifiers = capabilitiesConfiguration.getSignatureQualifiers();
         if (signatureQualifiers == null) {
@@ -125,6 +131,25 @@ public class WorkerConfigurationLoader {
                     SignaturePackaging.fromString(signaturePackaging),
                     supportedSignatureAlgorithms, returnsValidationInfo,
                     capabilitiesConfiguration.getDocumentTypes()
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);
+        }
+    }
+
+    private WorkerCapabilities getRawSignerCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
+                                               String workerName
+    ) {
+        List<String> supportedSignatureAlgorithms = capabilitiesConfiguration.getSignatureAlgorithms();
+        if (supportedSignatureAlgorithms == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signatureAlgorithms' capability."
+            );
+        }
+
+        try {
+            return new WorkerCapabilities(
+                    null, null, null, null, supportedSignatureAlgorithms, false, List.of(DocumentType.RAW)
             );
         } catch (IllegalArgumentException e) {
             throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);

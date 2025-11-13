@@ -6,9 +6,7 @@ import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.AlgorithmHelper;
-import com.czertainly.csc.model.DocumentContentToSign;
-import com.czertainly.csc.model.SignDocParameters;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.*;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.service.credentials.SessionCredentialsService;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
@@ -35,14 +33,11 @@ public class DocumentContentSigning {
 
     private final static Logger logger = LoggerFactory.getLogger(DocumentContentSigning.class);
 
-    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentContentSignatureProcessConfiguration, LongTermToken> longTermContentSignature;
-    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentContentSignatureProcessConfiguration, OneTimeToken> oneTimeContentSignature;
-    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentContentSignatureProcessConfiguration, SessionToken> sessionContentSignature;
+    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentContentSignatureProcessConfiguration, LongTermToken, DocumentSignature> longTermContentSignature;
+    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentContentSignatureProcessConfiguration, OneTimeToken, DocumentSignature> oneTimeContentSignature;
+    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentContentSignatureProcessConfiguration, SessionToken, DocumentSignature> sessionContentSignature;
 
     private final SignatureTypeDecider signatureTypeDecider;
-
-    SignserverClient signserverClient;
-    WorkerRepository workerRepository;
 
 
     public DocumentContentSigning(WorkerRepository workerRepository,
@@ -81,8 +76,6 @@ public class DocumentContentSigning {
         DocumentContentSigner<DocumentContentSignatureProcessConfiguration> documentContentSigner = new DocumentContentSigner<>(
                 signserverClient);
 
-        this.signserverClient = signserverClient;
-        this.workerRepository = workerRepository;
 
         longTermContentSignature = new SignatureProcessTemplate<>(
                 documentAuthorizer,
@@ -104,12 +97,12 @@ public class DocumentContentSigning {
         );
     }
 
-    public Result<SignedDocuments, TextError> sign(SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken) {
+    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken) {
         if (parameters.documentsToSign().isEmpty()) {
             return Result.error(TextError.of("No documents to sign."));
         }
 
-        SignedDocuments signedDocuments = SignedDocuments.empty();
+        SignaturesContainer<DocumentSignature> signatures = null;
         for (DocumentContentToSign documentToSign : parameters.documentsToSign()) {
             DocumentContentSignatureProcessConfiguration configuration = new DocumentContentSignatureProcessConfiguration(
                     parameters.userID(),
@@ -122,7 +115,7 @@ public class DocumentContentSigning {
                     parameters.returnValidationInfo()
             );
 
-            Result<SignedDocuments, TextError> signatureResult = null;
+            Result<SignaturesContainer<DocumentSignature>, TextError> signatureResult = null;
             Result<SignatureType, TextError> getSignatureType = signatureTypeDecider.decideType(parameters);
             if (getSignatureType instanceof Error(var err))
                 return Result.error(err.extend("Failed to determine signature type."));
@@ -159,11 +152,16 @@ public class DocumentContentSigning {
 
             if (signatureResult instanceof Error(var err))
                 return Result.error(err.extend("Failed to sign one of the document digest to sign."));
-            SignedDocuments docs = signatureResult.unwrap();
-            signedDocuments.extend(docs);
+            SignaturesContainer<DocumentSignature> docs = signatureResult.unwrap();
+            if (signatures != null) {
+                signatures.extend(docs);
+            } else {
+                signatures = docs;
+            }
+
         }
 
-        return Result.success(signedDocuments);
+        return Result.success(signatures);
     }
 
 }

@@ -2,8 +2,10 @@ package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
-import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.signing.Signature;
+import com.czertainly.csc.model.Signatures;
+import com.czertainly.csc.model.SignaturesContainer;
+import com.czertainly.csc.model.SignaturesWithValidationInfo;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
@@ -37,8 +39,14 @@ class DocumentHashSignerTest {
 
     @Test
     void signCanSignSingleHash() {
-        when(signserverClient.signSingleHash(any(), any(), any(), any()))
-                .thenReturn(Result.success(Signature.of("signature".getBytes(), SignaturePackaging.DETACHED)));
+        when(signserverClient.signSingleDocumentHash(any(), any(), any(), any()))
+                .thenReturn(
+                        Result.success(
+                                Signatures.of(
+                                    DocumentSignature.of("signature".getBytes(), SignaturePackaging.DETACHED)
+                                )
+                        )
+                );
 
         // given
         List<String> data = List.of("data");
@@ -54,7 +62,7 @@ class DocumentHashSignerTest {
 
         // then
         assertSuccess(result);
-        verify(signserverClient).signSingleHash(
+        verify(signserverClient).signSingleDocumentHash(
                 eq(worker.worker().workerName()),
                 eq("data".getBytes()),
                 eq(signingToken.getKeyAlias()),
@@ -64,9 +72,9 @@ class DocumentHashSignerTest {
 
     @Test
     void signCanSignSingleHashWithValidationInfo() {
-        when(signserverClient.signSingleHashWithValidationData(any(), any(), any(), any()))
+        when(signserverClient.signSingleDocumentHashWithValidationData(any(), any(), any(), any()))
                 .thenReturn(Result.success(
-                        SignedDocuments.of(Signature.of("signature".getBytes(), SignaturePackaging.DETACHED))));
+                        SignaturesWithValidationInfo.of(DocumentSignature.of("signature".getBytes(), SignaturePackaging.DETACHED))));
 
         // given
         List<String> data = List.of("data");
@@ -82,7 +90,7 @@ class DocumentHashSignerTest {
 
         // then
         assertSuccess(result);
-        verify(signserverClient).signSingleHashWithValidationData(
+        verify(signserverClient).signSingleDocumentHashWithValidationData(
                 eq(worker.worker().workerName()),
                 eq("data".getBytes()),
                 eq(signingToken.getKeyAlias()),
@@ -92,11 +100,13 @@ class DocumentHashSignerTest {
 
     @Test
     void signCanSignMultipleHashes() {
-        List<Signature> signatures = List.of(
-                Signature.of("signature1".getBytes(), SignaturePackaging.DETACHED),
-                Signature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
+        SignaturesContainer<DocumentSignature> signatures = Signatures.of(
+                List.of(
+                    DocumentSignature.of("signature1".getBytes(), SignaturePackaging.DETACHED),
+                    DocumentSignature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
+                )
         );
-        when(signserverClient.signMultipleHashes(any(), any(), any(), any()))
+        when(signserverClient.signMultipleDocumentHashes(any(), any(), any(), any()))
                 .thenReturn(Result.success(signatures));
 
         // given
@@ -113,7 +123,7 @@ class DocumentHashSignerTest {
 
         // then
         assertSuccess(result);
-        verify(signserverClient).signMultipleHashes(
+        verify(signserverClient).signMultipleDocumentHashes(
                 eq(worker.worker().workerName()),
                 eq(data),
                 eq(signingToken.getKeyAlias()),
@@ -123,13 +133,13 @@ class DocumentHashSignerTest {
 
     @Test
     void signCanSignMultipleHashesWithValidationInfo() {
-        SignedDocuments signatures = SignedDocuments.of(
+        SignaturesContainer<DocumentSignature> signatures = SignaturesWithValidationInfo.of(
                 List.of(
-                    Signature.of("signature1".getBytes(), SignaturePackaging.DETACHED),
-                    Signature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
+                        DocumentSignature.of("signature1".getBytes(), SignaturePackaging.DETACHED),
+                        DocumentSignature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
                 )
         );
-        when(signserverClient.signMultipleHashesWithValidationData(any(), any(), any(), any()))
+        when(signserverClient.signMultipleDocumentHashesWithValidationData(any(), any(), any(), any()))
                 .thenReturn(Result.success(signatures));
 
         // given
@@ -146,7 +156,7 @@ class DocumentHashSignerTest {
 
         // then
         assertSuccess(result);
-        verify(signserverClient).signMultipleHashesWithValidationData(
+        verify(signserverClient).signMultipleDocumentHashesWithValidationData(
                 eq(worker.worker().workerName()),
                 eq(data),
                 eq(signingToken.getKeyAlias()),
@@ -156,12 +166,12 @@ class DocumentHashSignerTest {
 
     @Test
     void returnsErrorWhenTheNumberOfReturnedSignaturesDoesNotMatchNumberOfInputDocuments() {
-        SignedDocuments signatures = SignedDocuments.of(
+        SignaturesContainer<DocumentSignature> signatures = SignaturesWithValidationInfo.of(
                 List.of(
-                        Signature.of("signature1".getBytes(), SignaturePackaging.DETACHED)
+                        DocumentSignature.of("signature1".getBytes(), SignaturePackaging.DETACHED)
                 )
         );
-        when(signserverClient.signMultipleHashesWithValidationData(any(), any(), any(), any()))
+        when(signserverClient.signMultipleDocumentHashesWithValidationData(any(), any(), any(), any()))
                 .thenReturn(Result.success(signatures));
 
         // given
