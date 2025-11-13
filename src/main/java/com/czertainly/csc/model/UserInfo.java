@@ -2,7 +2,6 @@ package com.czertainly.csc.model;
 
 
 import java.util.Map;
-import java.util.StringJoiner;
 
 public class UserInfo {
 

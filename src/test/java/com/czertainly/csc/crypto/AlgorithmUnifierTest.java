@@ -7,9 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -78,7 +76,8 @@ class AlgorithmUnifierTest {
         String signAlgo = "SHA256WITHECDSA";
         String hashAlgorithmOID = "1.2.840.113549.2.5";
         when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenReturn(true);
-        when(algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(hashAlgorithmOID, signAlgo)).thenReturn(false);
+        when(algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(hashAlgorithmOID, signAlgo)).thenReturn(
+                false);
 
         // when
         Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgo, hashAlgorithmOID);
@@ -106,7 +105,8 @@ class AlgorithmUnifierTest {
     void unifyWithIllegalArgumentException() {
         // given
         String signAlgo = "SHA256WITHECDSA";
-        when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenThrow(new IllegalArgumentException("Invalid argument"));
+        when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenThrow(
+                new IllegalArgumentException("Invalid argument"));
 
         // when
         Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgo, null);

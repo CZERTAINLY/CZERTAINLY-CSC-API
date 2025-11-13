@@ -19,6 +19,9 @@ public class OneTimeKeyAsyncDeletionService {
     @Async("oneTimeKeyDeletionExecutor")
     public void deleteKeyAsync(OneTimeKey key) {
         oneTimeKeysService.deleteKey(key)
-                .consumeError(err -> logger.error("Async deletion failed for one-time key '{}': {}", key.keyAlias(), err));
+                          .consumeError(
+                                  err -> logger.error("Async deletion failed for one-time key '{}': {}", key.keyAlias(),
+                                                      err
+                                  ));
     }
 }

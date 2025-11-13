@@ -6,24 +6,27 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignatureAlgorithmCriterionTest {
 
     @Test
     void matchesReturnsTrueOnMatchingSignatureAlgorithm() {
-         //given
-         WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
-                                                                          .withSupportedSignatureAlgorithms(
-                                                                                  List.of("SHA256WithRSA", "SHA512WithRSA"))
-                                                                          .build();
-         SignatureAlgorithmCriterion signatureAlgorithmCriterion = new SignatureAlgorithmCriterion("SHA512WithRSA");
+        //given
+        WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
+                                                                         .withSupportedSignatureAlgorithms(
+                                                                                 List.of("SHA256WithRSA",
+                                                                                         "SHA512WithRSA"
+                                                                                 ))
+                                                                         .build();
+        SignatureAlgorithmCriterion signatureAlgorithmCriterion = new SignatureAlgorithmCriterion("SHA512WithRSA");
 
-         // when
-         boolean isMatch = signatureAlgorithmCriterion.matches(workerCapabilities);
+        // when
+        boolean isMatch = signatureAlgorithmCriterion.matches(workerCapabilities);
 
-         // then
-         assertTrue(isMatch);
+        // then
+        assertTrue(isMatch);
     }
 
     @Test
@@ -31,7 +34,9 @@ class SignatureAlgorithmCriterionTest {
         //given
         WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
                                                                          .withSupportedSignatureAlgorithms(
-                                                                                 List.of("SHA256WithRSA", "SHA512WithRSA"))
+                                                                                 List.of("SHA256WithRSA",
+                                                                                         "SHA512WithRSA"
+                                                                                 ))
                                                                          .build();
         SignatureAlgorithmCriterion signatureAlgorithmCriterion = new SignatureAlgorithmCriterion("SHA384WithRSA");
 

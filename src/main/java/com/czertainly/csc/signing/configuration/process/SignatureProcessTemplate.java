@@ -68,7 +68,7 @@ public class SignatureProcessTemplate<
             Result<SignaturesContainer<S>, TextError> result;
             try {
                 result = signer.sign(data, configuration, signingToken, worker)
-                        .mapError(err -> err.extend("Error occurred during signing."));
+                               .mapError(err -> err.extend("Error occurred during signing."));
             } finally {
                 tokenProvider.cleanup(signingToken);
             }

@@ -24,13 +24,13 @@ public enum OperationMode {
     @JsonCreator
     public static OperationMode findByCode(String value) {
         return Arrays.stream(OperationMode.values())
-                .filter(k -> k.value.equals(value))
-                .findFirst()
-                .orElseThrow(() ->
-                    new IllegalArgumentException(
-                            "Unknown operation mode '" + value + "'. Allowed values: [" + Arrays.stream(
-                                    OperationMode.values()).map(cl -> cl.value).collect(
-                                            Collectors.joining(",")) + "]"));
+                     .filter(k -> k.value.equals(value))
+                     .findFirst()
+                     .orElseThrow(() ->
+                                          new IllegalArgumentException(
+                                                  "Unknown operation mode '" + value + "'. Allowed values: [" + Arrays.stream(
+                                                          OperationMode.values()).map(cl -> cl.value).collect(
+                                                          Collectors.joining(",")) + "]"));
     }
 
 }

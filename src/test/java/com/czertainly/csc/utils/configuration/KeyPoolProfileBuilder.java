@@ -13,7 +13,7 @@ public class KeyPoolProfileBuilder {
 
     public static KeyPoolProfile aKeyPoolProfile() {
         return Instancio.of(KeyPoolProfile.class)
-                .create();
+                        .create();
     }
 
     public static KeyPoolProfileBuilder create() {

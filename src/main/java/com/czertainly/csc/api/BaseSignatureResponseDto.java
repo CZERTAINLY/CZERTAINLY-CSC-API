@@ -6,8 +6,8 @@ public class BaseSignatureResponseDto {
 
     @Schema(
             description = """
-                        Arbitrary string value uniquely identifying the response. Returned only when operationMode is `A.`
-                        """
+                    Arbitrary string value uniquely identifying the response. Returned only when operationMode is `A.`
+                    """
     )
     private final String responseId;
 

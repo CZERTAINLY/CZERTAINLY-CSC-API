@@ -81,14 +81,14 @@ public class SignserverClient {
         return sign(workerName, dataBase64, keyAlias, metadata, SignserverProcessEncoding.BASE64)
                 .flatMap(encodedSignatures -> mapToObject(encodedSignatures, EncodedValidationDataWrapper.class))
                 .flatMap(signatureWithValidationData ->
-                        base64Decode(signatureWithValidationData.signatureData().getBytes())
-                                .map(signatureBytes -> new SignaturesWithValidationInfo<>(
-                                        List.of(new DocumentSignature(signatureBytes, signaturePackaging)),
-                                        new HashSet<>(signatureWithValidationData.validationData().crl()),
-                                        new HashSet<>(signatureWithValidationData.validationData().ocsp()),
-                                        new HashSet<>(
-                                                signatureWithValidationData.validationData().certificates())
-                                ))
+                                 base64Decode(signatureWithValidationData.signatureData().getBytes())
+                                         .map(signatureBytes -> new SignaturesWithValidationInfo<>(
+                                                 List.of(new DocumentSignature(signatureBytes, signaturePackaging)),
+                                                 new HashSet<>(signatureWithValidationData.validationData().crl()),
+                                                 new HashSet<>(signatureWithValidationData.validationData().ocsp()),
+                                                 new HashSet<>(
+                                                         signatureWithValidationData.validationData().certificates())
+                                         ))
                 );
     }
 
@@ -116,7 +116,9 @@ public class SignserverClient {
                 .flatMap(signatureWithValidationData ->
                                  base64Decode(signatureWithValidationData.signatureData().getBytes())
                                          .map(signatureBytes -> new SignaturesWithValidationInfo<>(
-                                                 List.of(new DocumentSignature(signatureBytes, SignaturePackaging.DETACHED)),
+                                                 List.of(new DocumentSignature(signatureBytes,
+                                                                               SignaturePackaging.DETACHED
+                                                 )),
                                                  new HashSet<>(signatureWithValidationData.validationData().crl()),
                                                  new HashSet<>(signatureWithValidationData.validationData().ocsp()),
                                                  new HashSet<>(
@@ -125,7 +127,9 @@ public class SignserverClient {
                 );
     }
 
-    public Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleDocumentHashes(String workerName, List<String> data, String keyAlias,
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleDocumentHashes(String workerName,
+                                                                                                List<String> data,
+                                                                                                String keyAlias,
                                                                                                 String digestAlgorithm
     ) {
         return multisign(workerName, data, keyAlias, digestAlgorithm)
@@ -165,8 +169,10 @@ public class SignserverClient {
                 });
     }
 
-    public Result<SignaturesContainer<PlainSignature>, TextError> signPlainMultipleHashes(String workerName, List<String> data, String keyAlias,
-                                                                                                String digestAlgorithm
+    public Result<SignaturesContainer<PlainSignature>, TextError> signPlainMultipleHashes(String workerName,
+                                                                                          List<String> data,
+                                                                                          String keyAlias,
+                                                                                          String digestAlgorithm
     ) {
         return multisign(workerName, data, keyAlias, digestAlgorithm)
                 .flatMap(encodedSignatures -> mapToObject(encodedSignatures, BatchSignaturesResponse.class))
@@ -237,7 +243,9 @@ public class SignserverClient {
                 .flatMap(keys -> {
                     if (keys.isEmpty()) {
                         return Result.error(
-                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias, cryptoToken.name())
+                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias,
+                                             cryptoToken.name()
+                                )
                         );
                     }
                     if (keys.size() > 1) {
@@ -322,8 +330,8 @@ public class SignserverClient {
 
     // Returns the signed data encoded in base64
     private Result<byte[], TextError> sign(String workerName, byte[] data, String keyAlias,
-                        Map<String, String> metadata,
-                        SignserverProcessEncoding encoding
+                                           Map<String, String> metadata,
+                                           SignserverProcessEncoding encoding
     ) {
         metadata.put("ALIAS", keyAlias);
         return signserverRestClient.process(workerName, data, metadata, encoding);

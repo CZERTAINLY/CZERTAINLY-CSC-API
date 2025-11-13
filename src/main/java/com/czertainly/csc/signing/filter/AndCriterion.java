@@ -7,7 +7,7 @@ public class AndCriterion<T> implements Criterion<T> {
 
     private final List<Criterion<T>> criteria;
 
-    public AndCriterion(){
+    public AndCriterion() {
         this.criteria = new ArrayList<>();
     }
 
@@ -15,7 +15,7 @@ public class AndCriterion<T> implements Criterion<T> {
         this.criteria = criteria;
     }
 
-    public void add(Criterion<T> criterion){
+    public void add(Criterion<T> criterion) {
         criteria.add(criterion);
     }
 

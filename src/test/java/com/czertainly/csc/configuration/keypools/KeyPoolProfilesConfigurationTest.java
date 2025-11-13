@@ -8,7 +8,7 @@ import org.springframework.validation.Errors;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class KeyPoolProfilesConfigurationTest {
 
@@ -53,7 +53,7 @@ class KeyPoolProfilesConfigurationTest {
         // KeyPools with the same key algorithm, key specification and designated usage are not allowed
         // given
         KeyPoolProfile profile1 = KeyPoolProfileBuilder.create()
-                                                        .withName("profile1")
+                                                       .withName("profile1")
                                                        .withDesignatedUsage(KeyUsageDesignation.SESSION_SIGNATURE)
                                                        .withKeyAlgorithm("RSA")
                                                        .withKeySpecification("2048")
@@ -80,17 +80,17 @@ class KeyPoolProfilesConfigurationTest {
     void uniqueKeyPoolProfilesDoNotProduceConfigurationError() {
         // given
         KeyPoolProfile profile1 = KeyPoolProfileBuilder.create()
-                                                        .withName("profile1")
-                                                        .withDesignatedUsage(KeyUsageDesignation.SESSION_SIGNATURE)
-                                                        .withKeyAlgorithm("RSA")
-                                                        .withKeySpecification("2048")
-                                                        .build();
+                                                       .withName("profile1")
+                                                       .withDesignatedUsage(KeyUsageDesignation.SESSION_SIGNATURE)
+                                                       .withKeyAlgorithm("RSA")
+                                                       .withKeySpecification("2048")
+                                                       .build();
         KeyPoolProfile profile2 = KeyPoolProfileBuilder.create()
-                                                        .withName("profile2")
-                                                        .withDesignatedUsage(KeyUsageDesignation.SESSION_SIGNATURE)
-                                                        .withKeyAlgorithm("RSA")
-                                                        .withKeySpecification("4096")
-                                                        .build();
+                                                       .withName("profile2")
+                                                       .withDesignatedUsage(KeyUsageDesignation.SESSION_SIGNATURE)
+                                                       .withKeyAlgorithm("RSA")
+                                                       .withKeySpecification("4096")
+                                                       .build();
         List<KeyPoolProfile> uniqueProfiles = List.of(profile1, profile2);
         KeyPoolProfilesConfiguration keyPoolProfilesConfiguration = new KeyPoolProfilesConfiguration(uniqueProfiles);
 

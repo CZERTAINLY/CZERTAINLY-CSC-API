@@ -11,5 +11,5 @@ public record WorkerCapabilities(
         List<String> supportedSignatureAlgorithms,
         boolean returnsValidationInfo,
         List<DocumentType> documentTypes
-        ) {
+) {
 }

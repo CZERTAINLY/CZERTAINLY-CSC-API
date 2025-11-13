@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -9,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for asn1Primitive complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="asn1Primitive"&gt;
  *   &lt;complexContent&gt;
@@ -22,17 +21,16 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "asn1Primitive")
 @XmlSeeAlso({
-    Asn1Set.class
+        Asn1Set.class
 })
 public abstract class Asn1Primitive
-    extends Asn1Object
-{
+        extends Asn1Object {
 
 
 }

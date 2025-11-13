@@ -82,7 +82,8 @@ class WorkerRepositoryTest {
             WorkerCapabilitiesBuilder.create()
                                      .withConformanceLevel(ConformanceLevel.AdES_B_B)
                                      .withSignaturePackaging(SignaturePackaging.DETACHED)
-                                     .withSupportedSignatureAlgorithms(List.of("SHA256withRSA", "SHA256withECDSA", "SHA512withECDSA"))
+                                     .withSupportedSignatureAlgorithms(
+                                             List.of("SHA256withRSA", "SHA256withECDSA", "SHA512withECDSA"))
                                      .build()
     );
 

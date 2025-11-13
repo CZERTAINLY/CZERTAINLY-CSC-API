@@ -103,7 +103,7 @@ public class CredentialsController {
     )
     public CredentialDto credentialInfo(
             @RequestBody GetCredentialInfoDto getCredentialInfoDto,
-        Authentication authentication
+            Authentication authentication
     ) {
         CscAuthenticationToken token = castTokenOrThrow(authentication);
         CredentialInfoRequest request = credentialInfoRequestMapper.map(getCredentialInfoDto, token);

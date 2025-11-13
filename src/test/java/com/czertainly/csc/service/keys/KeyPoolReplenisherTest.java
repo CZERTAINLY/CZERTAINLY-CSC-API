@@ -33,12 +33,23 @@ class KeyPoolReplenisherTest {
 
     static ExecutorService directExecutor() {
         return new AbstractExecutorService() {
-            @Override public void execute(@NotNull Runnable command) { command.run(); }
-            @Override public void shutdown() {}
-            @Override public @NotNull List<Runnable> shutdownNow() { return List.of(); }
-            @Override public boolean isShutdown() { return true; }
-            @Override public boolean isTerminated() { return true; }
-            @Override public boolean awaitTermination(long l, @NotNull TimeUnit u) { return true; }
+            @Override
+            public void execute(@NotNull Runnable command) {command.run();}
+
+            @Override
+            public void shutdown() {}
+
+            @Override
+            public @NotNull List<Runnable> shutdownNow() {return List.of();}
+
+            @Override
+            public boolean isShutdown() {return true;}
+
+            @Override
+            public boolean isTerminated() {return true;}
+
+            @Override
+            public boolean awaitTermination(long l, @NotNull TimeUnit u) {return true;}
         };
     }
 
@@ -191,7 +202,8 @@ class KeyPoolReplenisherTest {
         // 5 keys wanted, all key generation attempts are made concurrently regardless of failures
         verify(keysService, times(5))
                 .generateKey(eq(ct1), contains(profile.keyPrefix()),
-                        eq(profile.keyAlgorithm()), eq(profile.keySpecification()));
+                             eq(profile.keyAlgorithm()), eq(profile.keySpecification())
+                );
     }
 
     @Test

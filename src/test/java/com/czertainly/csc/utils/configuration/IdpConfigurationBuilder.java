@@ -15,7 +15,7 @@ public class IdpConfigurationBuilder {
 
     public static IdpConfiguration anIdpConfiguration() {
         return Instancio.of(IdpConfiguration.class)
-                .create();
+                        .create();
     }
 
     public static IdpConfigurationBuilder create() {

@@ -5,7 +5,6 @@ import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.SignaturesContainer;
-import com.czertainly.csc.model.SignaturesWithValidationInfo;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentContentSignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
@@ -68,7 +67,9 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
         );
     }
 
-    private Result<SignaturesContainer<DocumentSignature>, TextError> verifyNumberOfSignatures(List<String> data, SignaturesContainer<DocumentSignature> signed) {
+    private Result<SignaturesContainer<DocumentSignature>, TextError> verifyNumberOfSignatures(List<String> data,
+                                                                                               SignaturesContainer<DocumentSignature> signed
+    ) {
         if (signed.signatures().size() != data.size()) {
             logger.error("The number of signatures does not match the number of documents.");
             return Result.error(TextError.of("The number of signatures does not match the number of documents."));

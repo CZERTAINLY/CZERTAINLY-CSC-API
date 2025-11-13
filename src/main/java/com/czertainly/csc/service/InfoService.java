@@ -1,8 +1,8 @@
 package com.czertainly.csc.service;
 
 import com.czertainly.csc.api.info.InfoDto;
-import com.czertainly.csc.api.info.SignatureFormatsDto;
 import com.czertainly.csc.api.info.SignatureAlgorithmsDto;
+import com.czertainly.csc.api.info.SignatureFormatsDto;
 import com.czertainly.csc.configuration.csc.CscConfiguration;
 import com.czertainly.csc.configuration.idp.IdpConfiguration;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
@@ -28,13 +28,15 @@ public class InfoService {
     public InfoService(
             CscConfiguration cscConfiguration,
             IdpConfiguration idpConfiguration,
-            WorkerRepository workerRepository) {
+            WorkerRepository workerRepository
+    ) {
         this.componentName = cscConfiguration.name();
         this.logoUri = cscConfiguration.logo();
         this.region = cscConfiguration.region();
         this.idbBaseUri = idpConfiguration.baseUrl();
         this.workerRepository = workerRepository;
     }
+
     public InfoDto getInfo() {
         return new InfoDto(
                 "2.0.0.0",

@@ -40,7 +40,8 @@ class CscJwtAuthenticationConverterTest {
 
         // then
         Assertions.assertEquals(jwt, token.getToken());
-        Assertions.assertTrue(token.getAuthorities().stream().map(Object::toString).anyMatch(CscJwtAuthenticationConverter.CREDENTIAL_SCOPE::equalsIgnoreCase));
+        Assertions.assertTrue(token.getAuthorities().stream().map(Object::toString)
+                                   .anyMatch(CscJwtAuthenticationConverter.CREDENTIAL_SCOPE::equalsIgnoreCase));
 
         Assertions.assertNotNull(token.getSignatureActivationData());
         Assertions.assertEquals(userID, token.getSignatureActivationData().getUserID().get());
@@ -62,7 +63,8 @@ class CscJwtAuthenticationConverterTest {
 
         // then
         Assertions.assertEquals(jwt, token.getToken());
-        Assertions.assertTrue(token.getAuthorities().stream().map(Object::toString).anyMatch("SCOPE_service"::equalsIgnoreCase));
+        Assertions.assertTrue(
+                token.getAuthorities().stream().map(Object::toString).anyMatch("SCOPE_service"::equalsIgnoreCase));
 
         Assertions.assertNull(token.getSignatureActivationData());
     }

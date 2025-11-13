@@ -43,8 +43,7 @@ public class SignHashValidatingRequestMapper {
         try {
             if (credentialId != null) {
                 credentialIdUUID = UUID.fromString(credentialId);
-            }
-            else {
+            } else {
                 credentialIdUUID = null;
             }
         } catch (IllegalArgumentException e) {
@@ -55,7 +54,7 @@ public class SignHashValidatingRequestMapper {
             throw InvalidInputDataException.of("Missing (or invalid type) string parameter SAD");
         } else if (dto.getSAD().isPresent() && sad != null) {
             throw InvalidInputDataException.of("Signature activation data was provided in both the request" +
-                                             " and the access token. Please provide it in only one place.");
+                                                       " and the access token. Please provide it in only one place.");
         } else if (dto.getSAD().isPresent()) {
             String sadString = dto.getSAD().get();
             sad = sadParser.parse(sadString);
@@ -73,13 +72,13 @@ public class SignHashValidatingRequestMapper {
         String signAlgo = dto.getSignAlgo();
         String hashAlgorithmOID = dto.getHashAlgorithmOID();
         AlgorithmPair algorithmPair = algorithmUnifier.unify(signAlgo, hashAlgorithmOID)
-                .consumeError(error -> {
-                    throw InvalidInputDataException.of(error.getErrorText());
-                })
-                .unwrap();
+                                                      .consumeError(error -> {
+                                                          throw InvalidInputDataException.of(error.getErrorText());
+                                                      })
+                                                      .unwrap();
 
-            keyAlgo = algorithmPair.keyAlgo();
-            digestAlgo = algorithmPair.digestAlgo();
+        keyAlgo = algorithmPair.keyAlgo();
+        digestAlgo = algorithmPair.digestAlgo();
 
         String operationModeString = dto.getOperationMode().orElse("S");
         if (operationModeString.equals("S")) {
@@ -92,6 +91,8 @@ public class SignHashValidatingRequestMapper {
 
         clientData = dto.getClientData().orElse("");
 
-        return new SignHashParameters(credentialIdUUID, userID, hashes, keyAlgo, digestAlgo, sad, operationMode, clientData);
+        return new SignHashParameters(credentialIdUUID, userID, hashes, keyAlgo, digestAlgo, sad, operationMode,
+                                      clientData
+        );
     }
 }

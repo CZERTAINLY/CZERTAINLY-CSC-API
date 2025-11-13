@@ -27,11 +27,15 @@ public class ProxyConfiguration {
             ProxySettings proxySettings = ProxySettings.read(protocol);
             if (proxySettings != null) {
                 // CASE 2: auto-conf from ENV
-                logger.info("Configuring proxy for {} from env '{}': {}", protocol, proxySettings.getEnvName(), proxySettings);
+                logger.info("Configuring proxy for {} from env '{}': {}", protocol, proxySettings.getEnvName(),
+                            proxySettings
+                );
 
                 // set password authentication if specified
                 if (proxySettings.getUsername() != null && proxySettings.getPassword() != null) {
-                    msa.add(proxySettings.getHost() + ":" + proxySettings.getPort(), proxySettings.getUsername(), proxySettings.getPassword());
+                    msa.add(proxySettings.getHost() + ":" + proxySettings.getPort(), proxySettings.getUsername(),
+                            proxySettings.getPassword()
+                    );
                 }
 
                 // set proxy properties

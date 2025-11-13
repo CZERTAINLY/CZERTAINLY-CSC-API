@@ -21,7 +21,8 @@ public class CertificateUtils {
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
 
         // Generate the X509Certificate object
-        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(derCrt));
+        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(
+                new ByteArrayInputStream(derCrt));
 
         // Extract the public key from the certificate
         return certificate.getPublicKey();

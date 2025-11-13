@@ -6,7 +6,7 @@ import java.util.Set;
 
 public record ValidationInfo(
 
-        @Schema (
+        @Schema(
                 description = """
                         Array of Base64-encoded strings containing the DER-encoded ASN.1 data
                         structures of type `CertificateList` according to [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280).
@@ -14,7 +14,7 @@ public record ValidationInfo(
         )
         Set<String> crl,
 
-        @Schema (
+        @Schema(
                 description = """
                         Array of Base64-encoded strings containing the DER-encoded ASN.1 data
                         structures of type `OCSPResponse` according to [RFC 6960](https://datatracker.ietf.org/doc/html/rfc6960).
@@ -22,7 +22,7 @@ public record ValidationInfo(
         )
         Set<String> ocsp,
 
-        @Schema (
+        @Schema(
                 description = """
                         Array of Base64-encoded X.509v3 certificates from the certificate
                         chain used to create the respective signature and timestamps included in the signature.

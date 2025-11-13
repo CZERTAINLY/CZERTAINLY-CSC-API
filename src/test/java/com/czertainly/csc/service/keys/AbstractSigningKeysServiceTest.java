@@ -23,9 +23,7 @@ import static com.czertainly.csc.utils.assertions.ResultAssertions.assertErrorCo
 import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AbstractSigningKeysServiceTest {
@@ -152,8 +150,9 @@ class AbstractSigningKeysServiceTest {
 
         var sessionEntity = Mockito.spy(aSessionKeyEntity(cryptoToken, "key-alias", keyAlgorithm));
 
-        lenient().when(keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(cryptoToken.id(), keyAlgorithm, false))
-                .thenReturn(Optional.of(sessionEntity));
+        lenient().when(
+                         keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(cryptoToken.id(), keyAlgorithm, false))
+                 .thenReturn(Optional.of(sessionEntity));
         lenient().when(keysRepository.save(sessionEntity)).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
@@ -170,7 +169,9 @@ class AbstractSigningKeysServiceTest {
             assertEquals(true, key.inUse());
         } catch (AssertionError e) {
             // Accept the actual error message if the service returns an error
-            assertErrorContains(result, "Transaction failed while acquiring a signing key for Crypto Token 'cryptoToken (1)'.");
+            assertErrorContains(result,
+                                "Transaction failed while acquiring a signing key for Crypto Token 'cryptoToken (1)'."
+            );
         }
     }
 
@@ -180,7 +181,7 @@ class AbstractSigningKeysServiceTest {
         CryptoToken cryptoToken = new CryptoToken("tokenA", 1, List.of());
         String keyAlgorithm = "RSA";
         lenient().when(keysRepository.findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse(1, keyAlgorithm, false))
-                .thenReturn(Optional.empty());
+                 .thenReturn(Optional.empty());
 
         // when
         var result = testKeysService.acquireKey(cryptoToken, keyAlgorithm);
@@ -280,7 +281,9 @@ class AbstractSigningKeysServiceTest {
         var result = testKeysService.deleteKey(sessionKeyEntity.getId());
 
         // then
-        assertErrorContains(result, String.format("Signing key with id '%s' does not exist.", sessionKeyEntity.getId()));
+        assertErrorContains(result,
+                            String.format("Signing key with id '%s' does not exist.", sessionKeyEntity.getId())
+        );
     }
 
     @Test
@@ -317,7 +320,9 @@ class AbstractSigningKeysServiceTest {
         var result = testKeysService.deleteKey(sessionKeyEntity.getId());
 
         // then
-        assertErrorContains(result, String.format("Key 'key-alias' with id '%s' couldn't be deleted.", sessionKeyEntity.getId()));
+        assertErrorContains(result,
+                            String.format("Key 'key-alias' with id '%s' couldn't be deleted.", sessionKeyEntity.getId())
+        );
     }
 
 

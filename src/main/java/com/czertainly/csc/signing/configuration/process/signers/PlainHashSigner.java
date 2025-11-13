@@ -4,7 +4,6 @@ import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.PlainSignature;
-import com.czertainly.csc.model.Signatures;
 import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.PlainHashSignatureProcessConfiguration;
@@ -27,7 +26,8 @@ public class PlainHashSigner<C extends PlainHashSignatureProcessConfiguration> i
     }
 
     @Override
-    public Result<SignaturesContainer<PlainSignature>, TextError> sign(List<String> data, C configuration, SigningToken signingToken,
+    public Result<SignaturesContainer<PlainSignature>, TextError> sign(List<String> data, C configuration,
+                                                                       SigningToken signingToken,
                                                                        WorkerWithCapabilities worker
     ) {
         Result<SignaturesContainer<PlainSignature>, TextError> result;
@@ -40,7 +40,9 @@ public class PlainHashSigner<C extends PlainHashSignatureProcessConfiguration> i
         return result.flatMap(signed -> verifyNumberOfSignatures(data, signed));
     }
 
-    private Result<SignaturesContainer<PlainSignature>, TextError> verifyNumberOfSignatures(List<String> data, SignaturesContainer<PlainSignature> signed) {
+    private Result<SignaturesContainer<PlainSignature>, TextError> verifyNumberOfSignatures(List<String> data,
+                                                                                            SignaturesContainer<PlainSignature> signed
+    ) {
         if (signed.signatures().size() != data.size()) {
             logger.error("The number of signatures does not match the number of documents.");
             return Result.error(TextError.of("The number of signatures does not match the number of documents."));
@@ -52,10 +54,10 @@ public class PlainHashSigner<C extends PlainHashSignatureProcessConfiguration> i
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         return signserverClient.signPlainSingleHash(
-                    worker.worker().workerName(),
-                    data.getFirst().getBytes(),
-                    signingToken.getKeyAlias(),
-                    configuration.digestAlgorithm()
+                worker.worker().workerName(),
+                data.getFirst().getBytes(),
+                signingToken.getKeyAlias(),
+                configuration.digestAlgorithm()
         );
     }
 

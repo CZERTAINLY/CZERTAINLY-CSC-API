@@ -46,14 +46,16 @@ class OneTimeKeysServiceTest {
     public void getKeysAcquiredBeforeReturnsNoKeysWhenNonExpiredBefore() {
 
         // given
-        List<OneTimeKeyEntity> keyEntities = new ArrayList<>(); ZonedDateTime before = ZonedDateTime.now();
+        List<OneTimeKeyEntity> keyEntities = new ArrayList<>();
+        ZonedDateTime before = ZonedDateTime.now();
         given(keysRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, before)).willReturn(keyEntities);
 
         // when
         var getKeysResult = oneTimeKeysService.getKeysAcquiredBefore(before);
 
         // then
-        List<OneTimeKey> keys = assertSuccessAndGet(getKeysResult); assertEquals(0, keys.size());
+        List<OneTimeKey> keys = assertSuccessAndGet(getKeysResult);
+        assertEquals(0, keys.size());
     }
 
     @Test
@@ -70,7 +72,8 @@ class OneTimeKeysServiceTest {
         var getKeysResult = oneTimeKeysService.getKeysAcquiredBefore(before);
 
         // then
-        List<OneTimeKey> keys = assertSuccessAndGet(getKeysResult); assertEquals(1, keys.size());
+        List<OneTimeKey> keys = assertSuccessAndGet(getKeysResult);
+        assertEquals(1, keys.size());
         assertSame("Key1", keys.getFirst().keyAlias());
     }
 
@@ -89,7 +92,8 @@ class OneTimeKeysServiceTest {
         var getKeysResult = oneTimeKeysService.getKeysAcquiredBefore(before);
 
         // then
-        List<OneTimeKey> keys = assertSuccessAndGet(getKeysResult); assertEquals(0, keys.size());
+        List<OneTimeKey> keys = assertSuccessAndGet(getKeysResult);
+        assertEquals(0, keys.size());
     }
 
     @Test

@@ -5,7 +5,8 @@ import com.czertainly.csc.signing.configuration.WorkerCapabilities;
 import com.czertainly.csc.utils.configuration.WorkerCapabilitiesBuilder;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignaturePackagingCriterionTest {
 
@@ -13,9 +14,11 @@ class SignaturePackagingCriterionTest {
     void matchesReturnsTrueOnMatchingSignaturePackaging() {
         // given
         WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
-                                                                         .withSignaturePackaging(SignaturePackaging.DETACHED)
+                                                                         .withSignaturePackaging(
+                                                                                 SignaturePackaging.DETACHED)
                                                                          .build();
-        SignaturePackagingCriterion signaturePackagingCriterion = new SignaturePackagingCriterion(SignaturePackaging.DETACHED);
+        SignaturePackagingCriterion signaturePackagingCriterion = new SignaturePackagingCriterion(
+                SignaturePackaging.DETACHED);
 
         // when
         boolean isMatch = signaturePackagingCriterion.matches(workerCapabilities);
@@ -28,9 +31,11 @@ class SignaturePackagingCriterionTest {
     void matchesReturnsFalseOnNonMatchingSignaturePackaging() {
         // given
         WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
-                                                                         .withSignaturePackaging(SignaturePackaging.DETACHED)
+                                                                         .withSignaturePackaging(
+                                                                                 SignaturePackaging.DETACHED)
                                                                          .build();
-        SignaturePackagingCriterion signaturePackagingCriterion = new SignaturePackagingCriterion(SignaturePackaging.ENVELOPING);
+        SignaturePackagingCriterion signaturePackagingCriterion = new SignaturePackagingCriterion(
+                SignaturePackaging.ENVELOPING);
 
         // when
         boolean isMatch = signaturePackagingCriterion.matches(workerCapabilities);

@@ -230,7 +230,10 @@ public class ServerConfiguration {
 
             SSLContext sslContext = builder.build();
 
-           final HttpClient httpClient = getHttpClient(sslContext, new HttpComponents5ClientFactory.RemoveSoapHeadersInterceptor(), httpClientProperties);
+            final HttpClient httpClient = getHttpClient(sslContext,
+                                                        new HttpComponents5ClientFactory.RemoveSoapHeadersInterceptor(),
+                                                        httpClientProperties
+            );
 
             return new SimpleHttpComponents5MessageSender(httpClient);
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | KeyManagementException e) {
@@ -238,26 +241,32 @@ public class ServerConfiguration {
         }
     }
 
-    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor, HttpClientProperties properties) {
+    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor,
+                                            HttpClientProperties properties
+    ) {
         TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
         SocketConfig socketConfig = SocketConfig.custom()
-                .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
-                .build();
+                                                .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
+                                                .build();
         final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                                                                                .setDefaultSocketConfig(socketConfig)
                                                                                .setTlsSocketStrategy(tlsSocketStrategy)
-                                                                               .setMaxConnTotal(properties.getMaxTotal())
-                                                                               .setMaxConnPerRoute(properties.getDefaultMaxPerRoute())
+                                                                               .setMaxConnTotal(
+                                                                                       properties.getMaxTotal())
+                                                                               .setMaxConnPerRoute(
+                                                                                       properties.getDefaultMaxPerRoute())
                                                                                .build();
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(Timeout.ofSeconds(properties.getConnectionRequestTimeoutSeconds()))
-                .setResponseTimeout(Timeout.ofSeconds(properties.getResponseTimeoutSeconds()))
-                .build();
+                                                   .setConnectionRequestTimeout(Timeout.ofSeconds(
+                                                           properties.getConnectionRequestTimeoutSeconds()))
+                                                   .setResponseTimeout(
+                                                           Timeout.ofSeconds(properties.getResponseTimeoutSeconds()))
+                                                   .build();
 
         HttpClientBuilder builder = HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig);
+                                               .setConnectionManager(connectionManager)
+                                               .setDefaultRequestConfig(requestConfig);
 
         if (interceptor != null) {
             builder.addRequestInterceptorFirst(interceptor);

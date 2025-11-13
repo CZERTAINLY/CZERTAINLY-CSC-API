@@ -16,7 +16,7 @@ public record SignHashParameters(
         SignatureActivationData sad,
         OperationMode operationMode,
         String clientData
-    ) {
+) {
     public SignatureAlgorithm signatureAlgorithm() {
         return SignatureAlgorithm.of(keyAlgo, digestAlgo);
     }

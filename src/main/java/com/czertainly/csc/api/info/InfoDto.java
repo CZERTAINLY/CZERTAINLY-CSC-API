@@ -32,7 +32,7 @@ public record InfoDto(
                         The URI of the image file containing the logo of the remote service
                         which SHALL be published online. The image SHALL be in either
                         JPEG or PNG format and not larger than 256x256 pixels.
-                         """,
+                        """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String logo,

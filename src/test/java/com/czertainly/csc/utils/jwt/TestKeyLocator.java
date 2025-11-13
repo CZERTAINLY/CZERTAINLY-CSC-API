@@ -1,6 +1,5 @@
 package com.czertainly.csc.utils.jwt;
 
-import com.czertainly.csc.api.auth.JwksRepository;
 import com.czertainly.csc.api.auth.exceptions.JwkLookupException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;

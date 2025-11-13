@@ -66,23 +66,23 @@ public class SigningSessionsService {
     }
 
     public Result<Void, TextError> deleteSession(SigningSession session) {
-            logger.trace("Deleting signing session '{}'.", session);
-            if (session.status() == CredentialSessionStatus.ACTIVE) {
-                logger.warn("An active signing session '{}' is being deleted.", session);
-            }
+        logger.trace("Deleting signing session '{}'.", session);
+        if (session.status() == CredentialSessionStatus.ACTIVE) {
+            logger.warn("An active signing session '{}' is being deleted.", session);
+        }
 
-            try {
-                signingSessionsRepository.deleteById(session.id());
-                logger.debug("Deleted signing session '{}'.", session);
-                return Result.emptySuccess();
-            } catch (Exception e) {
-                logger.error("An error occurred while deleting the signing session '{}'.", session, e);
-                return Result.error(
-                        TextError.of(
-                                "An error occurred while deleting the signing session '%s'.",
-                                session.id()
-                        ));
-            }
+        try {
+            signingSessionsRepository.deleteById(session.id());
+            logger.debug("Deleted signing session '{}'.", session);
+            return Result.emptySuccess();
+        } catch (Exception e) {
+            logger.error("An error occurred while deleting the signing session '{}'.", session, e);
+            return Result.error(
+                    TextError.of(
+                            "An error occurred while deleting the signing session '%s'.",
+                            session.id()
+                    ));
+        }
     }
 
     public Result<List<SigningSession>, TextError> getExpiredSessions(Duration expiredSessionsKeepDuration) {

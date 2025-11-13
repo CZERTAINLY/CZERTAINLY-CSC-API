@@ -17,7 +17,9 @@ public class PatternSanProvider implements SubjectAlternativeNameProvider {
         this.isEmpty = pattern == null || pattern.isBlank() || pattern.equalsIgnoreCase(
                 "None") || pattern.equalsIgnoreCase("null");
         if (!isEmpty) {
-            this.patternReplacer = new OptionalPatternReplacer(pattern, requiredComponents, "Subject Alternative Name Provider");
+            this.patternReplacer = new OptionalPatternReplacer(pattern, requiredComponents,
+                                                               "Subject Alternative Name Provider"
+            );
         } else {
             this.patternReplacer = null;
         }

@@ -6,18 +6,18 @@ import java.util.List;
 
 public record SignatureAlgorithmsDto(
 
-    @Schema(description = """
+        @Schema(description = """
                 The list of signature algorithms supported by the remote service.
                 """,
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    List<String> algos,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        List<String> algos,
 
-    @Schema(description = """
+        @Schema(description = """
                 The list of eventual signature parameters.
                 """,
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    List<String> algoParams
-    ){
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        List<String> algoParams
+) {
 }

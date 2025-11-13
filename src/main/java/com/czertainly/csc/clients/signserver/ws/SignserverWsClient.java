@@ -69,7 +69,7 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
     }
 
     public Result<TokenSearchResults, TextError> queryTokenEntries(int workerId, boolean includeData, int startIndex,
-                                                int numOfItems, String keyAliasFilterPattern
+                                                                   int numOfItems, String keyAliasFilterPattern
     ) {
         var request = new QueryTokenEntries();
         request.setWorkerId(workerId);
@@ -121,7 +121,10 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
             logger.error("Failed to import certificate chain to key '{}' stored in crypto token with ID '{}'", keyAlias,
                          workerId, e
             );
-            return Result.error(TextError.of("Failed to import certificate chain to key '%s' stored in crypto token with ID '%s'", keyAlias, workerId));
+            return Result.error(
+                    TextError.of("Failed to import certificate chain to key '%s' stored in crypto token with ID '%s'",
+                                 keyAlias, workerId
+                    ));
         }
     }
 
@@ -171,7 +174,9 @@ public class SignserverWsClient extends WebServiceGatewaySupport {
                     TextErrorWithRetryIndication.doRetry("Failed to remove key"));
         } catch (Exception e) {
             if (notExistsOk && e.getMessage().contains("No such alias in token")) {
-                logger.info("Key '{}' was not found on crypto token '{}'. Key is considered removed.", keyAlias, workerId);
+                logger.info("Key '{}' was not found on crypto token '{}'. Key is considered removed.", keyAlias,
+                            workerId
+                );
                 return Result.emptySuccess();
             }
             logger.error("Failed to remove key '{}' from crypto token '{}'", keyAlias, workerId, e);

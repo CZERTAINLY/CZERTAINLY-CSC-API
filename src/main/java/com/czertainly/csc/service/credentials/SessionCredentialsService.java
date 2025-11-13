@@ -47,7 +47,8 @@ public class SessionCredentialsService {
         } catch (Exception e) {
             logger.error("Failed to get Credential '{}' belonging to session '{}'.", session.credentialId(),
                          session.id(), e
-            ); return Result.error(new TextError("Failed to get session credential."));
+            );
+            return Result.error(new TextError("Failed to get session credential."));
         }
     }
 
@@ -80,7 +81,8 @@ public class SessionCredentialsService {
     public Result<Void, TextError> deleteCredential(UUID credentialId) {
         try {
             sessionCredentialsRepository.deleteById(credentialId);
-            logger.debug("Deleted session credential '{}'.", credentialId); return Result.emptySuccess();
+            logger.debug("Deleted session credential '{}'.", credentialId);
+            return Result.emptySuccess();
         } catch (Exception e) {
             logger.error("Failed to delete session credential '{}'.", credentialId, e);
             return Result.error(new TextError("Failed to delete session credential."));

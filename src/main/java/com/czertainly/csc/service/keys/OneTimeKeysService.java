@@ -1,8 +1,8 @@
 package com.czertainly.csc.service.keys;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
-import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.Error;
+import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
@@ -33,13 +33,18 @@ public class OneTimeKeysService extends AbstractSigningKeysService<OneTimeKeyEnt
 
     public Result<List<OneTimeKey>, TextError> getKeysAcquiredBefore(ZonedDateTime before) {
         try {
-            List<OneTimeKeyEntity> keyEntities = keysRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, before);
+            List<OneTimeKeyEntity> keyEntities = keysRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true,
+                                                                                                                   before
+            );
 
             List<OneTimeKey> keys = new ArrayList<>();
             for (OneTimeKeyEntity keyEntity : keyEntities) {
                 var getCryptoTokenResult = workerRepository.getCryptoToken(keyEntity.getCryptoTokenId());
                 if (getCryptoTokenResult instanceof Error(var err)) {
-                    logger.error("Failed to get CryptoToken '{}'. Key '{}' can't be added to a list of keys for deletion. '{}'", keyEntity.getCryptoTokenId(), keyEntity.getKeyAlias(), err);
+                    logger.error(
+                            "Failed to get CryptoToken '{}'. Key '{}' can't be added to a list of keys for deletion. '{}'",
+                            keyEntity.getCryptoTokenId(), keyEntity.getKeyAlias(), err
+                    );
                     continue;
                 }
                 CryptoToken cryptoToken = getCryptoTokenResult.unwrap();

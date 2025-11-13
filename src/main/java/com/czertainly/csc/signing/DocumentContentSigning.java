@@ -6,7 +6,10 @@ import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.AlgorithmHelper;
-import com.czertainly.csc.model.*;
+import com.czertainly.csc.model.DocumentContentToSign;
+import com.czertainly.csc.model.DocumentSignature;
+import com.czertainly.csc.model.SignDocParameters;
+import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.service.credentials.SessionCredentialsService;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
@@ -16,7 +19,10 @@ import com.czertainly.csc.service.keys.OneTimeKeysService;
 import com.czertainly.csc.service.keys.SessionKeysService;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.process.SignatureProcessTemplate;
-import com.czertainly.csc.signing.configuration.process.configuration.*;
+import com.czertainly.csc.signing.configuration.process.configuration.DocumentContentSignatureProcessConfiguration;
+import com.czertainly.csc.signing.configuration.process.configuration.LongTermTokenConfiguration;
+import com.czertainly.csc.signing.configuration.process.configuration.OneTimeTokenConfiguration;
+import com.czertainly.csc.signing.configuration.process.configuration.SessionTokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.signers.DocumentContentSigner;
 import com.czertainly.csc.signing.configuration.process.token.*;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
@@ -97,7 +103,9 @@ public class DocumentContentSigning {
         );
     }
 
-    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken) {
+    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(SignDocParameters parameters,
+                                                                          CscAuthenticationToken cscAuthenticationToken
+    ) {
         if (parameters.documentsToSign().isEmpty()) {
             return Result.error(TextError.of("No documents to sign."));
         }
@@ -128,7 +136,7 @@ public class DocumentContentSigning {
                             parameters.credentialID()
                     );
                     signatureResult = longTermContentSignature.sign(configuration, tokenConfiguration,
-                            List.of(documentToSign.content())
+                                                                    List.of(documentToSign.content())
                     );
                 }
                 case ONE_TIME -> {
@@ -137,7 +145,7 @@ public class DocumentContentSigning {
                             cscAuthenticationToken
                     );
                     signatureResult = oneTimeContentSignature.sign(configuration, tokenConfiguration,
-                            List.of(documentToSign.content())
+                                                                   List.of(documentToSign.content())
                     );
                 }
                 case SESSION -> {
@@ -146,7 +154,8 @@ public class DocumentContentSigning {
                             parameters.sessionId().orElseThrow(), cscAuthenticationToken
                     );
                     signatureResult = sessionContentSignature.sign(configuration, tokenConfiguration,
-                            List.of(documentToSign.content()));
+                                                                   List.of(documentToSign.content())
+                    );
                 }
             }
 

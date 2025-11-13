@@ -2,7 +2,7 @@ package com.czertainly.csc.model;
 
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 
-public record DocumentSignature (
+public record DocumentSignature(
         byte[] value,
         SignaturePackaging packaging
 ) implements Signature {

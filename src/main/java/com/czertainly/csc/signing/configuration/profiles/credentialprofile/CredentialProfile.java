@@ -9,6 +9,7 @@ public class CredentialProfile extends Profile {
 
     private final String keyAlgorithm;
     private final String keySpecification;
+
     public CredentialProfile(String name, String certificateAuthority, String certificateProfileName,
                              String endEntityProfileName, Duration certificateValidity,
                              Duration certificateValidityOffset,

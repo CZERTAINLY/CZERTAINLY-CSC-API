@@ -8,13 +8,13 @@ public record CredentialIdDto(
 
         @Schema(
                 description = """
-                    Unique identifier of the credential.
-                    """,
+                        Unique identifier of the credential.
+                        """,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String credentialID
 ) {
-        public static CredentialIdDto from(UUID credentialID) {
-                return new CredentialIdDto(credentialID.toString());
-        }
+    public static CredentialIdDto from(UUID credentialID) {
+        return new CredentialIdDto(credentialID.toString());
+    }
 }

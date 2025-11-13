@@ -18,15 +18,16 @@ public class SignHashResponseMapper {
     public Result<SignHashResponseDto, TextError> map(SignaturesContainer<PlainSignature> model) {
         try {
             List<String> encodedSignatures = model.signatures().stream()
-                                                      .map(signature -> encoder.encodeToString(signature.value()))
-                                                      .toList();
+                                                  .map(signature -> encoder.encodeToString(signature.value()))
+                                                  .toList();
 
 
             return Result.success(
                     new SignHashResponseDto(encodedSignatures, null)
             );
         } catch (Exception e) {
-            return Result.error(TextError.of("Error while mapping signatures to the response body. %s", e.getMessage()));
+            return Result.error(
+                    TextError.of("Error while mapping signatures to the response body. %s", e.getMessage()));
         }
     }
 }

@@ -37,7 +37,8 @@ public class EjbcaClient {
         logger.trace(endEntity.toString());
         return ejbcaWsClient.editUser(endEntity.username(), endEntity.password(), endEntity.subjectDN(),
                                       endEntity.san(), profile.getCertificateAuthority(),
-                                      profile.getCertificateProfileName(), profile.getEndEntityProfileName())
+                                      profile.getCertificateProfileName(), profile.getEndEntityProfileName()
+                            )
                             .map((v) -> endEntity)
                             .mapError(e -> e.extend("Failed to create end entity %s.", endEntity.username()))
                             .ifSuccess(() -> logger.info("New End Entity {} was created.", endEntity.username()))
@@ -55,7 +56,9 @@ public class EjbcaClient {
         Duration certificateValidity = profile.getCertificateValidity();
 
         ZonedDateTime validityStart = certificateValidityCalculator.calculateValidityStart(now, offset);
-        ZonedDateTime validityEnd = certificateValidityCalculator.calculateValidityEnd(validityStart, certificateValidity);
+        ZonedDateTime validityEnd = certificateValidityCalculator.calculateValidityEnd(validityStart,
+                                                                                       certificateValidity
+        );
 
         return ejbcaWsClient.requestCertificate(endEntity.username(), endEntity.password(), endEntity.subjectDN(), csr,
                                                 validityStart, validityEnd, profile.getCertificateAuthority(),
@@ -117,10 +120,11 @@ public class EjbcaClient {
     }
 
     public Result<?, TextError> revokeCertificate(String certificateSerialNumberHex, String issuerDN,
-                                                  CertificateRevocationReason revocationReason) {
+                                                  CertificateRevocationReason revocationReason
+    ) {
         return ejbcaWsClient.revokeCertificate(certificateSerialNumberHex, issuerDN, revocationReason)
                             .mapError(e -> e.extend("Failed to revoke certificate '%s' issued by '%s'",
-                                                   certificateSerialNumberHex, issuerDN
+                                                    certificateSerialNumberHex, issuerDN
                             ));
     }
 

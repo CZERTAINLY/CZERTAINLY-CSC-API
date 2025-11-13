@@ -22,7 +22,8 @@ import java.util.List;
 
 import static com.czertainly.csc.utils.assertions.ExceptionAssertions.assertThrowsAndMessageContains;
 import static org.instancio.Select.field;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CredentialProfileLoaderTest {
 

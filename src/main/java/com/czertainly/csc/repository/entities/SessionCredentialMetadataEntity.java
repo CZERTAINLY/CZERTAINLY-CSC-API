@@ -25,7 +25,8 @@ public class SessionCredentialMetadataEntity {
     }
 
     public SessionCredentialMetadataEntity(
-            UUID id, String userId, String keyAlias, UUID keyId, String endEntityName, String signatureQualifier, int multisign,
+            UUID id, String userId, String keyAlias, UUID keyId, String endEntityName, String signatureQualifier,
+            int multisign,
             String cryptoTokenName
     ) {
         this.id = id;

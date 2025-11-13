@@ -5,8 +5,6 @@ import com.czertainly.csc.common.result.TextError;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;

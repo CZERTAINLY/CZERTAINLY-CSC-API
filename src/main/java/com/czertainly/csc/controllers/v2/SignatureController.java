@@ -34,8 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("csc/v2/signatures")
 @PreAuthorize("hasAuthority('SCOPE_credential') || hasAuthority('SCOPE_service')")
@@ -119,7 +117,7 @@ public class SignatureController {
     ) {
         logger.trace("Serving signHash request.");
         SignHashParameters parameters = signHashValidationRequestMapper
-                    .map(signHashRequest, getSadIfAvailable(authentication));
+                .map(signHashRequest, getSadIfAvailable(authentication));
 
         return signatureFacade.signHashes(parameters)
                               .flatMap(signHashResponseMapper::map)

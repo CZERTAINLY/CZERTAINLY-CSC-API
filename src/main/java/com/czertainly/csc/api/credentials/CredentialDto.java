@@ -68,8 +68,8 @@ public record CredentialDto(
 
         @Schema(
                 description = """
-                       Authorization details.
-                       """,
+                        Authorization details.
+                        """,
                 implementation = KeyDto.class,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )

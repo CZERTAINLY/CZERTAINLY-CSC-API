@@ -4,9 +4,9 @@ import com.czertainly.csc.api.signdoc.SignDocResponseDto;
 import com.czertainly.csc.api.signdoc.ValidationInfo;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.Signatures;
 import com.czertainly.csc.model.SignaturesWithValidationInfo;
-import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import org.junit.jupiter.api.Test;
 
@@ -158,12 +158,12 @@ class SignDocResponseMapperTest {
     void canMapRequestWithEmptyCertsCrlsOcsps() {
         // given
         Signatures<DocumentSignature> model = new Signatures<>( // Signatures container does not have validation info
-                List.of(
-                        new DocumentSignature(
-                                new byte[]{1, 2, 3},
-                                SignaturePackaging.ENVELOPED
-                        )
-                )
+                                                                List.of(
+                                                                        new DocumentSignature(
+                                                                                new byte[]{1, 2, 3},
+                                                                                SignaturePackaging.ENVELOPED
+                                                                        )
+                                                                )
         );
 
         // when
@@ -188,10 +188,12 @@ class SignDocResponseMapperTest {
                 Set.of("crl1", "crl2"),
                 Set.of("ocsp1", "ocsp2"),
                 Set.of("cert1", "cert2")
-            );
+        );
     }
 
-    SignaturesWithValidationInfo<DocumentSignature> aSignedDocuments(Set<String> crls, Set<String> ocsps, Set<String> certs) {
+    SignaturesWithValidationInfo<DocumentSignature> aSignedDocuments(Set<String> crls, Set<String> ocsps,
+                                                                     Set<String> certs
+    ) {
         return new SignaturesWithValidationInfo<>(
                 List.of(
                         new DocumentSignature(

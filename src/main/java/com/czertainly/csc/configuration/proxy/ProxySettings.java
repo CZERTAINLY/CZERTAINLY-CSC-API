@@ -22,7 +22,9 @@ public class ProxySettings {
     private final String username;
     private final String password;
 
-    public ProxySettings(String forProtocol, String protocol, String host, int port, String[] noProxyHosts, String username, String password) {
+    public ProxySettings(String forProtocol, String protocol, String host, int port, String[] noProxyHosts,
+                         String username, String password
+    ) {
         this.forProtocol = forProtocol;
         this.protocol = protocol;
         this.username = username;

@@ -28,12 +28,14 @@ public class WorkerConfigurationLoader {
     private final WorkerConfigurationFile configuration;
     private final Map<String, KeyPoolProfile> keyPoolMap;
 
-    public WorkerConfigurationLoader(CscConfiguration cscConfiguration, KeyPoolProfilesConfiguration keyPoolProfilesConfiguration) {
+    public WorkerConfigurationLoader(CscConfiguration cscConfiguration,
+                                     KeyPoolProfilesConfiguration keyPoolProfilesConfiguration
+    ) {
         this.keyPoolMap = keyPoolProfilesConfiguration.keyPoolProfiles()
-                                          .stream()
-                                          .collect(Collectors.toMap(KeyPoolProfile::name,
-                                                                    Function.identity()
-                                          ));
+                                                      .stream()
+                                                      .collect(Collectors.toMap(KeyPoolProfile::name,
+                                                                                Function.identity()
+                                                      ));
         Yaml yaml = new Yaml(new Constructor(WorkerConfigurationFile.class, new LoaderOptions()));
         try {
             configuration = yaml.load(new BufferedReader(new FileReader(cscConfiguration.workerConfigurationFile())));
@@ -47,7 +49,7 @@ public class WorkerConfigurationLoader {
         List<WorkerWithCapabilities> workersWithCapabilities = new ArrayList<>();
 
         Map<String, CryptoToken> cryptoTokenMap = getCryptoTokenMap(configuration.getCryptoTokens());
-        List<WorkerConfiguration> workerConfigurations = configuration.getSigners()  != null? configuration.getSigners() : List.of();
+        List<WorkerConfiguration> workerConfigurations = configuration.getSigners() != null ? configuration.getSigners() : List.of();
         for (WorkerConfiguration workerConfiguration : workerConfigurations) {
             String workerName = workerConfiguration.getName();
             if (workerName == null) {
@@ -71,7 +73,10 @@ public class WorkerConfigurationLoader {
             }
 
             WorkerCapabilities capabilities;
-            if (workerConfiguration.getCapabilities().getDocumentTypes() != null && workerConfiguration.getCapabilities().getDocumentTypes().contains(DocumentType.RAW)) {
+            if (workerConfiguration.getCapabilities()
+                                   .getDocumentTypes() != null && workerConfiguration.getCapabilities()
+                                                                                     .getDocumentTypes()
+                                                                                     .contains(DocumentType.RAW)) {
                 capabilities = getRawSignerCapabilities(workerConfiguration.getCapabilities(), workerName);
             } else {
                 capabilities = getDocumentSignerCapabilities(workerConfiguration.getCapabilities(), workerName);
@@ -120,7 +125,8 @@ public class WorkerConfigurationLoader {
 
         boolean returnsValidationInfo = capabilitiesConfiguration.isReturnsValidationInfo();
 
-        if (capabilitiesConfiguration.getDocumentTypes() == null || capabilitiesConfiguration.getDocumentTypes().isEmpty()) {
+        if (capabilitiesConfiguration.getDocumentTypes() == null || capabilitiesConfiguration.getDocumentTypes()
+                                                                                             .isEmpty()) {
             capabilitiesConfiguration.setDocumentTypes(List.of(DocumentType.HASH));
         }
 
@@ -138,7 +144,7 @@ public class WorkerConfigurationLoader {
     }
 
     private WorkerCapabilities getRawSignerCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
-                                               String workerName
+                                                        String workerName
     ) {
         List<String> supportedSignatureAlgorithms = capabilitiesConfiguration.getSignatureAlgorithms();
         if (supportedSignatureAlgorithms == null) {

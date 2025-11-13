@@ -1,13 +1,11 @@
 package com.czertainly.csc.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public record Signatures<S extends Signature>(
-    List<S> signatures
-) implements SignaturesContainer<S>{
+        List<S> signatures
+) implements SignaturesContainer<S> {
 
     public static <T extends Signature> Signatures<T> empty() {
         return new Signatures<>(new ArrayList<>());

@@ -26,7 +26,8 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
     }
 
     @Override
-    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(List<String> data, C configuration, SigningToken signingToken,
+    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(List<String> data, C configuration,
+                                                                          SigningToken signingToken,
                                                                           WorkerWithCapabilities worker
     ) {
         Result<SignaturesContainer<DocumentSignature>, TextError> result;
@@ -47,7 +48,9 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
         return result.flatMap(signed -> verifyNumberOfSignatures(data, signed));
     }
 
-    private Result<SignaturesContainer<DocumentSignature>, TextError> verifyNumberOfSignatures(List<String> data, SignaturesContainer<DocumentSignature> signed) {
+    private Result<SignaturesContainer<DocumentSignature>, TextError> verifyNumberOfSignatures(List<String> data,
+                                                                                               SignaturesContainer<DocumentSignature> signed
+    ) {
         if (signed.signatures().size() != data.size()) {
             logger.error("The number of signatures does not match the number of documents.");
             return Result.error(TextError.of("The number of signatures does not match the number of documents."));
@@ -59,10 +62,10 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         return signserverClient.signSingleDocumentHash(
-                    worker.worker().workerName(),
-                    data.getFirst().getBytes(),
-                    signingToken.getKeyAlias(),
-                    configuration.digestAlgorithm()
+                worker.worker().workerName(),
+                data.getFirst().getBytes(),
+                signingToken.getKeyAlias(),
+                configuration.digestAlgorithm()
         );
     }
 
@@ -70,22 +73,22 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         return signserverClient.signSingleDocumentHashWithValidationData(
-                    worker.worker().workerName(),
-                    data.getFirst().getBytes(),
-                    signingToken.getKeyAlias(),
-                    configuration.digestAlgorithm()
-            );
+                worker.worker().workerName(),
+                data.getFirst().getBytes(),
+                signingToken.getKeyAlias(),
+                configuration.digestAlgorithm()
+        );
     }
 
     private Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleHashesWithValidationInfo(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
         return signserverClient.signMultipleDocumentHashesWithValidationData(
-                    worker.worker().workerName(),
-                    data,
-                    signingToken.getKeyAlias(),
-                    configuration.digestAlgorithm()
-            );
+                worker.worker().workerName(),
+                data,
+                signingToken.getKeyAlias(),
+                configuration.digestAlgorithm()
+        );
     }
 
     private Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleHashes(

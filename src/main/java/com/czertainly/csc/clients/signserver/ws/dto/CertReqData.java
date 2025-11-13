@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -8,9 +7,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for certReqData complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="certReqData"&gt;
  *   &lt;complexContent&gt;
@@ -25,15 +24,15 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "certReqData", propOrder = {
-    "armored",
-    "binary",
-    "contentType",
-    "fileSuffix"
+        "armored",
+        "binary",
+        "contentType",
+        "fileSuffix"
 })
 public class CertReqData {
 
@@ -44,11 +43,10 @@ public class CertReqData {
 
     /**
      * Gets the value of the armored property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getArmored() {
         return armored;
@@ -56,11 +54,10 @@ public class CertReqData {
 
     /**
      * Sets the value of the armored property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setArmored(String value) {
         this.armored = value;
@@ -68,10 +65,9 @@ public class CertReqData {
 
     /**
      * Gets the value of the binary property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
+     *
+     * @return possible object is
+     * byte[]
      */
     public byte[] getBinary() {
         return binary;
@@ -79,10 +75,9 @@ public class CertReqData {
 
     /**
      * Sets the value of the binary property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
+     *
+     * @param value allowed object is
+     *              byte[]
      */
     public void setBinary(byte[] value) {
         this.binary = value;
@@ -90,11 +85,10 @@ public class CertReqData {
 
     /**
      * Gets the value of the contentType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getContentType() {
         return contentType;
@@ -102,11 +96,10 @@ public class CertReqData {
 
     /**
      * Sets the value of the contentType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setContentType(String value) {
         this.contentType = value;
@@ -114,11 +107,10 @@ public class CertReqData {
 
     /**
      * Gets the value of the fileSuffix property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getFileSuffix() {
         return fileSuffix;
@@ -126,11 +118,10 @@ public class CertReqData {
 
     /**
      * Sets the value of the fileSuffix property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setFileSuffix(String value) {
         this.fileSuffix = value;

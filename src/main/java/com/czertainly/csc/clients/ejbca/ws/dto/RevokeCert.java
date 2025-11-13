@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.ejbca.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -9,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for revokeCert complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="revokeCert"&gt;
  *   &lt;complexContent&gt;
@@ -25,15 +24,15 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlRootElement(namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "revokeCert", propOrder = {
-    "arg0",
-    "arg1",
-    "arg2"
+        "arg0",
+        "arg1",
+        "arg2"
 })
 public class RevokeCert {
 
@@ -43,11 +42,10 @@ public class RevokeCert {
 
     /**
      * Gets the value of the arg0 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getArg0() {
         return arg0;
@@ -55,11 +53,10 @@ public class RevokeCert {
 
     /**
      * Sets the value of the arg0 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setArg0(String value) {
         this.arg0 = value;
@@ -67,11 +64,10 @@ public class RevokeCert {
 
     /**
      * Gets the value of the arg1 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getArg1() {
         return arg1;
@@ -79,11 +75,10 @@ public class RevokeCert {
 
     /**
      * Sets the value of the arg1 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setArg1(String value) {
         this.arg1 = value;
@@ -91,7 +86,7 @@ public class RevokeCert {
 
     /**
      * Gets the value of the arg2 property.
-     * 
+     *
      */
     public int getArg2() {
         return arg2;
@@ -99,7 +94,7 @@ public class RevokeCert {
 
     /**
      * Sets the value of the arg2 property.
-     * 
+     *
      */
     public void setArg2(int value) {
         this.arg2 = value;

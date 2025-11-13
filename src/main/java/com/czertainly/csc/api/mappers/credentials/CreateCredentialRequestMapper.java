@@ -48,15 +48,15 @@ public class CreateCredentialRequestMapper {
         }
 
         return new CreateCredentialRequest(
-                        dto.cryptoTokenName(),
-                        dto.credentialProfileName(),
-                        dto.userId(),
-                        dto.signatureQualifier(),
-                        numberOfSignaturesPerAuthorization,
-                        dto.scal(),
-                        dto.dn(),
-                        dto.san(),
-                        dto.description()
+                dto.cryptoTokenName(),
+                dto.credentialProfileName(),
+                dto.userId(),
+                dto.signatureQualifier(),
+                numberOfSignaturesPerAuthorization,
+                dto.scal(),
+                dto.dn(),
+                dto.san(),
+                dto.description()
         );
     }
 }

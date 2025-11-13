@@ -8,7 +8,7 @@ public final class ThrowableUtil {
 
     public static String chainedString(@NonNull Throwable throwable) {
         StringBuilder SB = new StringBuilder(throwable.toString());
-        while((throwable = throwable.getCause()) != null)
+        while ((throwable = throwable.getCause()) != null)
             SB.append(": ").append(throwable);
         return SB.toString();
     }
@@ -17,7 +17,7 @@ public final class ThrowableUtil {
         StringBuilder SB = new StringBuilder(msg);
         do {
             SB.append(": ").append(throwable);
-        } while((throwable = throwable.getCause()) != null);
+        } while ((throwable = throwable.getCause()) != null);
         return SB.toString();
     }
 }

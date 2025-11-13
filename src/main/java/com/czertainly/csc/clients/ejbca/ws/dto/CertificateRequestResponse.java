@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.ejbca.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -9,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for certificateRequestResponse complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="certificateRequestResponse"&gt;
  *   &lt;complexContent&gt;
@@ -23,12 +22,12 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "certificateRequestResponse", propOrder = {
-    "_return"
+        "_return"
 })
 public class CertificateRequestResponse {
 
@@ -37,11 +36,10 @@ public class CertificateRequestResponse {
 
     /**
      * Gets the value of the return property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CertificateResponse }
-     *     
+     *
+     * @return possible object is
+     * {@link CertificateResponse }
+     *
      */
     public CertificateResponse getReturn() {
         return _return;
@@ -49,11 +47,10 @@ public class CertificateRequestResponse {
 
     /**
      * Sets the value of the return property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CertificateResponse }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link CertificateResponse }
+     *
      */
     public void setReturn(CertificateResponse value) {
         this._return = value;

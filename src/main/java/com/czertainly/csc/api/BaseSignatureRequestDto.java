@@ -79,7 +79,8 @@ public class BaseSignatureRequestDto {
     private final String clientData;
 
     public BaseSignatureRequestDto(String credentialID, String SAD, String operationMode, Integer validityPeriod,
-                                   String responseUri, String clientData) {
+                                   String responseUri, String clientData
+    ) {
         this.credentialID = credentialID;
         this.SAD = SAD;
         this.operationMode = operationMode;

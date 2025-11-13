@@ -25,8 +25,11 @@ public class DocumentHashAuthorizer implements SignatureAuthorizer {
         }
 
         if (sad.getNumSignatures() < documentHashes.size()) {
-            logger.info("Number of document hashes to sign is greater than the number of signatures allowed by the SAD.");
-            logger.debug("Number of document hashes to sign: {}, Allowed number of signatures by SAD {}", documentHashes.size(), sad.getNumSignatures());
+            logger.info(
+                    "Number of document hashes to sign is greater than the number of signatures allowed by the SAD.");
+            logger.debug("Number of document hashes to sign: {}, Allowed number of signatures by SAD {}",
+                         documentHashes.size(), sad.getNumSignatures()
+            );
             return Result.success(false);
         }
 

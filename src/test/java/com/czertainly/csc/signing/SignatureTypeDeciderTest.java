@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static com.czertainly.csc.utils.assertions.ResultAssertions.*;
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertErrorContains;
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SignatureTypeDeciderTest {
@@ -126,7 +127,9 @@ class SignatureTypeDeciderTest {
         var result = signatureTypeDecider.decideType(parameters);
 
         // then
-        assertErrorContains(result, "Session ID, signature qualifier and credential ID must not be present at the same time.");
+        assertErrorContains(result,
+                            "Session ID, signature qualifier and credential ID must not be present at the same time."
+        );
     }
 
     @Test

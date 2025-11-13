@@ -17,7 +17,7 @@ class CreateCredentialRequestMapperTest {
     @Test
     void canMapRequest() {
         // given
-        CreateCredentialDto dto  = Instancio.create(CreateCredentialDto.class);
+        CreateCredentialDto dto = Instancio.create(CreateCredentialDto.class);
 
         // when
         CreateCredentialRequest request = mapper.map(dto);
@@ -39,7 +39,7 @@ class CreateCredentialRequestMapperTest {
     @Test
     void throwsWhenDtoNotProvided() {
         // given
-        CreateCredentialDto dto  = null;
+        CreateCredentialDto dto = null;
 
         // when
         Executable ex = () -> mapper.map(dto);
@@ -51,9 +51,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void throwsOnMissingUserId() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .ignore(field(CreateCredentialDto::userId))
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .ignore(field(CreateCredentialDto::userId))
+                                           .create();
 
         // when
         Executable ex = () -> mapper.map(dto);
@@ -65,9 +65,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void throwsOnMissingCryptoTokenName() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .ignore(field(CreateCredentialDto::cryptoTokenName))
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .ignore(field(CreateCredentialDto::cryptoTokenName))
+                                           .create();
 
         // when
         Executable ex = () -> mapper.map(dto);
@@ -79,9 +79,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void throwsOnMissingDn() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .ignore(field(CreateCredentialDto::dn))
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .ignore(field(CreateCredentialDto::dn))
+                                           .create();
 
         // when
         Executable ex = () -> mapper.map(dto);
@@ -93,9 +93,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void throwsOnMissingSan() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .ignore(field(CreateCredentialDto::san))
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .ignore(field(CreateCredentialDto::san))
+                                           .create();
 
         // when
         Executable ex = () -> mapper.map(dto);
@@ -107,9 +107,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void throwsOnDescriptionTooLong() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .set(field(CreateCredentialDto::description), "a".repeat(256))
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .set(field(CreateCredentialDto::description), "a".repeat(256))
+                                           .create();
 
         // when
         Executable ex = () -> mapper.map(dto);
@@ -121,9 +121,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void numberOfSignaturesPerAuthorizationIsSetTo1WhenNull() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .ignore(field(CreateCredentialDto::numberOfSignaturesPerAuthorization))
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .ignore(field(CreateCredentialDto::numberOfSignaturesPerAuthorization))
+                                           .create();
 
         // when
         CreateCredentialRequest request = mapper.map(dto);
@@ -135,9 +135,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void numberOfSignaturesPerAuthorizationIsSetTo1WhenLowerThan1() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .set(field(CreateCredentialDto::numberOfSignaturesPerAuthorization), 0)
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .set(field(CreateCredentialDto::numberOfSignaturesPerAuthorization), 0)
+                                           .create();
 
         // when
         CreateCredentialRequest request = mapper.map(dto);
@@ -149,9 +149,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void numberOfSignaturesPerAuthorizationIsSetToItsValueWhenHigherThan1() {
         // given
-        CreateCredentialDto dto  = Instancio.of(CreateCredentialDto.class)
-                                            .set(field(CreateCredentialDto::numberOfSignaturesPerAuthorization), 2)
-                                            .create();
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .set(field(CreateCredentialDto::numberOfSignaturesPerAuthorization), 2)
+                                           .create();
 
         // when
         CreateCredentialRequest request = mapper.map(dto);

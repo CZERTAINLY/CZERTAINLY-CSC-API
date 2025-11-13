@@ -14,7 +14,7 @@ import java.util.Base64;
 import java.util.List;
 
 @Component
-public class SignDocResponseMapper{
+public class SignDocResponseMapper {
 
     Base64.Encoder encoder = Base64.getEncoder();
 
@@ -40,7 +40,7 @@ public class SignDocResponseMapper{
                     signatureObject,
                     null,
                     validationInfo
-            )) ;
+            ));
         } catch (Exception e) {
             return Result.error(TextError.of("Error while mapping signature to the response body. %s", e.getMessage()));
         }

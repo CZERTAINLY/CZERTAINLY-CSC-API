@@ -2,10 +2,10 @@ package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.Signatures;
 import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.model.SignaturesWithValidationInfo;
-import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentHashSignatureProcessConfiguration;
@@ -43,7 +43,7 @@ class DocumentHashSignerTest {
                 .thenReturn(
                         Result.success(
                                 Signatures.of(
-                                    DocumentSignature.of("signature".getBytes(), SignaturePackaging.DETACHED)
+                                        DocumentSignature.of("signature".getBytes(), SignaturePackaging.DETACHED)
                                 )
                         )
                 );
@@ -74,7 +74,8 @@ class DocumentHashSignerTest {
     void signCanSignSingleHashWithValidationInfo() {
         when(signserverClient.signSingleDocumentHashWithValidationData(any(), any(), any(), any()))
                 .thenReturn(Result.success(
-                        SignaturesWithValidationInfo.of(DocumentSignature.of("signature".getBytes(), SignaturePackaging.DETACHED))));
+                        SignaturesWithValidationInfo.of(
+                                DocumentSignature.of("signature".getBytes(), SignaturePackaging.DETACHED))));
 
         // given
         List<String> data = List.of("data");
@@ -102,8 +103,8 @@ class DocumentHashSignerTest {
     void signCanSignMultipleHashes() {
         SignaturesContainer<DocumentSignature> signatures = Signatures.of(
                 List.of(
-                    DocumentSignature.of("signature1".getBytes(), SignaturePackaging.DETACHED),
-                    DocumentSignature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
+                        DocumentSignature.of("signature1".getBytes(), SignaturePackaging.DETACHED),
+                        DocumentSignature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
                 )
         );
         when(signserverClient.signMultipleDocumentHashes(any(), any(), any(), any()))

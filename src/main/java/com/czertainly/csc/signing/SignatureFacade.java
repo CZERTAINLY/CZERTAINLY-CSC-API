@@ -13,7 +13,9 @@ public class SignatureFacade {
     private final DocumentHashSigning documentHashSigning;
     private final PlainHashSigning plainHashSigning;
 
-    public SignatureFacade(DocumentContentSigning documentSigning, DocumentHashSigning documentHashSigning, PlainHashSigning plainHashSigning) {
+    public SignatureFacade(DocumentContentSigning documentSigning, DocumentHashSigning documentHashSigning,
+                           PlainHashSigning plainHashSigning
+    ) {
         this.documentSigning = documentSigning;
         this.documentHashSigning = documentHashSigning;
         this.plainHashSigning = plainHashSigning;

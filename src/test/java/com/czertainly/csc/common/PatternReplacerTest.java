@@ -37,7 +37,10 @@ class PatternReplacerTest {
 
         // then
         var t = assertThrows(InvalidInputDataException.class, ex);
-        assertEquals("Not all variables could be replaced in the pattern provided to TestReplacer. Unknown variables: [UserInfo.id]", t.getMessage());
+        assertEquals(
+                "Not all variables could be replaced in the pattern provided to TestReplacer. Unknown variables: [UserInfo.id]",
+                t.getMessage()
+        );
     }
 
     @Test

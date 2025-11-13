@@ -2,11 +2,9 @@ package com.czertainly.csc.repository;
 
 import com.czertainly.csc.repository.entities.SessionKeyEntity;
 import com.czertainly.csc.utils.db.MysqlTest;
-import eu.rekawek.toxiproxy.model.ToxicDirection;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -95,7 +93,10 @@ class SessionKeyRepositoryMysqlTest extends MysqlTest {
         insertKeyEntity("Key5", 3, "ECDSA", true, ZonedDateTime.now().minusHours(3));
 
         // when
-        var keys = sessionKeyRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, ZonedDateTime.now().minusMinutes(90));
+        var keys = sessionKeyRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, ZonedDateTime.now()
+                                                                                                              .minusMinutes(
+                                                                                                                      90)
+        );
 
         // then
         assertEquals(2, keys.size());

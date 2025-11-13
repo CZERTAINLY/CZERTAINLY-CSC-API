@@ -20,7 +20,9 @@ public class PatternDnProvider implements DistinguishedNameProvider {
         if (requiredComponents == null || requiredComponents.isEmpty()) {
             throw new ApplicationConfigurationException("Distinguished Name required components are not set.");
         }
-        this.patternReplacer = new OptionalPatternReplacer(dnPattern, requiredComponents, "Distinguished Name Provider");
+        this.patternReplacer = new OptionalPatternReplacer(dnPattern, requiredComponents,
+                                                           "Distinguished Name Provider"
+        );
     }
 
     @Override
@@ -28,7 +30,8 @@ public class PatternDnProvider implements DistinguishedNameProvider {
         try {
             return Result.success(patternReplacer.replacePattern(keyValueSource));
         } catch (Exception e) {
-            return Result.error(TextError.of("Could not create Distinguished Name based on the provided pattern.", e.getMessage()));
+            return Result.error(
+                    TextError.of("Could not create Distinguished Name based on the provided pattern.", e.getMessage()));
         }
     }
 }

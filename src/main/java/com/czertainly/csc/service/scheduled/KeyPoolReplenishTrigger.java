@@ -22,17 +22,22 @@ public class KeyPoolReplenishTrigger {
 
     public KeyPoolReplenishTrigger(WorkerRepository repository, SessionKeysService sessionKeysService,
                                    OneTimeKeysService oneTimeKeysService,
-                                   @Qualifier("keyGenerationExecutor") ExecutorService keyGenerationExecutor) {
+                                   @Qualifier("keyGenerationExecutor") ExecutorService keyGenerationExecutor
+    ) {
 
         List<CryptoToken> cryptoTokensForSessionSignatures = getCryptoTokensWithDesignatedUsage(
                 repository, KeyUsageDesignation.SESSION_SIGNATURE
         );
-        sessionKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForSessionSignatures, sessionKeysService, keyGenerationExecutor);
+        sessionKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForSessionSignatures, sessionKeysService,
+                                                             keyGenerationExecutor
+        );
 
         List<CryptoToken> cryptoTokensForOneTimeSignatures = getCryptoTokensWithDesignatedUsage(
                 repository, KeyUsageDesignation.ONE_TIME_SIGNATURE
         );
-        oneTimeKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForOneTimeSignatures, oneTimeKeysService, keyGenerationExecutor);
+        oneTimeKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForOneTimeSignatures, oneTimeKeysService,
+                                                             keyGenerationExecutor
+        );
     }
 
     @Scheduled(cron = "${csc.signingSessions.generateCronExpression:30 */1 * * * *}")

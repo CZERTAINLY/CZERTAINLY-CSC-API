@@ -3,7 +3,8 @@ package com.czertainly.csc.crypto;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CustomAlgorithmNameFinderTest {
 

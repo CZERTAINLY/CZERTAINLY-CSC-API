@@ -466,7 +466,9 @@ class SignDocValidatingRequestMapperTest {
 
     @ParameterizedTest
     @MethodSource("getConformanceLevels")
-    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentsToSign(ConformanceLevel level, String levelStringValue) {
+    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentsToSign(ConformanceLevel level,
+                                                                            String levelStringValue
+    ) {
         // given
         var documents = List.of(
                 aDocumentToSign()
@@ -683,7 +685,9 @@ class SignDocValidatingRequestMapperTest {
 
     @ParameterizedTest
     @MethodSource("getConformanceLevels")
-    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentDigests(ConformanceLevel level, String levelStringValue) {
+    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentDigests(ConformanceLevel level,
+                                                                            String levelStringValue
+    ) {
         // given
         var documentDigests = List.of(
                 aDocumentDigestToSign()
@@ -729,7 +733,9 @@ class SignDocValidatingRequestMapperTest {
 
     @ParameterizedTest
     @MethodSource("getSignaturePackagings")
-    void canMapAllSignaturePackagingsForDocumentDigestsToSign(SignaturePackaging packaging, String packagingStringValue) {
+    void canMapAllSignaturePackagingsForDocumentDigestsToSign(SignaturePackaging packaging,
+                                                              String packagingStringValue
+    ) {
         // given
         var documentDigests = List.of(
                 aDocumentDigestToSign()

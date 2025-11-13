@@ -8,13 +8,13 @@ public record AuthDto(
 
         @Schema(
                 description = """
-                       Specifies one of the authorization modes.
-                       “explicit”: the authorization process is managed by the signature
-                       application, which collects authentication factors of various
-                       types.
-                       “oauth2code”: the authorization process is managed by the
-                       remote service using an OAuth 2.0 mechanism.
-                       """,
+                        Specifies one of the authorization modes.
+                        “explicit”: the authorization process is managed by the signature
+                        application, which collects authentication factors of various
+                        types.
+                        “oauth2code”: the authorization process is managed by the
+                        remote service using an OAuth 2.0 mechanism.
+                        """,
                 implementation = String.class,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )

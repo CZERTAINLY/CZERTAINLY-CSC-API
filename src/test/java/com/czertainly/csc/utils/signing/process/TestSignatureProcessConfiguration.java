@@ -26,7 +26,7 @@ public class TestSignatureProcessConfiguration extends SignatureProcessConfigura
                                              DocumentType documentType
     ) {
         super(userID, sad, signatureQualifier, signatureFormat, conformanceLevel, signaturePackaging,
-                signatureAlgorithm, returnValidationInfo, documentType
+              signatureAlgorithm, returnValidationInfo, documentType
         );
     }
 

@@ -16,7 +16,7 @@ public record Success<V, E extends ErrorValue>(V value) implements Result<V, E> 
     }
 
     @Override
-    public <U> Result<U,E > flatMap(Function<V, Result<U, E>> mapper) {
+    public <U> Result<U, E> flatMap(Function<V, Result<U, E>> mapper) {
         return mapper.apply(value);
     }
 

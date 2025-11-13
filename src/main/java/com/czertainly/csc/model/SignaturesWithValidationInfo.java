@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 public record SignaturesWithValidationInfo<S extends Signature>(
-    List<S> signatures,
-    Set<String> crls,
-    Set<String> ocsps,
-    Set<String> certs
-) implements SignaturesContainer<S>{
+        List<S> signatures,
+        Set<String> crls,
+        Set<String> ocsps,
+        Set<String> certs
+) implements SignaturesContainer<S> {
 
     public static <T extends Signature> SignaturesWithValidationInfo<T> empty() {
         return new SignaturesWithValidationInfo<>(new ArrayList<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());

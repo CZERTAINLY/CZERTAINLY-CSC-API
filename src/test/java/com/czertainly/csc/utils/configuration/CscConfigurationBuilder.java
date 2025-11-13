@@ -52,8 +52,9 @@ public class CscConfigurationBuilder {
         this.signingSessions = signingSessions;
         return this;
     }
-    
-    public CscConfigurationBuilder withOneTimeKeysCleanupSettings(OneTimeKeysCleanupSettings oneTimeKeysCleanupSettings) {
+
+    public CscConfigurationBuilder withOneTimeKeysCleanupSettings(OneTimeKeysCleanupSettings oneTimeKeysCleanupSettings
+    ) {
         this.oneTimeKeysCleanupSettings = oneTimeKeysCleanupSettings;
         return this;
     }

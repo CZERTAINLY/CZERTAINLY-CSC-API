@@ -2,9 +2,9 @@ package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.Signatures;
 import com.czertainly.csc.model.SignaturesWithValidationInfo;
-import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentContentSignatureProcessConfiguration;
@@ -46,7 +46,7 @@ class DocumentContentSignerTest {
                 .thenReturn(
                         Result.success(
                                 Signatures.of(
-                                    DocumentSignature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION)
+                                        DocumentSignature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION)
                                 )
                         )
                 );
@@ -78,7 +78,8 @@ class DocumentContentSignerTest {
     void signCanSignSingleContentWithValidationInfo() {
         when(signserverClient.signSingleDocumentWithValidationData(any(), any(), any(), any()))
                 .thenReturn(Result.success(
-                        SignaturesWithValidationInfo.of(DocumentSignature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION))));
+                        SignaturesWithValidationInfo.of(
+                                DocumentSignature.of("signature".getBytes(), SignaturePackaging.CERTIFICATION))));
 
         // given
         String dataB64 = BASE64_ENCODER.encodeToString("data".getBytes());

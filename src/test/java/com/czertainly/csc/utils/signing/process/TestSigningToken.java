@@ -18,7 +18,8 @@ public class TestSigningToken implements SigningToken {
     }
 
     public TestSigningToken(String keyAlias, Boolean canSignData) {
-        this.keyAlias = keyAlias; this.canSignData = canSignData;
+        this.keyAlias = keyAlias;
+        this.canSignData = canSignData;
     }
 
     public void setKeyAlias(String keyAlias) {

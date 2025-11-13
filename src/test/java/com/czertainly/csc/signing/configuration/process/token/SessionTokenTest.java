@@ -1,16 +1,13 @@
 package com.czertainly.csc.signing.configuration.process.token;
 
-import com.czertainly.csc.model.csc.CredentialMetadata;
 import com.czertainly.csc.model.csc.SessionCredentialMetadata;
 import com.czertainly.csc.service.credentials.CredentialSessionStatus;
 import com.czertainly.csc.service.credentials.SigningSession;
-import com.czertainly.csc.utils.signing.CredentialMetadataBuilder;
 import com.czertainly.csc.utils.signing.SessionCredentialMetadataBuilder;
 import com.czertainly.csc.utils.signing.aSigningSession;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,7 +32,7 @@ class SessionTokenTest {
 
         // when
         boolean canSignData = sessionToken.canSignData(List.of("document1", "document2", "document3"),
-                                                        maxDocumentsAllowedBySad
+                                                       maxDocumentsAllowedBySad
         );
 
         // then

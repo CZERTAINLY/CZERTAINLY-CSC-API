@@ -4,9 +4,8 @@ import com.czertainly.csc.clients.signserver.rest.SignserverRestClient;
 import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.crypto.CertificateParser;
-import com.czertainly.csc.model.SignaturesContainer;
-import com.czertainly.csc.model.SignaturesWithValidationInfo;
 import com.czertainly.csc.model.DocumentSignature;
+import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,7 +98,9 @@ class SignserverClientTest {
                 Result.success(multipleSignedHashes));
 
         // when
-        var signingresult = signserverClient.signMultipleDocumentHashes(signerName, multipleHashes, keyAlias, digestAlgorithm);
+        var signingresult = signserverClient.signMultipleDocumentHashes(signerName, multipleHashes, keyAlias,
+                                                                        digestAlgorithm
+        );
 
         // then
         SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
@@ -116,8 +117,9 @@ class SignserverClientTest {
                 Result.success(multipleSignedHashesWithValidationData));
 
         // when
-        var signingresult = signserverClient.signMultipleDocumentHashesWithValidationData(signerName, multipleHashes, keyAlias,
-                                                                                           digestAlgorithm
+        var signingresult = signserverClient.signMultipleDocumentHashesWithValidationData(signerName, multipleHashes,
+                                                                                          keyAlias,
+                                                                                          digestAlgorithm
         );
 
         // then
