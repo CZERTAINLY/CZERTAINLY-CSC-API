@@ -1,6 +1,8 @@
 cryptoTokens:
   - name: "SigningToken01"
     id: 1
+    keyPoolProfiles:
+      - test-pool
 signers:
   - name: "XAdES-Baseline-B"
     id: 201

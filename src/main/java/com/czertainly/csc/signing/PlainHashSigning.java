@@ -15,7 +15,7 @@ import com.czertainly.csc.signing.configuration.process.configuration.PlainHashS
 import com.czertainly.csc.signing.configuration.process.signers.PlainHashSigner;
 import com.czertainly.csc.signing.configuration.process.token.LongTermToken;
 import com.czertainly.csc.signing.configuration.process.token.LongTermTokenProvider;
-import com.czertainly.csc.signing.signatureauthorizers.DocumentHashAuthorizer;
+import com.czertainly.csc.signing.signatureauthorizers.HashAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class PlainHashSigning {
     public PlainHashSigning(WorkerRepository workerRepository, SignserverClient signserverClient,
                             CredentialsService credentialsService
     ) {
-        DocumentHashAuthorizer documentAuthorizer = new DocumentHashAuthorizer();
+        HashAuthorizer documentAuthorizer = new HashAuthorizer();
 
         LongTermTokenProvider<PlainHashSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(
                 credentialsService

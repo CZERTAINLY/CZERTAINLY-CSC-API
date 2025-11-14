@@ -4,17 +4,13 @@ cryptoTokens:
     keyPoolProfiles:
       - test-pool
 signers:
-  - id: 201
+  - name: "RawSigner"
+    id: 301
     cryptoToken: "SigningToken01"
     capabilities:
-      signatureQualifiers:
-        - eu_eidas_qes
-        - eu_eidas_aes
-      signatureFormat: X
-      conformanceLevel: Ades-B-B
-      signaturePackaging: Detached
+      documentTypes:
+        - RAW
       signatureAlgorithms:
         - SHA256withRSA
         - SHA384withRSA
         - SHA512withRSA
-      returnsValidationInfo: false

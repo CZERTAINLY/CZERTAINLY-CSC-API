@@ -24,7 +24,7 @@ class DocumentAuthorizerTest {
     private AlgorithmHelper algorithmHelper;
 
     @Spy
-    private DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
+    private HashAuthorizer hashAuthorizer = new HashAuthorizer();
 
     @InjectMocks
     private DocumentAuthorizer documentAuthorizer;
@@ -51,7 +51,7 @@ class DocumentAuthorizerTest {
 
         // then
         assertTrue(result.unwrap());
-        verify(documentHashAuthorizer).authorize(any(), eq(sad));
+        verify(hashAuthorizer).authorize(any(), eq(sad));
     }
 
     @Test

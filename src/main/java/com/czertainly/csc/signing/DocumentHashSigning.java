@@ -25,7 +25,7 @@ import com.czertainly.csc.signing.configuration.process.configuration.SessionTok
 import com.czertainly.csc.signing.configuration.process.signers.DocumentHashSigner;
 import com.czertainly.csc.signing.configuration.process.token.*;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
-import com.czertainly.csc.signing.signatureauthorizers.DocumentHashAuthorizer;
+import com.czertainly.csc.signing.signatureauthorizers.HashAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -52,7 +52,7 @@ public class DocumentHashSigning {
                                SignatureTypeDecider signatureTypeDecider
     ) {
         this.signatureTypeDecider = signatureTypeDecider;
-        DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
+        HashAuthorizer hashAuthorizer = new HashAuthorizer();
         OneTimeTokenProvider<DocumentHashSignatureProcessConfiguration> oneTimeTokenProvider = new OneTimeTokenProvider<>(
                 signatureQualifierBasedCredentialFactory, oneTimeKeySelector, oneTimeKeysService, asyncDeletionService);
         LongTermTokenProvider<DocumentHashSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(
@@ -70,21 +70,21 @@ public class DocumentHashSigning {
                 signserverClient);
 
         oneTimeHashSignature = new SignatureProcessTemplate<>(
-                documentHashAuthorizer,
+                hashAuthorizer,
                 workerRepository,
                 oneTimeTokenProvider,
                 documentHashSigner
         );
 
         longTermHashSignature = new SignatureProcessTemplate<>(
-                documentHashAuthorizer,
+                hashAuthorizer,
                 workerRepository,
                 longTermTokenProvider,
                 documentHashSigner
         );
 
         sessionSignature = new SignatureProcessTemplate<>(
-                documentHashAuthorizer,
+                hashAuthorizer,
                 workerRepository,
                 sessionTokenProvider,
                 documentHashSigner

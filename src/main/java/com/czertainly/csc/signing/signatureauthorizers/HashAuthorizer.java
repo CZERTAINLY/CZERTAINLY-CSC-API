@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class DocumentHashAuthorizer implements SignatureAuthorizer {
+public class HashAuthorizer implements SignatureAuthorizer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DocumentHashAuthorizer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HashAuthorizer.class);
 
     @Override
     public Result<Boolean, TextError> authorize(List<String> documentHashes, SignatureActivationData sad) {

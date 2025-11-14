@@ -20,13 +20,13 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
     private static final Logger logger = LoggerFactory.getLogger(DocumentAuthorizer.class);
 
     private final AlgorithmHelper algorithmHelper;
-    private final DocumentHashAuthorizer documentHashAuthorizer;
+    private final HashAuthorizer hashAuthorizer;
     private final Base64.Encoder base64Encoder = Base64.getEncoder();
     private final Base64.Decoder base64Decoder = Base64.getDecoder();
 
-    public DocumentAuthorizer(AlgorithmHelper algorithmHelper, DocumentHashAuthorizer documentHashAuthorizer) {
+    public DocumentAuthorizer(AlgorithmHelper algorithmHelper, HashAuthorizer hashAuthorizer) {
         this.algorithmHelper = algorithmHelper;
-        this.documentHashAuthorizer = documentHashAuthorizer;
+        this.hashAuthorizer = hashAuthorizer;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
             String digestAlgorithmOID = sad.getHashAlgorithmOID().orElseThrow();
             return createMessageDigest(digestAlgorithmOID)
                     .flatMap(messageDigest -> hashDocuments(documents, messageDigest))
-                    .flatMap(documentHashes -> documentHashAuthorizer.authorize(documentHashes, sad));
+                    .flatMap(documentHashes -> hashAuthorizer.authorize(documentHashes, sad));
         } catch (NoSuchElementException e) {
             logger.error("No hash algorithm OID provided in the signature activation data.");
             return Result.error(TextError.of("No hash algorithm OID provided in the signature activation data."));

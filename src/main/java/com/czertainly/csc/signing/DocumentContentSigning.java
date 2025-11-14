@@ -27,7 +27,7 @@ import com.czertainly.csc.signing.configuration.process.signers.DocumentContentS
 import com.czertainly.csc.signing.configuration.process.token.*;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
 import com.czertainly.csc.signing.signatureauthorizers.DocumentAuthorizer;
-import com.czertainly.csc.signing.signatureauthorizers.DocumentHashAuthorizer;
+import com.czertainly.csc.signing.signatureauthorizers.HashAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -59,7 +59,7 @@ public class DocumentContentSigning {
     ) {
         this.signatureTypeDecider = signatureTypeDecider;
         DocumentAuthorizer documentAuthorizer = new DocumentAuthorizer(
-                new AlgorithmHelper(), new DocumentHashAuthorizer()
+                new AlgorithmHelper(), new HashAuthorizer()
         );
 
         LongTermTokenProvider<DocumentContentSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(

@@ -4,17 +4,15 @@ cryptoTokens:
     keyPoolProfiles:
       - test-pool
 signers:
-  - id: 201
+  - name: "XAdES-Baseline-B"
+    id: 201
     cryptoToken: "SigningToken01"
     capabilities:
       signatureQualifiers:
         - eu_eidas_qes
-        - eu_eidas_aes
       signatureFormat: X
       conformanceLevel: Ades-B-B
-      signaturePackaging: Detached
+      signaturePackaging: INVALID_PACKAGING
       signatureAlgorithms:
         - SHA256withRSA
-        - SHA384withRSA
-        - SHA512withRSA
       returnsValidationInfo: false
