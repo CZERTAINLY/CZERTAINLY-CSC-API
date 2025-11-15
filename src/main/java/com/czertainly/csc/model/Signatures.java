@@ -19,10 +19,6 @@ public record Signatures<S extends Signature>(
         return new Signatures<>(signatures);
     }
 
-    public void extend(Signatures<S> sigs) {
-        signatures.addAll(sigs.signatures());
-    }
-
     @Override
     public void extend(SignaturesContainer<S> sigs) {
         signatures.addAll(sigs.signatures());

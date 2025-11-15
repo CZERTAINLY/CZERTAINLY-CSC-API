@@ -439,10 +439,13 @@ class WorkerConfigurationLoaderTest {
         return file;
     }
 
-    private static @NotNull List<String> getKeyPoolProfileNames(File workersFile) throws FileNotFoundException {
+    private static @NotNull List<String> getKeyPoolProfileNames(File workersFile) throws IOException {
         // Parse the YAML file to extract key pool profile names
         Yaml yaml = new Yaml(new Constructor(WorkerConfigurationFile.class, new LoaderOptions()));
-        WorkerConfigurationFile config = yaml.load(new BufferedReader(new FileReader(workersFile)));
+        WorkerConfigurationFile config;
+        try (BufferedReader reader = new BufferedReader(new FileReader(workersFile))) {
+            config = yaml.load(reader);
+        }
 
         // Extract all unique key pool profile names from crypto tokens
         List<String> keyPoolProfileNames = new ArrayList<>();
