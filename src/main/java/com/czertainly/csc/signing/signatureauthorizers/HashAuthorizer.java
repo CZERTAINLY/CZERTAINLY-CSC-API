@@ -17,6 +17,10 @@ public class HashAuthorizer implements SignatureAuthorizer {
 
     @Override
     public Result<Boolean, TextError> authorize(List<String> documentHashes, SignatureActivationData sad) {
+        if (sad.getHashes().isEmpty()) {
+            logger.info("No hashes were provided in the SAD.");
+            return Result.error(TextError.of("No hashes were provided in the SAD. Can't authorize the signature."));
+        }
         if (sad.getHashes().isEmpty() || !sad.getHashes().get().containsAll(documentHashes)) {
             logger.info("Some document hashes were not authorized by the SAD.");
             logger.debug("Authorized document hashes: {}", sad.getHashes().orElseGet(Set::of));

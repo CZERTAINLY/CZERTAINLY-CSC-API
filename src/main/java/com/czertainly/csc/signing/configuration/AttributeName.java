@@ -1,5 +1,7 @@
 package com.czertainly.csc.signing.configuration;
 
+import java.util.Arrays;
+
 public enum AttributeName {
     COMMITMENT_TYPE_INDICATION("commitment-type-indication",
                                "Base64-encoding of the attribute commitment-type-indication defined in clause 5.2.3 of ETSI EN 319 122-1"
@@ -69,9 +71,8 @@ public enum AttributeName {
         return switch (value) {
             case "commitment-type-indication" -> COMMITMENT_TYPE_INDICATION;
             default -> throw new IllegalArgumentException(
-                    "Unknown attribute name '" + value + "'. Allowed values: [" + String.join(",",
-                                                                                              AttributeName.values()
-                                                                                                           .toString()
+                    "Unknown attribute name '" + value + "'. Allowed values: [" + String.join(",", Arrays.toString(
+                            AttributeName.values())
                     ) + "]");
         };
     }
