@@ -96,9 +96,7 @@ public class SignserverClient {
     public Result<SignaturesContainer<DocumentSignature>, TextError> signSingleDocumentHash(
             String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
-        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
-        // so we instruct signserver to not decode it.
-        return singleSign(workerName, data, keyAlias, digestAlgorithm, SignserverProcessEncoding.NONE)
+        return singleSignDocumentHash(workerName, data, keyAlias, digestAlgorithm)
                 .flatMap(this::base64Decode)
                 .map(signatureBytes -> {
                     var documentSignature = new DocumentSignature(signatureBytes, SignaturePackaging.DETACHED);
@@ -109,9 +107,7 @@ public class SignserverClient {
     public Result<SignaturesContainer<DocumentSignature>, TextError> signSingleDocumentHashWithValidationData(
             String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
-        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
-        // so we instruct signserver to not decode it.
-        return singleSign(workerName, data, keyAlias, digestAlgorithm, SignserverProcessEncoding.NONE)
+        return singleSignDocumentHash(workerName, data, keyAlias, digestAlgorithm)
                 .flatMap(encodedSignatures -> mapToObject(encodedSignatures, EncodedValidationDataWrapper.class))
                 .flatMap(signatureWithValidationData ->
                                  base64Decode(signatureWithValidationData.signatureData().getBytes())
@@ -159,9 +155,8 @@ public class SignserverClient {
     public Result<SignaturesContainer<PlainSignature>, TextError> signPlainSingleHash(
             String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
-        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
-        // so we instruct signserver to not decode it.
-        return singleSign(workerName, data, keyAlias, digestAlgorithm, SignserverProcessEncoding.NONE)
+
+        return singleSignRawHash(workerName, data, keyAlias, digestAlgorithm)
                 .flatMap(this::base64Decode)
                 .map(signatureBytes -> {
                     var documentSignature = new PlainSignature(signatureBytes);
@@ -286,14 +281,25 @@ public class SignserverClient {
         return signserverWSClient.removeKey(workerId, keyAlias, true);
     }
 
-    private Result<byte[], TextError> singleSign(
-            String workerName, byte[] data, String keyAlias, String digestAlgorithm, SignserverProcessEncoding encoding
+    private Result<byte[], TextError> singleSignDocumentHash(
+            String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
         var metadata = new HashMap<String, String>();
         metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
         metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
+        // so we instruct signserver to not decode it.
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
+    }
 
-        return sign(workerName, data, keyAlias, metadata, encoding);
+    private Result<byte[], TextError> singleSignRawHash(
+            String workerName, byte[] data, String keyAlias, String digestAlgorithm
+    ) {
+        var metadata = new HashMap<String, String>();
+        metadata.put("DIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
+        // so we instruct signserver to not decode it.
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
     }
 
     private Result<byte[], TextError> multisign(String workerName, List<String> data, String keyAlias,
