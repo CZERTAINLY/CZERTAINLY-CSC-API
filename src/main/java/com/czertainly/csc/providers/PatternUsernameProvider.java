@@ -17,7 +17,6 @@ public class PatternUsernameProvider implements UsernameProvider {
             throw new ApplicationConfigurationException("Username pattern is not set.");
         }
         this.patternReplacer = new PatternReplacer(pattern, "Username Provider");
-        ;
     }
 
     @Override
