@@ -98,8 +98,8 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
             return acquireKeyInTransaction(cryptoToken, keyAlgorithm)
                     .flatMap(key ->
                                      key.map(acquiredKey -> {
-                                         logger.info("Signing key acquired for CryptoToken '{}' with algorithm '{}'",
-                                                     cryptoToken.identifier(), keyAlgorithm
+                                         logger.info("Signing key acquired for CryptoToken '{}' with algorithm '{}'. Key alias: '{}'",
+                                                     cryptoToken.identifier(), keyAlgorithm, acquiredKey.keyAlias()
                                          );
                                          return Result.<K, TextError>success(acquiredKey);
                                      }).orElseGet(() -> {
@@ -285,7 +285,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                                            logger.error("Failed to delete signing key '{}' with id '{}' from database.",
                                                         key.keyAlias(), key.id(), e
                                            );
-                                           Result.error(
+                                           return Result.error(
                                                    TextError.of("Key '%s' not deleted from database.", key.keyAlias()));
                                        }
                                        return Result.emptySuccess();

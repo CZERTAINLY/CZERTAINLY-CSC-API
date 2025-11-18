@@ -19,6 +19,8 @@ import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.repository.CredentialsRepository;
 import com.czertainly.csc.repository.entities.CredentialMetadataEntity;
+import com.czertainly.csc.service.keys.LongTermKeysService;
+import com.czertainly.csc.service.keys.SigningKey;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
 import com.czertainly.csc.signing.configuration.profiles.credentialprofile.CredentialProfile;
@@ -50,13 +52,15 @@ public class CredentialsService {
     private final DateConverter dateConverter;
     private final CertificateValidityDecider certificateValidityDecider;
     private final CredentialProfileRepository credentialProfileRepository;
+    private final LongTermKeysService longTermKeysService;
 
     public CredentialsService(PasswordGenerator passwordGenerator, EjbcaClient ejbcaClient,
                               SignserverClient signserverClient, CredentialsRepository credentialsRepository,
                               WorkerRepository workerRepository, CertificateParser certificateParser,
                               AlgorithmHelper algorithmHelper, DateConverter dateConverter,
                               CertificateValidityDecider certificateValidityDecider,
-                              CredentialProfileRepository credentialProfileRepository
+                              CredentialProfileRepository credentialProfileRepository,
+                              LongTermKeysService longTermKeysService
     ) {
         this.passwordGenerator = passwordGenerator;
         this.ejbcaClient = ejbcaClient;
@@ -68,6 +72,7 @@ public class CredentialsService {
         this.dateConverter = dateConverter;
         this.certificateValidityDecider = certificateValidityDecider;
         this.credentialProfileRepository = credentialProfileRepository;
+        this.longTermKeysService = longTermKeysService;
     }
 
     public Result<UUID, TextError> createCredential(
@@ -84,7 +89,7 @@ public class CredentialsService {
         logger.debug(credentialProfile.toString());
 
         String uniqueUserId = createUniqueUserId(createCredentialRequest.userId());
-        String tokenAlias = getUniqueKeyAlias(uniqueUserId);
+        String keyAlias = getUniqueKeyAlias(uniqueUserId);
 
         var geCryptoTokenResult = workerRepository.getCryptoToken(createCredentialRequest.cryptoTokenName())
                                                   .mapError(e -> e.extend(
@@ -92,16 +97,7 @@ public class CredentialsService {
         if (geCryptoTokenResult instanceof Error(var err)) return Result.error(err);
         CryptoToken token = geCryptoTokenResult.unwrap();
 
-        var generateKeyResult = signserverClient
-                .generateKey(
-                        token, tokenAlias,
-                        credentialProfile.getKeyAlgorithm(),
-                        credentialProfile.getKeySpecification()
-                )
-                .mapError(e -> e.extend(
-                        "Key couldn't be generated on SignServer CryptoToken %s(%s).",
-                        token.name(), token.id()
-                ));
+        var generateKeyResult = getPregeneratedOrGenerateKey(token, keyAlias, credentialProfile, createCredentialRequest.usePreGeneratedKey());
         if (generateKeyResult instanceof Error(var err)) return Result.error(err);
         String generatedKeyAlias = generateKeyResult.unwrap();
 
@@ -386,6 +382,29 @@ public class CredentialsService {
         } catch (Exception e) {
             logger.error("Failed to retrieve credentials for user '{}'.", request.userID(), e);
             return Result.error(TextError.of(e));
+        }
+    }
+
+    private Result<String, TextError> getPregeneratedOrGenerateKey(CryptoToken cryptoToken, String keyAlias,
+                                                                   CredentialProfile credentialProfile,
+                                                                   boolean usePreGeneratedKey
+    ) {
+        if (usePreGeneratedKey) {
+            logger.debug("Will use pre-generated long-term key for the credential.");
+            return longTermKeysService.acquireKey(cryptoToken, credentialProfile.getKeyAlgorithm())
+                    .map(SigningKey::keyAlias);
+        } else {
+            logger.debug("Will generate a new long-term key for the credential.");
+            return signserverClient
+                    .generateKey(
+                            cryptoToken, keyAlias,
+                            credentialProfile.getKeyAlgorithm(),
+                            credentialProfile.getKeySpecification()
+                    )
+                    .mapError(e -> e.extend(
+                            "Key couldn't be generated on SignServer CryptoToken %s(%s).",
+                            cryptoToken.name(), cryptoToken.id()
+                    ));
         }
     }
 

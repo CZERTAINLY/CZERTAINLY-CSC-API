@@ -19,9 +19,10 @@ public class KeyPoolReplenishTrigger {
 
     private final KeyPoolReplenisher<SessionKey> sessionKeyPoolReplenisher;
     private final KeyPoolReplenisher<OneTimeKey> oneTimeKeyPoolReplenisher;
+    private final KeyPoolReplenisher<LongTermKey> longTermKeyPoolReplenisher;
 
     public KeyPoolReplenishTrigger(WorkerRepository repository, SessionKeysService sessionKeysService,
-                                   OneTimeKeysService oneTimeKeysService,
+                                   OneTimeKeysService oneTimeKeysService, LongTermKeysService longTermKeysService,
                                    @Qualifier("keyGenerationExecutor") ExecutorService keyGenerationExecutor
     ) {
 
@@ -38,6 +39,13 @@ public class KeyPoolReplenishTrigger {
         oneTimeKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForOneTimeSignatures, oneTimeKeysService,
                                                              keyGenerationExecutor
         );
+
+        List<CryptoToken> cryptoTokensForLongTermSignatures = getCryptoTokensWithDesignatedUsage(
+                repository, KeyUsageDesignation.LONG_TERM_SIGNATURE
+        );
+        longTermKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForLongTermSignatures, longTermKeysService,
+                                                             keyGenerationExecutor
+        );
     }
 
     @Scheduled(cron = "${csc.signingSessions.generateCronExpression:30 */1 * * * *}")
@@ -48,6 +56,11 @@ public class KeyPoolReplenishTrigger {
     @Scheduled(cron = "${csc.oneTimeKeys.generateCronExpression:0 */1 * * * *}")
     public void replenishOneTimePools() {
         oneTimeKeyPoolReplenisher.replenishPools();
+    }
+
+    @Scheduled(cron = "${csc.longTermKeys.generateCronExpression:45 */1 * * * *}")
+    public void replenishLongTermKeyPools() {
+        longTermKeyPoolReplenisher.replenishPools();
     }
 
     private static List<CryptoToken> getCryptoTokensWithDesignatedUsage(

@@ -5,8 +5,6 @@ import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.configuration.keypools.KeyUsageDesignation;
 import com.czertainly.csc.model.signserver.CryptoToken;
 
-import java.util.UUID;
-
 public interface KeysService<K extends SigningKey> {
 
     Result<Integer, TextError> getNumberOfUsableKeys(CryptoToken cryptoToken, String keyAlgorithm);
@@ -16,8 +14,6 @@ public interface KeysService<K extends SigningKey> {
     );
 
     Result<K, TextError> acquireKey(CryptoToken cryptoToken, String keyAlgorithm);
-
-    Result<K, TextError> getKey(UUID keyId);
 
     Result<Void, TextError> deleteKey(K key);
 

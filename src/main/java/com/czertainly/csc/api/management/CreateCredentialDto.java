@@ -95,6 +95,15 @@ public record CreateCredentialDto(
                         """,
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
-        String description
+        String description,
+
+        @Schema(
+                description = """
+                        Indicates whether to use a pre-generated key from the key pool.
+                        If set to true, a pre-generated key will be used; if false or not provided, a new key will be generated.
+                        """,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        Boolean usePreGeneratedKey
 ) {
 }

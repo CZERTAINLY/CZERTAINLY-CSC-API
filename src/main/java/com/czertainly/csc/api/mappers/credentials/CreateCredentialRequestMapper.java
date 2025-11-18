@@ -47,6 +47,12 @@ public class CreateCredentialRequestMapper {
             throw InvalidInputDataException.of("The description field must be at most 255 characters long.");
         }
 
+        // If usePreGeneratedKey is not provided, set it to false.
+        Boolean usePreGeneratedKey = dto.usePreGeneratedKey();
+        if (usePreGeneratedKey == null) {
+            usePreGeneratedKey = false;
+        }
+
         return new CreateCredentialRequest(
                 dto.cryptoTokenName(),
                 dto.credentialProfileName(),
@@ -56,7 +62,8 @@ public class CreateCredentialRequestMapper {
                 dto.scal(),
                 dto.dn(),
                 dto.san(),
-                dto.description()
+                dto.description(),
+                usePreGeneratedKey
         );
     }
 }

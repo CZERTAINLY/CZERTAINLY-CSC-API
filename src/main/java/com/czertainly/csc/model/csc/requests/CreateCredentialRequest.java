@@ -10,6 +10,7 @@ public record CreateCredentialRequest(
         String scal,
         String dn,
         String san,
-        String description
+        String description,
+        Boolean usePreGeneratedKey
 ) {
 }
