@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.StringJoiner;
 import java.util.UUID;
 
 @Entity
@@ -49,5 +50,15 @@ public class LongTermKeyEntity {
 
     public void setKeyAlgorithm(String key_algorithm) {
         this.keyAlgorithm = key_algorithm;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", LongTermKeyEntity.class.getSimpleName() + "[", "]")
+                .add("id=" + id)
+                .add("cryptoTokenId=" + cryptoTokenId)
+                .add("keyAlias='" + keyAlias + "'")
+                .add("keyAlgorithm='" + keyAlgorithm + "'")
+                .toString();
     }
 }

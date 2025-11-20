@@ -47,16 +47,9 @@ csc:
     # Long-term keys are pre-generated keys used during the credential creation to speed up the process
     # The keys are generated in pools
     longTermKeys:
-      # Pre-generate long-term keys according to the specified cron expression on defined key pool profiles
-      # The cron expression is in the UN*X definition format: second, minute, hour, day of month, month, and day of week
-      generateCronExpression: "45 */1 * * * *"
-      # How long will the keys be kept in the pool in ISO 8601 duration format before they are removed
-      # See https://en.wikipedia.org/wiki/ISO_8601#Durations for more information
-      usedUpKeyKeepTime: PT1H
-      # How often will the cleaning of the used-up keys be performed according to the specified cron expression
-      # The cron expression is in the UN*X definition format: second, minute, hour, day of month, month, and day of week
-      cleanupCronExpression: "0 0 * * * *"
-
+        # Pre-generate long-term keys according to the specified cron expression on defined key pool profiles
+        # The cron expression is in the UN*X definition format: second, minute, hour, day of month, month, and day of week
+        generateCronExpression: "45 */1 * * * *"
     # Configuration of the concurrency defines the maximum number of concurrent requests that can be processed
     # for specific operations
     concurrency:
