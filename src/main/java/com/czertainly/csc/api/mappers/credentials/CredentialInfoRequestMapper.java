@@ -5,6 +5,7 @@ import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.credentials.GetCredentialInfoDto;
 import com.czertainly.csc.api.credentials.ListCredentialsRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
+import com.czertainly.csc.common.utils.CertificateMapperUtil;
 import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.requests.CredentialInfoRequest;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class CredentialInfoRequestMapper {
 
         CertificateReturnType certificateReturnType;
         try {
-            certificateReturnType = resolveCertificateReturnType(dto.certificates());
+            certificateReturnType = CertificateMapperUtil.resolveCertificateReturnType(dto.certificates());
         } catch (IllegalArgumentException e) {
             throw InvalidInputDataException.of("Invalid parameter certificates.");
         }
@@ -44,14 +45,6 @@ public class CredentialInfoRequestMapper {
                         returnCertificateInfo,
                         returnAuthInfo
         );
-    }
-
-    private CertificateReturnType resolveCertificateReturnType(String certificateReturnType
-    ) throws IllegalArgumentException {
-        if (certificateReturnType == null) {
-            return CertificateReturnType.END_CERTIFICATE;
-        }
-        return CertificateReturnType.valueOf(certificateReturnType);
     }
 
     private String extractUserIdFromToken(CscAuthenticationToken authenticationToken) {
