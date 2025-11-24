@@ -141,10 +141,27 @@ public class CredentialsService {
         if (extractCertificateResult instanceof Error(var err)) return Result.error(err);
         X509CertificateHolder endCertificate = extractCertificateResult.unwrap();
 
+        var parsePkcs7Result = certificateParser
+                .parsePkcs7Chain(encodedCertificates)
+                .mapError(e -> e.extend("Failed to parse PKCS#7 certificate chain."))
+                .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias))
+                .ifError(() -> revokeCertificate(endCertificate));
+        if (parsePkcs7Result instanceof Error(var err)) return Result.error(err);
+
+        List<byte[]> certificateChain = parsePkcs7Result.unwrap().stream()
+                .map(cert -> {
+                    try {
+                        return cert.getEncoded();
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to encode certificate", e);
+                    }
+                })
+                .toList();
+
         var importChainResult = signserverClient
                 .importCertificateChain(
                         token, generatedKeyAlias,
-                        List.of(encodedCertificates)
+                        certificateChain
                 )
                 .mapError(e -> e.extend("Certificate chain couldn't be imported to the crypto token."))
                 .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias))
