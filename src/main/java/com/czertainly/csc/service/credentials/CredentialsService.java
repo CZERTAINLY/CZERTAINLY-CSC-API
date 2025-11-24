@@ -148,7 +148,7 @@ public class CredentialsService {
         var importChainResult = signserverClient
                 .importCertificateChain(
                         token, generatedKeyAlias,
-                        List.of(encodedCertificates)
+                        certificateParser.parsePkcs7ChainToList(encodedCertificates).unwrap()
                 )
                 .mapError(e -> e.extend("Certificate chain couldn't be imported to the crypto token."))
                 .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias))
@@ -316,7 +316,8 @@ public class CredentialsService {
 
         var importChainResult = signserverClient
                 .importCertificateChain(
-                        destinationCryptoToken, finalNewKeyAlias, List.of(certificateChain)
+                        destinationCryptoToken, finalNewKeyAlias,
+                        certificateParser.parsePkcs7ChainToList(certificateChain).unwrap()
                 )
                 .mapError(e -> e.extend(
                         "Failed to import certificate chain for key '%s'",
