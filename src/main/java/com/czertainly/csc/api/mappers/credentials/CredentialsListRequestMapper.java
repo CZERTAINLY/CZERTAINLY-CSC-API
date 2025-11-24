@@ -3,6 +3,7 @@ package com.czertainly.csc.api.mappers.credentials;
 import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.api.credentials.ListCredentialsRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
+import com.czertainly.csc.common.utils.CertificateMapperUtil;
 import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.requests.ListCredentialsRequest;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ public class CredentialsListRequestMapper {
 
         CertificateReturnType certificateReturnType;
         try {
-            certificateReturnType = resolveCertificateReturnType(dto.certificates());
+            certificateReturnType = CertificateMapperUtil.resolveCertificateReturnType(dto.certificates());
         } catch (IllegalArgumentException e) {
             throw InvalidInputDataException.of("Invalid parameter certificates.");
         }
@@ -36,19 +37,6 @@ public class CredentialsListRequestMapper {
                 returnAuthInfo,
                 onlyValid
         );
-    }
-
-    private CertificateReturnType resolveCertificateReturnType(String certificateReturnType
-    ) throws IllegalArgumentException {
-        if (certificateReturnType == null) {
-            return CertificateReturnType.END_CERTIFICATE;
-        }
-        return switch (certificateReturnType) {
-            case "none" -> CertificateReturnType.NONE;
-            case "single" -> CertificateReturnType.END_CERTIFICATE;
-            case "chain" -> CertificateReturnType.CERTIFICATE_CHAIN;
-            default -> throw new IllegalArgumentException("Invalid certificateReturnType value.");
-        };
     }
 
     private String getUserId(ListCredentialsRequestDto dto, CscAuthenticationToken authenticationToken) {
