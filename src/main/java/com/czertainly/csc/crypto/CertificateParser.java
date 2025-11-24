@@ -13,7 +13,9 @@ import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Component
 public class CertificateParser {
@@ -56,4 +58,19 @@ public class CertificateParser {
                 });
     }
 
+    public Result<List<byte[]>, TextError> parsePkcs7ChainToList(byte[] pkcs7Chain) {
+        return parsePkcs7Chain(pkcs7Chain)
+                .flatMap(chain -> {
+                    List<byte[]> certificates = new ArrayList<>();
+                    for (X509CertificateHolder certHolder : chain) {
+                        try {
+                            certificates.add(certHolder.getEncoded());
+                        } catch (Exception e) {
+                            logger.error("Failed to encode certificate from PKCS7 chain.", e);
+                            return Result.error(TextError.of("Failed to encode certificate: %s", e.getMessage()));
+                        }
+                    }
+                    return Result.success(certificates);
+                });
+    }
 }
