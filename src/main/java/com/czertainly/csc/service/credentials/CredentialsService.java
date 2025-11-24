@@ -141,10 +141,16 @@ public class CredentialsService {
         if (extractCertificateResult instanceof Error(var err)) return Result.error(err);
         X509CertificateHolder endCertificate = extractCertificateResult.unwrap();
 
+        var parseChainResult = certificateParser.parsePkcs7ChainToList(encodedCertificates)
+                .mapError(e -> e.extend("Failed to parse PKCS7 chain."))
+                .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias));
+        if (parseChainResult instanceof Error(var err)) return Result.error(err);
+        List<byte[]> parsedChain = parseChainResult.unwrap();
+
         var importChainResult = signserverClient
                 .importCertificateChain(
                         token, generatedKeyAlias,
-                        List.of(encodedCertificates)
+                        parsedChain
                 )
                 .mapError(e -> e.extend("Certificate chain couldn't be imported to the crypto token."))
                 .ifError(() -> rollbackKeyCreation(token, generatedKeyAlias))
@@ -316,9 +322,16 @@ public class CredentialsService {
         if (extractCertificateResult instanceof Error(var err)) return Result.error(err);
         X509CertificateHolder endCertificate = extractCertificateResult.unwrap();
 
+        var parseChainResult = certificateParser.parsePkcs7ChainToList(certificateChain)
+                .mapError(e -> e.extend("Failed to parse PKCS7 chain."))
+                .ifError(() -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias));
+        if (parseChainResult instanceof Error(var err)) return Result.error(err);
+        List<byte[]> parsedChain = parseChainResult.unwrap();
+
         var importChainResult = signserverClient
                 .importCertificateChain(
-                        destinationCryptoToken, finalNewKeyAlias, List.of(certificateChain)
+                        destinationCryptoToken, finalNewKeyAlias,
+                        parsedChain
                 )
                 .mapError(e -> e.extend(
                         "Failed to import certificate chain for key '%s'",
