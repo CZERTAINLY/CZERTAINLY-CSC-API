@@ -4,5 +4,4 @@ public enum CertificateReturnType {
     NONE,
     END_CERTIFICATE,
     CERTIFICATE_CHAIN,
-
 }
