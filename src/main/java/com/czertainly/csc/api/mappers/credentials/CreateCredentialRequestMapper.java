@@ -2,8 +2,11 @@ package com.czertainly.csc.api.mappers.credentials;
 
 import com.czertainly.csc.api.management.CreateCredentialDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
+import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
 import org.springframework.stereotype.Component;
+
+import static com.czertainly.csc.common.utils.CertificateMapperUtil.resolveCertificateReturnType;
 
 @Component
 public class CreateCredentialRequestMapper {
@@ -53,6 +56,13 @@ public class CreateCredentialRequestMapper {
             usePreGeneratedKey = false;
         }
 
+        CertificateReturnType certificateReturnType;
+        try {
+            certificateReturnType = resolveCertificateReturnType(dto.certificates());
+        } catch (IllegalArgumentException e) {
+            throw InvalidInputDataException.of("Invalid parameter certificates.");
+        }
+
         return new CreateCredentialRequest(
                 dto.cryptoTokenName(),
                 dto.credentialProfileName(),
@@ -63,7 +73,8 @@ public class CreateCredentialRequestMapper {
                 dto.dn(),
                 dto.san(),
                 dto.description(),
-                usePreGeneratedKey
+                usePreGeneratedKey,
+                certificateReturnType
         );
     }
 }

@@ -75,7 +75,7 @@ public class CredentialsService {
         this.longTermKeysService = longTermKeysService;
     }
 
-    public Result<UUID, TextError> createCredential(
+    public Result<Credential, TextError> createCredential(
             CreateCredentialRequest createCredentialRequest
     ) {
         logger.debug("Creating new credential for user '{}'.", createCredentialRequest.userId());
@@ -162,7 +162,7 @@ public class CredentialsService {
                                  endEntity,
                                  endCertificate
         )
-                .map(CredentialMetadataEntity::getId)
+                .flatMap(credentialMetadataEntity -> getCredential(credentialMetadataEntity, createCredentialRequest.certificateReturnType()))
                 .mapError(e -> e.extend("A newly created credential couldn't be saved in the database."))
                 .consume(credentialId -> logger.info("Credential {} was generated for user {} ", credentialId,
                                                      createCredentialRequest.userId()

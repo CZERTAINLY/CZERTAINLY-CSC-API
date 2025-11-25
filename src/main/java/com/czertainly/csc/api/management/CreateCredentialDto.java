@@ -104,6 +104,20 @@ public record CreateCredentialDto(
                         """,
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
-        Boolean usePreGeneratedKey
+        Boolean usePreGeneratedKey,
+
+        @Schema(
+                description = """
+                        Specifies which certificates from the certificate chain SHALL be returned in
+                        certs/certificates.
+                        - “none”: No certificate SHALL be returned.
+                        - “single”: Only the end entity certificate SHALL be returned.
+                        - “chain”: The full certificate chain SHALL be returned.
+                        The default value is “single”, so if the parameter is omitted then the method will
+                        only return the end entity certificate(s).
+                        """,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        String certificates
 ) {
 }

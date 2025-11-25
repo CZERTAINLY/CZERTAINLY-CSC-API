@@ -1,6 +1,8 @@
 package com.czertainly.csc.model.csc.requests;
 
 
+import com.czertainly.csc.model.csc.CertificateReturnType;
+
 public record CreateCredentialRequest(
         String cryptoTokenName,
         String credentialProfileName,
@@ -11,6 +13,7 @@ public record CreateCredentialRequest(
         String dn,
         String san,
         String description,
-        Boolean usePreGeneratedKey
+        Boolean usePreGeneratedKey,
+        CertificateReturnType certificateReturnType
 ) {
 }
