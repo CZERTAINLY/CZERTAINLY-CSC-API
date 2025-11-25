@@ -2,6 +2,7 @@ package com.czertainly.csc.api.mappers.credentials;
 
 import com.czertainly.csc.api.management.CreateCredentialDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
+import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,9 @@ class CreateCredentialRequestMapperTest {
     @Test
     void canMapRequest() {
         // given
-        CreateCredentialDto dto = Instancio.create(CreateCredentialDto.class);
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                            .set(field(CreateCredentialDto::certificates), "chain")
+                            .create();
 
         // when
         CreateCredentialRequest request = mapper.map(dto);
@@ -33,6 +36,7 @@ class CreateCredentialRequestMapperTest {
         assertEquals(dto.dn(), request.dn());
         assertEquals(dto.san(), request.san());
         assertEquals(dto.description(), request.description());
+        assertEquals(CertificateReturnType.CERTIFICATE_CHAIN, request.certificateReturnType());
     }
 
 
@@ -123,6 +127,7 @@ class CreateCredentialRequestMapperTest {
         // given
         CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
                                            .ignore(field(CreateCredentialDto::numberOfSignaturesPerAuthorization))
+                                           .set(field(CreateCredentialDto::certificates), "single")
                                            .create();
 
         // when
@@ -137,6 +142,7 @@ class CreateCredentialRequestMapperTest {
         // given
         CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
                                            .set(field(CreateCredentialDto::numberOfSignaturesPerAuthorization), 0)
+                                           .set(field(CreateCredentialDto::certificates), "single")
                                            .create();
 
         // when
@@ -151,6 +157,7 @@ class CreateCredentialRequestMapperTest {
         // given
         CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
                                            .set(field(CreateCredentialDto::numberOfSignaturesPerAuthorization), 2)
+                                           .set(field(CreateCredentialDto::certificates), "single")
                                            .create();
 
         // when
@@ -158,5 +165,19 @@ class CreateCredentialRequestMapperTest {
 
         // then
         assertEquals(2, request.numberOfSignaturesPerAuthorization());
+    }
+
+    @Test
+    void throwsOnInvalidCertificates() {
+        // given
+        CreateCredentialDto dto = Instancio.of(CreateCredentialDto.class)
+                                           .set(field(CreateCredentialDto::certificates), "invalid_value")
+                                           .create();
+
+        // when
+        Executable ex = () -> mapper.map(dto);
+
+        // then
+        assertThrows(InvalidInputDataException.class, ex, "Invalid parameter certificates.");
     }
 }
