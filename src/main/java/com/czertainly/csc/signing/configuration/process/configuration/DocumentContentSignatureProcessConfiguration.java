@@ -20,8 +20,4 @@ public class DocumentContentSignatureProcessConfiguration extends SignatureProce
               signatureAlgorithm, returnValidationInfo, DocumentType.FULL
         );
     }
-
-    public String digestAlgorithm() {
-        return signatureAlgorithm().digestAlgorithm();
-    }
 }

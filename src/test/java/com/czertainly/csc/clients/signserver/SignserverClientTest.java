@@ -55,6 +55,7 @@ class SignserverClientTest {
     List<String> multipleHashes = List.of("dummyData1", "dummyData2");
     String keyAlias = "signingKey01";
     String digestAlgorithm = "SHA-256";
+    String encryptionAlgorithm = "RSA";
 
 
     @Test
@@ -99,7 +100,7 @@ class SignserverClientTest {
 
         // when
         var signingresult = signserverClient.signMultipleDocumentHashes(signerName, multipleHashes, keyAlias,
-                                                                        digestAlgorithm
+                                                                        encryptionAlgorithm, digestAlgorithm
         );
 
         // then
@@ -118,7 +119,7 @@ class SignserverClientTest {
 
         // when
         var signingresult = signserverClient.signMultipleDocumentHashesWithValidationData(signerName, multipleHashes,
-                                                                                          keyAlias,
+                                                                                          keyAlias, encryptionAlgorithm,
                                                                                           digestAlgorithm
         );
 

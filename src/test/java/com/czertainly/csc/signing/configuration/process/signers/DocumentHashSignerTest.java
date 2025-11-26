@@ -107,7 +107,7 @@ class DocumentHashSignerTest {
                         DocumentSignature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
                 )
         );
-        when(signserverClient.signMultipleDocumentHashes(any(), any(), any(), any()))
+        when(signserverClient.signMultipleDocumentHashes(any(), any(), any(), any(), any()))
                 .thenReturn(Result.success(signatures));
 
         // given
@@ -128,6 +128,7 @@ class DocumentHashSignerTest {
                 eq(worker.worker().workerName()),
                 eq(data),
                 eq(signingToken.getKeyAlias()),
+                eq(configuration.encryptionAlgorithm()),
                 eq(configuration.digestAlgorithm())
         );
     }
@@ -140,7 +141,7 @@ class DocumentHashSignerTest {
                         DocumentSignature.of("signature2".getBytes(), SignaturePackaging.DETACHED)
                 )
         );
-        when(signserverClient.signMultipleDocumentHashesWithValidationData(any(), any(), any(), any()))
+        when(signserverClient.signMultipleDocumentHashesWithValidationData(any(), any(), any(), any(), any()))
                 .thenReturn(Result.success(signatures));
 
         // given
@@ -161,6 +162,7 @@ class DocumentHashSignerTest {
                 eq(worker.worker().workerName()),
                 eq(data),
                 eq(signingToken.getKeyAlias()),
+                eq(configuration.encryptionAlgorithm()),
                 eq(configuration.digestAlgorithm())
         );
     }
@@ -172,7 +174,7 @@ class DocumentHashSignerTest {
                         DocumentSignature.of("signature1".getBytes(), SignaturePackaging.DETACHED)
                 )
         );
-        when(signserverClient.signMultipleDocumentHashesWithValidationData(any(), any(), any(), any()))
+        when(signserverClient.signMultipleDocumentHashesWithValidationData(any(), any(), any(), any(), any()))
                 .thenReturn(Result.success(signatures));
 
         // given

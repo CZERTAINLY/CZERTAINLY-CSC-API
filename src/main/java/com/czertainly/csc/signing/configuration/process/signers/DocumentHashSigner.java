@@ -87,6 +87,7 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
                 worker.worker().workerName(),
                 data,
                 signingToken.getKeyAlias(),
+                configuration.encryptionAlgorithm(),
                 configuration.digestAlgorithm()
         );
     }
@@ -98,6 +99,7 @@ public class DocumentHashSigner<C extends DocumentHashSignatureProcessConfigurat
                 worker.worker().workerName(),
                 data,
                 signingToken.getKeyAlias(),
+                configuration.encryptionAlgorithm(),
                 configuration.digestAlgorithm()
         );
     }

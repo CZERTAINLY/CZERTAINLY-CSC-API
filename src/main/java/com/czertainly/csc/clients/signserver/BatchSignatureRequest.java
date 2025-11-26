@@ -1,4 +1,4 @@
 package com.czertainly.csc.clients.signserver;
 
-public record BatchSignatureRequest(String data, String hashingAlgorithm, String customIdentifier) {
+public record BatchSignatureRequest(String data, String encryptionAlgorithm, String hashingAlgorithm, String customIdentifier) {
 }

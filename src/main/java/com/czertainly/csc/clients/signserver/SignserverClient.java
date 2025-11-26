@@ -126,17 +126,18 @@ public class SignserverClient {
     public Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleDocumentHashes(String workerName,
                                                                                                 List<String> data,
                                                                                                 String keyAlias,
+                                                                                                String encryptionAlgorithm,
                                                                                                 String digestAlgorithm
     ) {
-        return multisign(workerName, data, keyAlias, digestAlgorithm)
+        return multisign(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
                 .flatMap(encodedSignatures -> mapToObject(encodedSignatures, BatchSignaturesResponse.class))
                 .map(batchSignatures -> Signatures.of(mapToDocumentSignaturesList(batchSignatures)));
     }
 
     public Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleDocumentHashesWithValidationData(
-            String workerName, List<String> data, String keyAlias, String digestAlgorithm
+            String workerName, List<String> data, String keyAlias, String encryptionAlgorithm, String digestAlgorithm
     ) {
-        return multisign(workerName, data, keyAlias, digestAlgorithm)
+        return multisign(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
                 .flatMap(encodedSignatures -> mapToObject(encodedSignatures,
                                                           BatchSignatureWithValidationData.class
                 ))
@@ -153,10 +154,10 @@ public class SignserverClient {
 
     // Plain Signature Methods
     public Result<SignaturesContainer<PlainSignature>, TextError> signPlainSingleHash(
-            String workerName, byte[] data, String keyAlias, String digestAlgorithm
+            String workerName, byte[] data, String keyAlias, String encryptionAlgorithm, String digestAlgorithm
     ) {
 
-        return singleSignRawHash(workerName, data, keyAlias, digestAlgorithm)
+        return singleSignRawHash(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
                 .flatMap(this::base64Decode)
                 .map(signatureBytes -> {
                     var documentSignature = new PlainSignature(signatureBytes);
@@ -167,9 +168,10 @@ public class SignserverClient {
     public Result<SignaturesContainer<PlainSignature>, TextError> signPlainMultipleHashes(String workerName,
                                                                                           List<String> data,
                                                                                           String keyAlias,
+                                                                                          String encryptionAlgorithm,
                                                                                           String digestAlgorithm
     ) {
-        return multisign(workerName, data, keyAlias, digestAlgorithm)
+        return multisign(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
                 .flatMap(encodedSignatures -> mapToObject(encodedSignatures, BatchSignaturesResponse.class))
                 .map(batchSignatures -> Signatures.of(mapToPlainSignaturesList(batchSignatures)));
     }
@@ -293,23 +295,24 @@ public class SignserverClient {
     }
 
     private Result<byte[], TextError> singleSignRawHash(
-            String workerName, byte[] data, String keyAlias, String digestAlgorithm
+            String workerName, byte[] data, String keyAlias, String encryptionAlgorithm, String digestAlgorithm
     ) {
         var metadata = new HashMap<String, String>();
         metadata.put("DIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+        metadata.put("ENCRYPTIONALGORITHM", encryptionAlgorithm);
         // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
         // so we instruct signserver to not decode it.
         return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
     }
 
     private Result<byte[], TextError> multisign(String workerName, List<String> data, String keyAlias,
-                                                String digestAlgorithm
+                                                String encryptionAlgorithm, String digestAlgorithm
     ) {
         var signatureRequests = new ArrayList<BatchSignatureRequest>();
         int i = 0;
 
         for (String hash : data) {
-            var signatureRequest = new BatchSignatureRequest(hash,
+            var signatureRequest = new BatchSignatureRequest(hash, encryptionAlgorithm,
                                                              DigestAlgorithmJavaName.get(digestAlgorithm),
                                                              "r" + i
             );

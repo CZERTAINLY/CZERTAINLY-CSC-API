@@ -57,6 +57,7 @@ public class PlainHashSigner<C extends PlainHashSignatureProcessConfiguration> i
                 worker.worker().workerName(),
                 data.getFirst().getBytes(),
                 signingToken.getKeyAlias(),
+                configuration.encryptionAlgorithm(),
                 configuration.digestAlgorithm()
         );
     }
@@ -68,6 +69,7 @@ public class PlainHashSigner<C extends PlainHashSignatureProcessConfiguration> i
                 worker.worker().workerName(),
                 data,
                 signingToken.getKeyAlias(),
+                configuration.encryptionAlgorithm(),
                 configuration.digestAlgorithm()
         );
     }

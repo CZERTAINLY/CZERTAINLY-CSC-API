@@ -15,8 +15,4 @@ public class PlainHashSignatureProcessConfiguration extends SignatureProcessConf
               null, signatureAlgorithm, false, DocumentType.RAW
         );
     }
-
-    public String digestAlgorithm() {
-        return signatureAlgorithm().digestAlgorithm();
-    }
 }
