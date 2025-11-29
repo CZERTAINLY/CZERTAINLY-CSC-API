@@ -3,24 +3,25 @@ package com.czertainly.csc.signing;
 import com.czertainly.csc.api.auth.CscAuthenticationToken;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.model.SignDocParameters;
-import com.czertainly.csc.model.SignHashParameters;
-import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.model.SignedHashes;
+import com.czertainly.csc.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SignatureFacade {
 
-    DocumentContentSigning documentSigning;
-    DocumentHashSigning documentHashSigning;
+    private final DocumentContentSigning documentSigning;
+    private final DocumentHashSigning documentHashSigning;
+    private final PlainHashSigning plainHashSigning;
 
-    public SignatureFacade(DocumentContentSigning documentSigning, DocumentHashSigning documentHashSigning) {
+    public SignatureFacade(DocumentContentSigning documentSigning, DocumentHashSigning documentHashSigning,
+                           PlainHashSigning plainHashSigning
+    ) {
         this.documentSigning = documentSigning;
         this.documentHashSigning = documentHashSigning;
+        this.plainHashSigning = plainHashSigning;
     }
 
-    public Result<SignedDocuments, TextError> signDocuments(
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signDocuments(
             SignDocParameters signDocParameters, CscAuthenticationToken cscAuthenticationToken
     ) {
 
@@ -34,8 +35,11 @@ public class SignatureFacade {
 
     }
 
-    public Result<SignedHashes, TextError> signHashes(SignHashParameters signHashParameters) {
-        return Result.error(TextError.of("Not implemented", "The method is not yet implemented."));
+    public Result<SignaturesContainer<PlainSignature>, TextError> signHashes(SignHashParameters signHashParameters) {
+        if (signHashParameters.hashes().isEmpty()) {
+            return Result.error(TextError.of("No hashes to sign."));
+        }
+        return plainHashSigning.sign(signHashParameters);
     }
 
 }

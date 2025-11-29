@@ -39,34 +39,36 @@ public class OpenApiConfiguration {
     @Bean
     public GroupedOpenApi cscApis() {
         return GroupedOpenApi.builder()
-                .group("czertainly-csc-api")
-                .packagesToScan("com.czertainly.csc.controllers")
-                //.pathsToMatch("/v1/**")
-                .build();
+                             .group("czertainly-csc-api")
+                             .packagesToScan("com.czertainly.csc.controllers")
+                             //.pathsToMatch("/v1/**")
+                             .build();
     }
 
     @Bean
     public OpenAPI cscOpenAPI() {
         Map<String, Object> logoExtension = new HashMap<>();
         Map<String, Object> logoExtensionFields = new HashMap<>();
-        logoExtensionFields.put("url", "https://github.com/CZERTAINLY/CZERTAINLY/blob/develop/czertainly-logo/czertainly_color_H.svg");
+        logoExtensionFields.put("url",
+                                "https://github.com/CZERTAINLY/CZERTAINLY/blob/develop/czertainly-logo/czertainly_color_H.svg"
+        );
         logoExtension.put("x-logo", logoExtensionFields);
 
         return new OpenAPI()
                 .info(new Info().title("CZERTAINLY CSC API")
-                        .description("CZERTAINLY CSC API Documentation")
-                        .version(getAppVersion())
-                        .license(new License()
-                                .name("MIT License")
-                                .url("https://github.com/CZERTAINLY/CZERTAINLY/blob/develop/LICENSE.md"))
-                        .extensions(logoExtension)
-                        .contact(new Contact()
-                                .name("CZERTAINLY")
-                                .url("https://www.czertainly.com")
-                                .email("info@czertainly.com")))
+                                .description("CZERTAINLY CSC API Documentation")
+                                .version(getAppVersion())
+                                .license(new License()
+                                                 .name("MIT License")
+                                                 .url("https://github.com/CZERTAINLY/CZERTAINLY/blob/develop/LICENSE.md"))
+                                .extensions(logoExtension)
+                                .contact(new Contact()
+                                                 .name("CZERTAINLY")
+                                                 .url("https://www.czertainly.com")
+                                                 .email("info@czertainly.com")))
                 .externalDocs(new ExternalDocumentation()
-                        .description("CZERTAINLY Documentation")
-                        .url("https://docs.czertainly.com"))
+                                      .description("CZERTAINLY Documentation")
+                                      .url("https://docs.czertainly.com"))
                 .servers(List.of(new Server().url("https://csc.czertainly.online")))
                 .schemaRequirement(
                         "BearerAuthSignature",
@@ -74,11 +76,11 @@ public class OpenApiConfiguration {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .description("""
-                        Bearer authentication with `credential` or `service` scope. If the access token passed
-                        in the `Authorization` HTTP header has scope `service`, the signing application MUST pass an
-                        access token with scope `credential` in the `SAD` request parameter. This is not required,
-                        if the the access token passed in the `Authorization` HTTP header has scope `credential`.
-                        """)
+                                                     Bearer authentication with `credential` or `service` scope. If the access token passed
+                                                     in the `Authorization` HTTP header has scope `service`, the signing application MUST pass an
+                                                     access token with scope `credential` in the `SAD` request parameter. This is not required,
+                                                     if the the access token passed in the `Authorization` HTTP header has scope `credential`.
+                                                     """)
                 )
                 .schemaRequirement(
                         "BearerAuthCredential",
@@ -86,8 +88,8 @@ public class OpenApiConfiguration {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .description("""
-                        Bearer authentication with `credential` or `service` scope.
-                        """)
+                                                     Bearer authentication with `credential` or `service` scope.
+                                                     """)
                 )
                 .schemaRequirement(
                         "BearerAuthCredentialManagement",
@@ -95,8 +97,8 @@ public class OpenApiConfiguration {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .description("""
-                        Bearer authentication with `manageCredentials` scope.
-                        """)
+                                                     Bearer authentication with `manageCredentials` scope.
+                                                     """)
                 );
     }
 

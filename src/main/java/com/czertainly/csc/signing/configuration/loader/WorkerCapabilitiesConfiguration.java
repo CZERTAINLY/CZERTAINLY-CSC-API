@@ -2,17 +2,16 @@ package com.czertainly.csc.signing.configuration.loader;
 
 import com.czertainly.csc.signing.configuration.DocumentType;
 
-import java.util.Collections;
 import java.util.List;
 
-public class WorkerCapabilitiesConfiguration{
-        private List<String> signatureQualifiers;
-        private String signatureFormat;
-        private String conformanceLevel;
-        private String signaturePackaging;
-        private List<String> signatureAlgorithms;
-        private boolean returnsValidationInfo = false;
-        private List<DocumentType> documentTypes;
+public class WorkerCapabilitiesConfiguration {
+    private List<String> signatureQualifiers;
+    private String signatureFormat;
+    private String conformanceLevel;
+    private String signaturePackaging;
+    private List<String> signatureAlgorithms;
+    private boolean returnsValidationInfo = false;
+    private List<DocumentType> documentTypes;
 
     public List<String> getSignatureQualifiers() {
         return signatureQualifiers;

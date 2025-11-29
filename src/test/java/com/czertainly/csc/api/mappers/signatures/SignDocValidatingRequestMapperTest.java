@@ -29,6 +29,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
@@ -305,8 +306,7 @@ class SignDocValidatingRequestMapperTest {
     }
 
 
-    // Test Cases for Operation Mode
-
+    // Tests for Operation Mode
     @Test
     void throwsGivenOperationModeNotKnown() {
         // given
@@ -339,8 +339,7 @@ class SignDocValidatingRequestMapperTest {
     }
 
 
-    // Test Cases for Validation Info
-
+    // Tests for Validation Info
     @Test
     void returnValidationInfoDefaultsToFalseWhenNotSpecified() {
         // given
@@ -357,8 +356,7 @@ class SignDocValidatingRequestMapperTest {
     }
 
 
-    // Test Cases for Documents mapping
-
+    // Tests for Documents mapping
     @Test
     void mapsDocumentsToSign() {
         // given
@@ -393,10 +391,6 @@ class SignDocValidatingRequestMapperTest {
         assertEquals("SHA256", parsedDoc.digestAlgorithm());
         assertEquals("signAlgoParams", parsedDoc.signAlgoParams());
         assertEquals(SignaturePackaging.ATTACHED, parsedDoc.signaturePackaging());
-        // Not Yet Implemented
-        //        assertEquals(1, parsedDoc.signedAttributes().size());
-        //        assertEquals("val1", parsedDoc.signedAttributes().get("attr1"));
-
     }
 
     @ParameterizedTest
@@ -466,7 +460,9 @@ class SignDocValidatingRequestMapperTest {
 
     @ParameterizedTest
     @MethodSource("getConformanceLevels")
-    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentsToSign(ConformanceLevel level, String levelStringValue) {
+    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentsToSign(ConformanceLevel level,
+                                                                            String levelStringValue
+    ) {
         // given
         var documents = List.of(
                 aDocumentToSign()
@@ -683,7 +679,9 @@ class SignDocValidatingRequestMapperTest {
 
     @ParameterizedTest
     @MethodSource("getConformanceLevels")
-    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentDigests(ConformanceLevel level, String levelStringValue) {
+    void canMapAllConformanceLevelsWithDefaultWhenMissingForDocumentDigests(ConformanceLevel level,
+                                                                            String levelStringValue
+    ) {
         // given
         var documentDigests = List.of(
                 aDocumentDigestToSign()
@@ -729,7 +727,9 @@ class SignDocValidatingRequestMapperTest {
 
     @ParameterizedTest
     @MethodSource("getSignaturePackagings")
-    void canMapAllSignaturePackagingsForDocumentDigestsToSign(SignaturePackaging packaging, String packagingStringValue) {
+    void canMapAllSignaturePackagingsForDocumentDigestsToSign(SignaturePackaging packaging,
+                                                              String packagingStringValue
+    ) {
         // given
         var documentDigests = List.of(
                 aDocumentDigestToSign()
@@ -907,37 +907,20 @@ class SignDocValidatingRequestMapperTest {
     }
 
     static Stream<Arguments> getSignatureFormats() {
-        return Stream.of(
-                Arguments.of(SignatureFormat.JAdEs, "J"),
-                Arguments.of(SignatureFormat.CAdES, "C"),
-                Arguments.of(SignatureFormat.XAdES, "X"),
-                Arguments.of(SignatureFormat.PAdES, "P")
-        );
+        return Arrays.stream(SignatureFormat.values())
+                     .map(format -> Arguments.of(format, format.toString()));
     }
 
     static Stream<Arguments> getSignaturePackagings() {
-        return Stream.of(
-                Arguments.of(SignaturePackaging.ATTACHED, "Attached"),
-                Arguments.of(SignaturePackaging.DETACHED, "Detached"),
-                Arguments.of(SignaturePackaging.ENVELOPING, "Enveloping"),
-                Arguments.of(SignaturePackaging.ENVELOPED, "Enveloped"),
-                Arguments.of(SignaturePackaging.REVISION, "Revision"),
-                Arguments.of(SignaturePackaging.CERTIFICATION, "Certification"),
-                Arguments.of(SignaturePackaging.PARALLEL, "Parallel")
-        );
+        return Arrays.stream(SignaturePackaging.values())
+                     .map(packaging -> Arguments.of(packaging, packaging.toString()));
     }
 
     static Stream<Arguments> getConformanceLevels() {
-        return Stream.of(
-                Arguments.of(ConformanceLevel.AdES_B_B, "Ades-B-B"),
-                Arguments.of(ConformanceLevel.AdES_B_T, "Ades-B-T"),
-                Arguments.of(ConformanceLevel.AdES_B_LT, "Ades-B-LT"),
-                Arguments.of(ConformanceLevel.AdES_B_LTA, "Ades-B-LTA"),
-                Arguments.of(ConformanceLevel.AdES_B, "Ades-B"),
-                Arguments.of(ConformanceLevel.AdES_T, "Ades-T"),
-                Arguments.of(ConformanceLevel.AdES_LT, "Ades-LT"),
-                Arguments.of(ConformanceLevel.AdES_LTA, "Ades-LTA"),
-                Arguments.of(ConformanceLevel.AdES_B_B, null)
+        return Stream.concat(
+                Arrays.stream(ConformanceLevel.values())
+                      .map(level -> Arguments.of(level, level.toString())),
+                Stream.of(Arguments.of(ConformanceLevel.AdES_B_B, null))
         );
     }
 

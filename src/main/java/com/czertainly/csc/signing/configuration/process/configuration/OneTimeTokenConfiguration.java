@@ -7,5 +7,4 @@ public record OneTimeTokenConfiguration(
 ) implements TokenConfiguration {
 
 
-
 }

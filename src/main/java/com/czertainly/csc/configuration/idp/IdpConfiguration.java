@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
 public record IdpConfiguration(
         @Url String baseUrl,
         @Url String jwksUri,
-        @Url(required=false) String userInfoUrl,
+        @Url(required = false) String userInfoUrl,
         @NotBlank String issuer,
         @NotBlank String audience,
         @NotNull @DurationUnit(ChronoUnit.SECONDS) Duration clockSkewSeconds,

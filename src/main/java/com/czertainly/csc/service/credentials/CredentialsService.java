@@ -19,9 +19,11 @@ import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.repository.CredentialsRepository;
 import com.czertainly.csc.repository.entities.CredentialMetadataEntity;
+import com.czertainly.csc.service.keys.LongTermKeysService;
+import com.czertainly.csc.service.keys.SigningKey;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
-import com.czertainly.csc.signing.configuration.profiles.credentialprofile.CredentialProfile;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
+import com.czertainly.csc.signing.configuration.profiles.credentialprofile.CredentialProfile;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
@@ -50,13 +52,15 @@ public class CredentialsService {
     private final DateConverter dateConverter;
     private final CertificateValidityDecider certificateValidityDecider;
     private final CredentialProfileRepository credentialProfileRepository;
+    private final LongTermKeysService longTermKeysService;
 
     public CredentialsService(PasswordGenerator passwordGenerator, EjbcaClient ejbcaClient,
                               SignserverClient signserverClient, CredentialsRepository credentialsRepository,
                               WorkerRepository workerRepository, CertificateParser certificateParser,
                               AlgorithmHelper algorithmHelper, DateConverter dateConverter,
                               CertificateValidityDecider certificateValidityDecider,
-                                CredentialProfileRepository credentialProfileRepository
+                              CredentialProfileRepository credentialProfileRepository,
+                              LongTermKeysService longTermKeysService
     ) {
         this.passwordGenerator = passwordGenerator;
         this.ejbcaClient = ejbcaClient;
@@ -68,9 +72,10 @@ public class CredentialsService {
         this.dateConverter = dateConverter;
         this.certificateValidityDecider = certificateValidityDecider;
         this.credentialProfileRepository = credentialProfileRepository;
+        this.longTermKeysService = longTermKeysService;
     }
 
-    public Result<UUID, TextError> createCredential(
+    public Result<Credential, TextError> createCredential(
             CreateCredentialRequest createCredentialRequest
     ) {
         logger.debug("Creating new credential for user '{}'.", createCredentialRequest.userId());
@@ -84,7 +89,7 @@ public class CredentialsService {
         logger.debug(credentialProfile.toString());
 
         String uniqueUserId = createUniqueUserId(createCredentialRequest.userId());
-        String tokenAlias = getUniqueKeyAlias(uniqueUserId);
+        String keyAlias = getUniqueKeyAlias(uniqueUserId);
 
         var geCryptoTokenResult = workerRepository.getCryptoToken(createCredentialRequest.cryptoTokenName())
                                                   .mapError(e -> e.extend(
@@ -92,16 +97,7 @@ public class CredentialsService {
         if (geCryptoTokenResult instanceof Error(var err)) return Result.error(err);
         CryptoToken token = geCryptoTokenResult.unwrap();
 
-        var generateKeyResult = signserverClient
-                .generateKey(
-                        token, tokenAlias,
-                        credentialProfile.getKeyAlgorithm(),
-                        credentialProfile.getKeySpecification()
-                )
-                .mapError(e -> e.extend(
-                        "Key couldn't be generated on SignServer CryptoToken %s(%s).",
-                        token.name(), token.id()
-                ));
+        var generateKeyResult = getPregeneratedOrGenerateKey(token, keyAlias, credentialProfile, createCredentialRequest.usePreGeneratedKey());
         if (generateKeyResult instanceof Error(var err)) return Result.error(err);
         String generatedKeyAlias = generateKeyResult.unwrap();
 
@@ -166,7 +162,7 @@ public class CredentialsService {
                                  endEntity,
                                  endCertificate
         )
-                .map(CredentialMetadataEntity::getId)
+                .flatMap(credentialMetadataEntity -> getCredential(credentialMetadataEntity, createCredentialRequest.certificateReturnType()))
                 .mapError(e -> e.extend("A newly created credential couldn't be saved in the database."))
                 .consume(credentialId -> logger.info("Credential {} was generated for user {} ", credentialId,
                                                      createCredentialRequest.userId()
@@ -180,7 +176,8 @@ public class CredentialsService {
     }
 
     private Result<Void, TextError> deleteCredential(UUID credentialId,
-                                                             CertificateRevocationReason revocationReason) {
+                                                     CertificateRevocationReason revocationReason
+    ) {
         logger.info("Deleting credential with ID '{}'.", credentialId);
 
         return getCredentialMetadataEntity(credentialId, null)
@@ -193,15 +190,19 @@ public class CredentialsService {
                     // Revoke certificate if revocationReason is provided
                     return getCredential(credentialMetadata, CertificateReturnType.END_CERTIFICATE)
                             .map(credential -> {
-                                revokeCertificate(credential.cert().serialNumber(), credential.cert().issuerDN(), revocationReason);
+                                revokeCertificate(credential.cert().serialNumber(), credential.cert().issuerDN(),
+                                                  revocationReason
+                                );
                                 return credentialMetadata;
                             });
                 })
                 .flatMap(credentialMetadata ->
-                        workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
-                                .flatMap(token ->
-                                        signserverClient.removeKeyOkIfNotExists(token.id(), credentialMetadata.getKeyAlias())
-                                )
+                                 workerRepository.getCryptoToken(credentialMetadata.getCryptoTokenName())
+                                                 .flatMap(token ->
+                                                                  signserverClient.removeKeyOkIfNotExists(token.id(),
+                                                                                                          credentialMetadata.getKeyAlias()
+                                                                  )
+                                                 )
                 )
                 .flatMap(v -> {
                     try {
@@ -255,7 +256,6 @@ public class CredentialsService {
         CryptoTokenKey currentKey = getCurrentKeyResult.unwrap();
 
 
-
         var getDestinationCryptoTokenResult = workerRepository
                 .getCryptoToken(mergedRequest.cryptoTokenName())
                 .mapError(
@@ -296,7 +296,9 @@ public class CredentialsService {
                              newKeyAlias, endEntity.subjectDN(),
                              credentialProfile.getCsrSignatureAlgorithm()
                 )
-                .mapError(e -> e.extend("Failed to generate CSR when rekeying credential '%s'", mergedRequest.credentialID()))
+                .mapError(e -> e.extend("Failed to generate CSR when rekeying credential '%s'",
+                                        mergedRequest.credentialID()
+                ))
                 .consumeError(e -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias));
         if (genarateCsrResult instanceof Error(var err)) return Result.error(err);
         byte[] csr = genarateCsrResult.unwrap();
@@ -339,7 +341,8 @@ public class CredentialsService {
 
         var updateCredentialMetadataresult = updateCredentialMetadataWithNewKeyAndCertificate(
                 currentCredentialMetadata, endCertificate, finalNewKeyAlias, destinationCryptoToken,
-                credentialProfile.getName())
+                credentialProfile.getName()
+        )
                 .mapError(e -> e.extend("Failed to update credential metadata with new key and certificate."))
                 .ifError(() -> rollbackKeyCreation(destinationCryptoToken, finalNewKeyAlias))
                 .ifError(() -> revokeCertificate(endCertificate));
@@ -360,7 +363,8 @@ public class CredentialsService {
 
     public Result<Credential, TextError> getCredential(CredentialInfoRequest request) {
         logger.debug("Retrieving credential '{}'.", request.credentialID());
-        logger.trace(request.toString()); return getCredentialMetadataEntity(request.credentialID(), request.userID())
+        logger.trace(request.toString());
+        return getCredentialMetadataEntity(request.credentialID(), request.userID())
                 .mapError(e -> e.extend("Failed to retrieve credential metadata."))
                 .flatMap(metadata -> getCredential(metadata, request.certificateReturnType()));
     }
@@ -391,6 +395,29 @@ public class CredentialsService {
         } catch (Exception e) {
             logger.error("Failed to retrieve credentials for user '{}'.", request.userID(), e);
             return Result.error(TextError.of(e));
+        }
+    }
+
+    private Result<String, TextError> getPregeneratedOrGenerateKey(CryptoToken cryptoToken, String keyAlias,
+                                                                   CredentialProfile credentialProfile,
+                                                                   boolean usePreGeneratedKey
+    ) {
+        if (usePreGeneratedKey) {
+            logger.debug("Will use pre-generated long-term key for the credential.");
+            return longTermKeysService.acquireKey(cryptoToken, credentialProfile.getKeyAlgorithm())
+                    .map(SigningKey::keyAlias);
+        } else {
+            logger.debug("Will generate a new long-term key for the credential.");
+            return signserverClient
+                    .generateKey(
+                            cryptoToken, keyAlias,
+                            credentialProfile.getKeyAlgorithm(),
+                            credentialProfile.getKeySpecification()
+                    )
+                    .mapError(e -> e.extend(
+                            "Key couldn't be generated on SignServer CryptoToken %s(%s).",
+                            cryptoToken.name(), cryptoToken.id()
+                    ));
         }
     }
 
@@ -442,9 +469,10 @@ public class CredentialsService {
                 return credentialsRepository.findByIdAndUserId(credentialId, userId)
                                             .<Result<CredentialMetadataEntity, TextError>>map(Result::success)
                                             .orElseGet(() -> Result.error(
-                                                    TextError.of("No credential with id '%s' belonging to the user '%s' found in database.",
-                                                                 credentialId,
-                                                                 userId
+                                                    TextError.of(
+                                                            "No credential with id '%s' belonging to the user '%s' found in database.",
+                                                            credentialId,
+                                                            userId
                                                     )));
             }
         } catch (Exception e) {
@@ -564,10 +592,13 @@ public class CredentialsService {
             }
         }
 
-        var getAvailableAlgorithmsResult = workerRepository.getAvailableSignatureAlgorithmsForToken(credentialMetadata.getCryptoTokenName());
+        var getAvailableAlgorithmsResult = workerRepository.getAvailableSignatureAlgorithmsForToken(
+                credentialMetadata.getCryptoTokenName());
         if (getAvailableAlgorithmsResult instanceof Error) {
             TextError e = getAvailableAlgorithmsResult.unwrapError();
-            return Result.error(e.extend("Failed to retrieve available signature algorithms for crypto token '%s'.", credentialMetadata.getCryptoTokenName()));
+            return Result.error(e.extend("Failed to retrieve available signature algorithms for crypto token '%s'.",
+                                         credentialMetadata.getCryptoTokenName()
+            ));
         }
         List<String> algorithms = getAvailableAlgorithmsResult.unwrap();
 
@@ -708,7 +739,8 @@ public class CredentialsService {
                     certificate.getSerialNumber()
         );
         ejbcaClient.revokeCertificate(certificate.getSerialNumber().toString(16), certificate.getIssuer().toString(),
-                        CertificateRevocationReason.UNSPECIFIED)
+                                      CertificateRevocationReason.UNSPECIFIED
+                   )
                    .consumeError(e -> logger.error(
                            "Failed to revoke certificate '{}'. The certificate should be revoked manually.",
                            certificate.getSerialNumber()

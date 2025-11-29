@@ -1,7 +1,6 @@
 package com.czertainly.csc.crypto;
 
 import com.czertainly.csc.common.result.Result;
-import com.czertainly.csc.common.result.TextError;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -75,7 +74,7 @@ public class AlgorithmUnifier {
         }
     }
 
-    private Result<AlgorithmPair,AlgorithmUnificationError>  splitSignatureAlgo(String signAlgo) {
+    private Result<AlgorithmPair, AlgorithmUnificationError> splitSignatureAlgo(String signAlgo) {
         String signatureAlgo = algorithmHelper.getSignatureAlgorithmName(signAlgo);
         String[] parts = signatureAlgo.split(CONJUNCTION);
         if (parts.length != 2) {
@@ -84,7 +83,6 @@ public class AlgorithmUnifier {
         }
         return Result.success(new AlgorithmPair(parts[1], parts[0]));
     }
-
 
 
 }

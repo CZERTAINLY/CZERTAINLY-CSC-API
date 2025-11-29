@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.*;
@@ -10,9 +9,9 @@ import java.util.List;
 
 /**
  * <p>Java class for tokenEntry complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="tokenEntry"&gt;
  *   &lt;complexContent&gt;
@@ -50,17 +49,17 @@ import java.util.List;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tokenEntry", propOrder = {
-    "alias",
-    "chain",
-    "creationDate",
-    "info",
-    "trustedCertificate",
-    "type"
+        "alias",
+        "chain",
+        "creationDate",
+        "info",
+        "trustedCertificate",
+        "type"
 })
 public class TokenEntry {
 
@@ -76,11 +75,10 @@ public class TokenEntry {
 
     /**
      * Gets the value of the alias property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getAlias() {
         return alias;
@@ -88,11 +86,10 @@ public class TokenEntry {
 
     /**
      * Sets the value of the alias property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setAlias(String value) {
         this.alias = value;
@@ -100,24 +97,24 @@ public class TokenEntry {
 
     /**
      * Gets the value of the chain property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the chain property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getChain().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * byte[]
-     * 
+     *
      */
     public List<byte[]> getChain() {
         return this.chain;
@@ -125,11 +122,10 @@ public class TokenEntry {
 
     /**
      * Gets the value of the creationDate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
+     *
+     * @return possible object is
+     * {@link XMLGregorianCalendar }
+     *
      */
     public XMLGregorianCalendar getCreationDate() {
         return creationDate;
@@ -137,11 +133,10 @@ public class TokenEntry {
 
     /**
      * Sets the value of the creationDate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link XMLGregorianCalendar }
+     *
      */
     public void setCreationDate(XMLGregorianCalendar value) {
         this.creationDate = value;
@@ -149,11 +144,10 @@ public class TokenEntry {
 
     /**
      * Gets the value of the info property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Info }
-     *     
+     *
+     * @return possible object is
+     * {@link Info }
+     *
      */
     public Info getInfo() {
         return info;
@@ -161,11 +155,10 @@ public class TokenEntry {
 
     /**
      * Sets the value of the info property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Info }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Info }
+     *
      */
     public void setInfo(Info value) {
         this.info = value;
@@ -173,10 +166,9 @@ public class TokenEntry {
 
     /**
      * Gets the value of the trustedCertificate property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
+     *
+     * @return possible object is
+     * byte[]
      */
     public byte[] getTrustedCertificate() {
         return trustedCertificate;
@@ -184,10 +176,9 @@ public class TokenEntry {
 
     /**
      * Sets the value of the trustedCertificate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
+     *
+     * @param value allowed object is
+     *              byte[]
      */
     public void setTrustedCertificate(byte[] value) {
         this.trustedCertificate = value;
@@ -195,11 +186,10 @@ public class TokenEntry {
 
     /**
      * Gets the value of the type property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getType() {
         return type;
@@ -207,11 +197,10 @@ public class TokenEntry {
 
     /**
      * Sets the value of the type property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setType(String value) {
         this.type = value;
@@ -220,9 +209,9 @@ public class TokenEntry {
 
     /**
      * <p>Java class for anonymous complex type.
-     * 
+     *
      * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
+     *
      * <pre>
      * &lt;complexType&gt;
      *   &lt;complexContent&gt;
@@ -245,12 +234,12 @@ public class TokenEntry {
      *   &lt;/complexContent&gt;
      * &lt;/complexType&gt;
      * </pre>
-     * 
-     * 
+     *
+     *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(propOrder = {
-        "entries"
+            "entries"
     })
     public static class Info {
 
@@ -259,25 +248,25 @@ public class TokenEntry {
 
         /**
          * Gets the value of the entry property.
-         * 
+         *
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the Jakarta XML Binding object.
          * This is why there is not a <CODE>set</CODE> method for the entry property.
-         * 
+         *
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getEntry().add(newItem);
          * </pre>
-         * 
-         * 
+         *
+         *
          * <p>
          * Objects of the following type(s) are allowed in the list
          * {@link Entry }
-         * 
-         * 
+         *
+         *
          */
         public List<Entry> getEntries() {
             if (entries == null) {
@@ -289,9 +278,9 @@ public class TokenEntry {
 
         /**
          * <p>Java class for anonymous complex type.
-         * 
+         *
          * <p>The following schema fragment specifies the expected content contained within this class.
-         * 
+         *
          * <pre>
          * &lt;complexType&gt;
          *   &lt;complexContent&gt;
@@ -304,13 +293,13 @@ public class TokenEntry {
          *   &lt;/complexContent&gt;
          * &lt;/complexType&gt;
          * </pre>
-         * 
-         * 
+         *
+         *
          */
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "", propOrder = {
-            "key",
-            "value"
+                "key",
+                "value"
         })
         public static class Entry {
 
@@ -319,11 +308,10 @@ public class TokenEntry {
 
             /**
              * Gets the value of the key property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link String }
-             *     
+             *
+             * @return possible object is
+             * {@link String }
+             *
              */
             public String getKey() {
                 return key;
@@ -331,11 +319,10 @@ public class TokenEntry {
 
             /**
              * Sets the value of the key property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link String }
-             *     
+             *
+             * @param value allowed object is
+             *              {@link String }
+             *
              */
             public void setKey(String value) {
                 this.key = value;
@@ -343,11 +330,10 @@ public class TokenEntry {
 
             /**
              * Gets the value of the value property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link String }
-             *     
+             *
+             * @return possible object is
+             * {@link String }
+             *
              */
             public String getValue() {
                 return value;
@@ -355,11 +341,10 @@ public class TokenEntry {
 
             /**
              * Sets the value of the value property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link String }
-             *     
+             *
+             * @param value allowed object is
+             *              {@link String }
+             *
              */
             public void setValue(String value) {
                 this.value = value;

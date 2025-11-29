@@ -30,11 +30,13 @@ public class AsyncConfig {
     @Bean(name = "oneTimeKeyDeletionExecutor", destroyMethod = "close")
     public ExecutorService oneTimeKeyDeletionExecutor() {
         ThreadFactory tf = Thread.ofVirtual()
-                .name("key-del-", 0)
-                .uncaughtExceptionHandler(
-                        (t, e) -> logger.error("Uncaught exception in one-time key deletion thread: {}",
-                                t.getName(), e))
-                .factory();
+                                 .name("key-del-", 0)
+                                 .uncaughtExceptionHandler(
+                                         (t, e) -> logger.error(
+                                                 "Uncaught exception in one-time key deletion thread: {}",
+                                                 t.getName(), e
+                                         ))
+                                 .factory();
         ExecutorService base = Executors.newFixedThreadPool(cscConfig.concurrency().maxKeyDeletion(), tf);
         return new DelegatingSecurityContextExecutorService(base);
     }
@@ -42,23 +44,27 @@ public class AsyncConfig {
     @Bean(name = "keyGenerationExecutor", destroyMethod = "close")
     public ExecutorService keyGenerationExecutor() {
         ThreadFactory tf = Thread.ofVirtual()
-                .name("key-gen-", 0)
-                .uncaughtExceptionHandler(
-                        (t, e) -> logger.error("Uncaught exception in key generation thread: {}",
-                                t.getName(), e))
-                .factory();
+                                 .name("key-gen-", 0)
+                                 .uncaughtExceptionHandler(
+                                         (t, e) -> logger.error("Uncaught exception in key generation thread: {}",
+                                                                t.getName(), e
+                                         ))
+                                 .factory();
         ExecutorService base = Executors.newFixedThreadPool(cscConfig.concurrency().maxKeyGeneration(), tf);
         return new DelegatingSecurityContextExecutorService(base);
     }
 
-    /** Global handler for uncaught exceptions in @Async void methods */
+    /**
+     * Global handler for uncaught exceptions in @Async void methods
+     */
     @Bean
     public AsyncUncaughtExceptionHandler asyncExceptionHandler() {
         return (ex, method, params) ->
                 logger.error("Uncaught async exception in {}.{}: {}",
-                        method.getDeclaringClass().getSimpleName(),
-                        method.getName(),
-                        ex.getMessage(),
-                        ex);
+                             method.getDeclaringClass().getSimpleName(),
+                             method.getName(),
+                             ex.getMessage(),
+                             ex
+                );
     }
 }

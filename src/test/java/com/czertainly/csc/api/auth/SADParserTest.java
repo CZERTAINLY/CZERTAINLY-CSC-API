@@ -17,10 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -87,7 +84,8 @@ public class SADParserTest {
     }
 
     private Jws<Claims> aJws(String userID, String credentialID, String signatureQualifier,
-                             String hashAlgorithmOID, int numSignatures, Set<String> hashes) {
+                             String hashAlgorithmOID, int numSignatures, Set<String> hashes
+    ) {
 
         Claims claims = Mockito.mock(Claims.class);
         when(claims.get("userID", String.class)).thenReturn(userID);

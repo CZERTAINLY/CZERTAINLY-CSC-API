@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 import static com.czertainly.csc.utils.assertions.ResultAssertions.assertErrorContains;
 import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConfigurationUtilsTest {
 
@@ -72,7 +72,9 @@ class ConfigurationUtilsTest {
         var result = ConfigurationUtils.extractDuration(stringSupplier, "aProperty");
 
         // then
-        assertErrorContains(result, "Invalid duration format for 'aProperty' property. Expected ISO-8601 duration format.");
+        assertErrorContains(result,
+                            "Invalid duration format for 'aProperty' property. Expected ISO-8601 duration format."
+        );
     }
 
     @Test
@@ -179,7 +181,7 @@ class ConfigurationUtilsTest {
         assertErrorContains(result, "Directory path is empty.");
     }
 
-   @Test
+    @Test
     void checkFileExistenceAndGetReturnErrorIfDirectoryIsNull() throws IOException {
         // given
         String directory = null;

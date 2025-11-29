@@ -6,7 +6,8 @@ import java.util.Set;
 
 public class SignatureActivationDataBuilder {
 
-    public static final Set<String> knownClaims = Set.of("userID", "credentialID", "signatureQualifier", "hashAlgorithmOID",
+    public static final Set<String> knownClaims = Set.of("userID", "credentialID", "signatureQualifier",
+                                                         "hashAlgorithmOID",
                                                          "numSignatures", "clientData"
     );
 
@@ -21,7 +22,8 @@ public class SignatureActivationDataBuilder {
     private final Map<String, String> otherAttributes = new HashMap<>();
 
     public SignatureActivationData build() {
-        return new SignatureActivationData(userID, credentialID, signatureQualifier, numSignatures, hashes, hashAlgorithmOID,
+        return new SignatureActivationData(userID, credentialID, signatureQualifier, numSignatures, hashes,
+                                           hashAlgorithmOID,
                                            clientData, otherAttributes
         );
     }

@@ -40,11 +40,11 @@ public record CredentialsListDto(
         boolean onlyValid
 
 ) {
-        static public CredentialsListDto from(List<Credential> credentials, DateConverter dateConverter) {
-                return new CredentialsListDto(
-                        credentials.stream().map(Credential::credentialID).toList(),
-                        credentials.stream().map(c -> CredentialDto.fromModel(c, dateConverter)).toList(),
-                        false
-                );
-        }
+    static public CredentialsListDto from(List<Credential> credentials, DateConverter dateConverter) {
+        return new CredentialsListDto(
+                credentials.stream().map(Credential::credentialID).toList(),
+                credentials.stream().map(c -> CredentialDto.fromModel(c, dateConverter)).toList(),
+                false
+        );
+    }
 }

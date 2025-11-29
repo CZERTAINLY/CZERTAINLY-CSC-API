@@ -1,9 +1,9 @@
 package com.czertainly.csc.signing.filter;
 
-import com.czertainly.csc.signing.configuration.WorkerCapabilities;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
+import com.czertainly.csc.signing.configuration.WorkerCapabilities;
 
-public class SignaturePackagingCriterion implements Criterion<WorkerCapabilities>{
+public class SignaturePackagingCriterion implements Criterion<WorkerCapabilities> {
     private final SignaturePackaging packaging;
 
     public SignaturePackagingCriterion(SignaturePackaging packaging) {

@@ -1,0 +1,42 @@
+cryptoTokens:
+  - name: "SigningToken01"
+    id: 1
+    keyPoolProfiles:
+      - test-pool
+  - name: "SigningToken02"
+    id: 2
+    keyPoolProfiles:
+      - test-pool-2
+signers:
+  - name: "XAdES-Baseline-B"
+    id: 201
+    cryptoToken: "SigningToken01"
+    capabilities:
+      signatureQualifiers:
+        - eu_eidas_qes
+      signatureFormat: X
+      conformanceLevel: Ades-B-B
+      signaturePackaging: Detached
+      signatureAlgorithms:
+        - SHA256withRSA
+      returnsValidationInfo: false
+  - name: "PAdES-Baseline-B"
+    id: 202
+    cryptoToken: "SigningToken02"
+    capabilities:
+      signatureQualifiers:
+        - eu_eidas_aes
+      signatureFormat: P
+      conformanceLevel: Ades-B-B
+      signaturePackaging: Enveloped
+      signatureAlgorithms:
+        - SHA512withRSA
+      returnsValidationInfo: true
+  - name: "RawSigner"
+    id: 301
+    cryptoToken: "SigningToken01"
+    capabilities:
+      documentTypes:
+        - RAW
+      signatureAlgorithms:
+        - SHA256withRSA

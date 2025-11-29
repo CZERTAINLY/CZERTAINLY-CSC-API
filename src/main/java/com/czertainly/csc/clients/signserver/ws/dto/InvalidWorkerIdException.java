@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -8,9 +7,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for InvalidWorkerIdException complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="InvalidWorkerIdException"&gt;
  *   &lt;complexContent&gt;
@@ -22,12 +21,12 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "InvalidWorkerIdException", propOrder = {
-    "message"
+        "message"
 })
 public class InvalidWorkerIdException {
 
@@ -35,11 +34,10 @@ public class InvalidWorkerIdException {
 
     /**
      * Gets the value of the message property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getMessage() {
         return message;
@@ -47,11 +45,10 @@ public class InvalidWorkerIdException {
 
     /**
      * Sets the value of the message property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setMessage(String value) {
         this.message = value;

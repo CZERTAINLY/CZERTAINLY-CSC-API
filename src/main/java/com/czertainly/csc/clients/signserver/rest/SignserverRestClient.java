@@ -48,37 +48,38 @@ public class SignserverRestClient {
         logger.debug("Creating SignserverRestClient with base URL: {}", signserverUrl);
         restClient = RestClient.builder().requestFactory(requestFactory).baseUrl(signserverUrl).build();
         if (authzType == SignApiAuthorization.BASIC) {
-            basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((basicAuthUsername + ":" + basicAuthPassword).getBytes());
+            basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString(
+                    (basicAuthUsername + ":" + basicAuthPassword).getBytes());
         } else {
             basicAuthHeader = null;
         }
     }
 
     public Result<byte[], TextError> process(String workerName, byte[] data, Map<String, String> metadata,
-                                                            SignserverProcessEncoding encoding
+                                             SignserverProcessEncoding encoding
     ) {
         logger.debug("Calling Signserver process API. WorkerName: {}, Encoding: {}, metadata: [{}]",
                      workerName, encoding,
                      metadata.entrySet().stream()
-                          .map(e -> e.getKey() + "=" + e.getValue())
-                          .collect(Collectors.joining(", "))
+                             .map(e -> e.getKey() + "=" + e.getValue())
+                             .collect(Collectors.joining(", "))
         );
         final String requestData;
-        if (encoding == SignserverProcessEncoding.BASE64) {
-            requestData = Base64.getEncoder().encodeToString(data);
-        } else {
-            requestData = new String(data);
-        }
+        requestData = new String(data);
+
         WorkerProcessRequest workerProcessRequest = new WorkerProcessRequest(requestData, metadata, encoding);
         try {
-            WorkerProcessResponse response = restClient.post().uri(WORKER_PROCESS_REST_API_PATH, workerName).body(workerProcessRequest)
-                             .contentType(MediaType.APPLICATION_JSON)
-                             .header("Authorization", basicAuthHeader)
-                             .accept(MediaType.APPLICATION_JSON).retrieve().body(WorkerProcessResponse.class);
+            WorkerProcessResponse response = restClient.post().uri(WORKER_PROCESS_REST_API_PATH, workerName)
+                                                       .body(workerProcessRequest)
+                                                       .contentType(MediaType.APPLICATION_JSON)
+                                                       .header("Authorization", basicAuthHeader)
+                                                       .accept(MediaType.APPLICATION_JSON).retrieve()
+                                                       .body(WorkerProcessResponse.class);
 
             if (response == null) {
                 logger.error("Processing failed on worker {}. The response object is null.", workerName);
-                return Result.error(TextErrorWithRetryIndication.doNotRetry("Processing failed on worker " + workerName));
+                return Result.error(
+                        TextErrorWithRetryIndication.doNotRetry("Processing failed on worker " + workerName));
             }
             return Result.success(response.data().getBytes());
         } catch (ResourceAccessException e) {

@@ -36,10 +36,13 @@ public class SignatureQualifierProfileLoader {
 
 
     public SignatureQualifierProfileLoader(
-            CscConfiguration cscConfiguration, @Value("signature-qualifier-profiles-ejbca.yml") String configurationFileName
+            CscConfiguration cscConfiguration,
+            @Value("signature-qualifier-profiles-ejbca.yml") String configurationFileName
     ) {
         String configurationDirectoryPath = cscConfiguration.profilesConfigurationDirectory();
-        logger.info("Loading signature qualifier profiles from '{}/{}'.", configurationDirectoryPath, configurationFileName);
+        logger.info("Loading signature qualifier profiles from '{}/{}'.", configurationDirectoryPath,
+                    configurationFileName
+        );
         var getConfigurationFileResult = checkFileExistenceAndGet(configurationDirectoryPath, configurationFileName);
         if (getConfigurationFileResult instanceof Error(var e)) {
             throw new ApplicationConfigurationException(e.getErrorText());
@@ -137,7 +140,7 @@ public class SignatureQualifierProfileLoader {
         }
 
         var getCsrSignatureAlgorithm = extractString(configuration::getCsrSignatureAlgorithm,
-                                                          "csrSignatureAlgorithm"
+                                                     "csrSignatureAlgorithm"
         );
         if (getCsrSignatureAlgorithm instanceof Error(var e)) {
             return Result.error(e);

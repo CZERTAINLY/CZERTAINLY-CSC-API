@@ -1,0 +1,18 @@
+cryptoTokens:
+  - name: "SigningToken01"
+    id: 1
+    keyPoolProfiles:
+      - unknown-pool
+signers:
+  - name: "XAdES-Baseline-B"
+    id: 201
+    cryptoToken: "SigningToken01"
+    capabilities:
+      signatureQualifiers:
+        - eu_eidas_qes
+      signatureFormat: X
+      conformanceLevel: Ades-B-B
+      signaturePackaging: Detached
+      signatureAlgorithms:
+        - SHA256withRSA
+      returnsValidationInfo: false

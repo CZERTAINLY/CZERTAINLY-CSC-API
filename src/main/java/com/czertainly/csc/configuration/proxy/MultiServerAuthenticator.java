@@ -25,7 +25,9 @@ public class MultiServerAuthenticator extends Authenticator {
     protected PasswordAuthentication getPasswordAuthentication() {
         String host = "" + getRequestingHost() + ":" + getRequestingPort();
         PasswordAuthentication passwordAuthentication = host2Authent.get(host);
-        logger.trace("using proxy authentication for <{}>: {}", host, passwordAuthentication == null ? "none" : passwordAuthentication.getUserName() + "/***");
+        logger.trace("using proxy authentication for <{}>: {}", host,
+                     passwordAuthentication == null ? "none" : passwordAuthentication.getUserName() + "/***"
+        );
         return passwordAuthentication;
     }
 

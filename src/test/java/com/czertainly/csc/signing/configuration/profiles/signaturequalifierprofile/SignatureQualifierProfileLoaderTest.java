@@ -70,7 +70,8 @@ class SignatureQualifierProfileLoaderTest {
     void loadSignatureQualifierProfilesLoadsConfigurationCorrectly() {
         // given
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
-                aSignatureQualifierProfileConfiguration().create()); File config = prepareConfigurationFile(profiles);
+                aSignatureQualifierProfileConfiguration().create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
@@ -80,7 +81,8 @@ class SignatureQualifierProfileLoaderTest {
         // then
         assertEquals(1, loader.getProfiles().size());
         SignatureQualifierProfile profile = loader.getProfiles().getFirst();
-        assertEquals("profile1", profile.getName()); assertEquals("aCA", profile.getCertificateAuthority());
+        assertEquals("profile1", profile.getName());
+        assertEquals("aCA", profile.getCertificateAuthority());
         assertEquals("CertProfile1", profile.getCertificateProfileName());
         assertEquals("EndEntityProfile1", profile.getEndEntityProfileName());
         assertEquals(Duration.ofDays(365), profile.getCertificateValidity());
@@ -143,7 +145,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getName),
                                                               null
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
@@ -160,7 +163,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getCaName),
                                                               null
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
@@ -305,7 +309,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getDn),
                                                               null
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
@@ -320,7 +325,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getDn),
                                                               new NamePattern(null, List.of("CN"))
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
@@ -337,7 +343,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getDn),
                                                               new NamePattern("CN=XY", null)
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
@@ -354,7 +361,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getSan),
                                                               null
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
@@ -372,7 +380,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getSan),
                                                               new NamePattern(null, List.of())
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
@@ -390,7 +399,8 @@ class SignatureQualifierProfileLoaderTest {
         List<SignatureQualifierProfileConfiguration> profiles = List.of(
                 aSignatureQualifierProfileConfiguration().set(field(SignatureQualifierProfileConfiguration::getSan),
                                                               new NamePattern("XY", null)
-                ).create()); File config = prepareConfigurationFile(profiles);
+                ).create());
+        File config = prepareConfigurationFile(profiles);
 
         // when
         SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
@@ -423,7 +433,9 @@ class SignatureQualifierProfileLoaderTest {
     private File prepareConfigurationFile(List<SignatureQualifierProfileConfiguration> profiles) {
         try {
             Path f = Files.createTempFile(configurationDirectory, "credential-profiles-ejbca", ".yml");
-            DumperOptions options = new DumperOptions(); options.setIndent(2); options.setPrettyFlow(true);
+            DumperOptions options = new DumperOptions();
+            options.setIndent(2);
+            options.setPrettyFlow(true);
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
             Representer representer = new Representer(options);
@@ -431,9 +443,11 @@ class SignatureQualifierProfileLoaderTest {
             Yaml yaml = new Yaml(representer, options);
 
             SignatureQualifierProfilesConfigurationFile configuration = new SignatureQualifierProfilesConfigurationFile();
-            configuration.setProfiles(profiles); try (FileWriter writer = new FileWriter(f.toFile())) {
+            configuration.setProfiles(profiles);
+            try (FileWriter writer = new FileWriter(f.toFile())) {
                 yaml.dump(configuration, writer);
-            } return f.toFile();
+            }
+            return f.toFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

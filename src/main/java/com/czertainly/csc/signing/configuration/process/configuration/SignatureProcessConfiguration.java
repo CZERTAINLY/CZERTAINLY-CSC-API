@@ -71,4 +71,12 @@ public class SignatureProcessConfiguration {
     public DocumentType documentType() {
         return documentType;
     }
+
+    public String digestAlgorithm() {
+        return signatureAlgorithm().digestAlgorithm();
+    }
+
+    public String encryptionAlgorithm() {
+        return signatureAlgorithm().keyAlgorithm();
+    }
 }

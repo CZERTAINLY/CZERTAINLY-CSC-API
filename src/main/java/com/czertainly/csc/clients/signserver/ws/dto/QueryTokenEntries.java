@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -12,9 +11,9 @@ import java.util.List;
 
 /**
  * <p>Java class for queryTokenEntries complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="queryTokenEntries"&gt;
  *   &lt;complexContent&gt;
@@ -31,18 +30,18 @@ import java.util.List;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlRootElement(namespace = "http://adminws.signserver.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "queryTokenEntries", propOrder = {
-    "workerId",
-    "startIndex",
-    "max",
-    "condition",
-    "ordering",
-    "includeData"
+        "workerId",
+        "startIndex",
+        "max",
+        "condition",
+        "ordering",
+        "includeData"
 })
 public class QueryTokenEntries {
 
@@ -55,7 +54,7 @@ public class QueryTokenEntries {
 
     /**
      * Gets the value of the workerId property.
-     * 
+     *
      */
     public int getWorkerId() {
         return workerId;
@@ -63,7 +62,7 @@ public class QueryTokenEntries {
 
     /**
      * Sets the value of the workerId property.
-     * 
+     *
      */
     public void setWorkerId(int value) {
         this.workerId = value;
@@ -71,7 +70,7 @@ public class QueryTokenEntries {
 
     /**
      * Gets the value of the startIndex property.
-     * 
+     *
      */
     public int getStartIndex() {
         return startIndex;
@@ -79,7 +78,7 @@ public class QueryTokenEntries {
 
     /**
      * Sets the value of the startIndex property.
-     * 
+     *
      */
     public void setStartIndex(int value) {
         this.startIndex = value;
@@ -87,7 +86,7 @@ public class QueryTokenEntries {
 
     /**
      * Gets the value of the max property.
-     * 
+     *
      */
     public int getMax() {
         return max;
@@ -95,7 +94,7 @@ public class QueryTokenEntries {
 
     /**
      * Sets the value of the max property.
-     * 
+     *
      */
     public void setMax(int value) {
         this.max = value;
@@ -110,25 +109,25 @@ public class QueryTokenEntries {
 
     /**
      * Gets the value of the condition property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the condition property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getCondition().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link QueryCondition }
-     * 
-     * 
+     *
+     *
      */
     public List<QueryCondition> getCondition() {
         if (this.condition == null) {
@@ -139,25 +138,25 @@ public class QueryTokenEntries {
 
     /**
      * Gets the value of the ordering property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the ordering property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getOrdering().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link QueryOrdering }
-     * 
-     * 
+     *
+     *
      */
     public List<QueryOrdering> getOrdering() {
         return this.ordering;
@@ -165,7 +164,7 @@ public class QueryTokenEntries {
 
     /**
      * Gets the value of the includeData property.
-     * 
+     *
      */
     public boolean isIncludeData() {
         return includeData;
@@ -173,7 +172,7 @@ public class QueryTokenEntries {
 
     /**
      * Sets the value of the includeData property.
-     * 
+     *
      */
     public void setIncludeData(boolean value) {
         this.includeData = value;

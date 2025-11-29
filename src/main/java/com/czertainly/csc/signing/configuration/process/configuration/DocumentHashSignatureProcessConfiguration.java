@@ -21,8 +21,4 @@ public class DocumentHashSignatureProcessConfiguration extends SignatureProcessC
               signatureAlgorithm, returnValidationInfo, DocumentType.HASH
         );
     }
-
-    public String digestAlgorithm() {
-        return signatureAlgorithm().digestAlgorithm();
-    }
 }

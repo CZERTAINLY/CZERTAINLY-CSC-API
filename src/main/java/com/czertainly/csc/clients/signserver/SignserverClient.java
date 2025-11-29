@@ -10,12 +10,11 @@ import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.CertificateParser;
 import com.czertainly.csc.crypto.DigestAlgorithmJavaName;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.*;
 import com.czertainly.csc.model.builders.CryptoTokenKeyBuilder;
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.model.signserver.CryptoTokenKeyStatus;
-import com.czertainly.csc.signing.Signature;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +37,9 @@ public class SignserverClient {
     private final ObjectMapper objectMapper;
     private final CertificateParser certificateParser;
 
+    private final Base64.Decoder decoder = Base64.getDecoder();
+    private final Base64.Encoder encoder = Base64.getEncoder();
+
     public SignserverClient(SignserverWsClient signserverWSClient, SignserverRestClient signserverRestClient,
                             KeySpecificationParser keySpecificationParser, ObjectMapper objectMapper,
                             CertificateParser certificateParser
@@ -49,64 +51,39 @@ public class SignserverClient {
         this.certificateParser = certificateParser;
     }
 
-    public Result<Signature, TextError> signSingleContent(
+    // Document signing methods
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signSingleDocument(
             String workerName, byte[] data, String keyAlias, SignaturePackaging signaturePackaging
     ) {
-        Base64.Decoder decoder = Base64.getDecoder();
-
         // Metadata can be used to pass additional information to the signing process
         var metadata = new HashMap<String, String>();
 
-        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.BASE64)
-                .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
-                .map(signatureBytes -> new Signature(signatureBytes, signaturePackaging));
+        byte[] dataBase64 = encoder.encode(data);
+        // SignserverProcessEncoding.BASE64 - we base64 encode the document bytes, and we instruct Signserver to
+        // decode them so the signer receives the original data.
+        return sign(workerName, dataBase64, keyAlias, metadata, SignserverProcessEncoding.BASE64)
+                .flatMap(this::base64Decode)
+                .map(signatureBytes -> {
+                    var documentSignature = new DocumentSignature(signatureBytes, signaturePackaging);
+                    return Signatures.of(documentSignature);
+                });
     }
 
-    public Result<SignedDocuments, TextError> signSingleContentWithValidationData(
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signSingleDocumentWithValidationData(
             String workerName, byte[] data, String keyAlias, SignaturePackaging signaturePackaging
     ) {
-        Base64.Decoder decoder = Base64.getDecoder();
-
         // Metadata can be used to pass additional information to the signing process
         var metadata = new HashMap<String, String>();
 
-        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.BASE64)
-                .flatMap(encodedSignatures -> mapToObject(
-                        decoder, encodedSignatures, EncodedValidationDataWrapper.class
-                ))
+        byte[] dataBase64 = encoder.encode(data);
+        // SignserverProcessEncoding.BASE64 - we base64 encode the document bytes, and we instruct Signserver to
+        // decode them so the signer receives the original data.
+        return sign(workerName, dataBase64, keyAlias, metadata, SignserverProcessEncoding.BASE64)
+                .flatMap(encodedSignatures -> mapToObject(encodedSignatures, EncodedValidationDataWrapper.class))
                 .flatMap(signatureWithValidationData ->
-                        base64Decode(decoder, signatureWithValidationData.signatureData().getBytes())
-                                .map(signatureBytes -> new SignedDocuments(
-                                        List.of(new Signature(signatureBytes, signaturePackaging)),
-                                        new HashSet<>(signatureWithValidationData.validationData().crl()),
-                                        new HashSet<>(signatureWithValidationData.validationData().ocsp()),
-                                        new HashSet<>(
-                                                signatureWithValidationData.validationData().certificates())
-                                ))
-                );
-    }
-
-    public Result<Signature, TextError> signSingleHash(
-            String workerName, byte[] data, String keyAlias, String digestAlgorithm
-    ) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        return singleSign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> base64Decode(decoder, encodedSignatures))
-                .map(signatureBytes -> new Signature(signatureBytes, SignaturePackaging.DETACHED));
-    }
-
-    public Result<SignedDocuments, TextError> signSingleHashWithValidationData(
-            String workerName, byte[] data, String keyAlias, String digestAlgorithm
-    ) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        return singleSign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> mapToObject(
-                        decoder, encodedSignatures, EncodedValidationDataWrapper.class
-                ))
-                .flatMap(signatureWithValidationData ->
-                                 base64Decode(decoder, signatureWithValidationData.signatureData().getBytes())
-                                         .map(signatureBytes -> new SignedDocuments(
-                                                 List.of(new Signature(signatureBytes, SignaturePackaging.DETACHED)),
+                                 base64Decode(signatureWithValidationData.signatureData().getBytes())
+                                         .map(signatureBytes -> new SignaturesWithValidationInfo<>(
+                                                 List.of(new DocumentSignature(signatureBytes, signaturePackaging)),
                                                  new HashSet<>(signatureWithValidationData.validationData().crl()),
                                                  new HashSet<>(signatureWithValidationData.validationData().ocsp()),
                                                  new HashSet<>(
@@ -115,32 +92,88 @@ public class SignserverClient {
                 );
     }
 
-    public Result<List<Signature>, TextError> signMultipleHashes(String workerName, List<String> data, String keyAlias,
-                                                                 String digestAlgorithm
+    // Hash signing methods
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signSingleDocumentHash(
+            String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        return multisign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> mapToObject(decoder, encodedSignatures, BatchSignaturesResponse.class))
-                .map(batchSignatures -> mapToSignaturesList(batchSignatures, decoder));
+        return singleSignDocumentHash(workerName, data, keyAlias, digestAlgorithm)
+                .flatMap(this::base64Decode)
+                .map(signatureBytes -> {
+                    var documentSignature = new DocumentSignature(signatureBytes, SignaturePackaging.DETACHED);
+                    return Signatures.of(documentSignature);
+                });
     }
 
-    public Result<SignedDocuments, TextError> signMultipleHashesWithValidationData(
-            String workerName, List<String> data, String keyAlias, String digestAlgorithm
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signSingleDocumentHashWithValidationData(
+            String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        return multisign(workerName, data, keyAlias, digestAlgorithm)
-                .flatMap(encodedSignatures -> mapToObject(decoder, encodedSignatures,
+        return singleSignDocumentHash(workerName, data, keyAlias, digestAlgorithm)
+                .flatMap(encodedSignatures -> mapToObject(encodedSignatures, EncodedValidationDataWrapper.class))
+                .flatMap(signatureWithValidationData ->
+                                 base64Decode(signatureWithValidationData.signatureData().getBytes())
+                                         .map(signatureBytes -> new SignaturesWithValidationInfo<>(
+                                                 List.of(new DocumentSignature(signatureBytes,
+                                                                               SignaturePackaging.DETACHED
+                                                 )),
+                                                 new HashSet<>(signatureWithValidationData.validationData().crl()),
+                                                 new HashSet<>(signatureWithValidationData.validationData().ocsp()),
+                                                 new HashSet<>(
+                                                         signatureWithValidationData.validationData().certificates())
+                                         ))
+                );
+    }
+
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleDocumentHashes(String workerName,
+                                                                                                List<String> data,
+                                                                                                String keyAlias,
+                                                                                                String encryptionAlgorithm,
+                                                                                                String digestAlgorithm
+    ) {
+        return multisign(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
+                .flatMap(encodedSignatures -> mapToObject(encodedSignatures, BatchSignaturesResponse.class))
+                .map(batchSignatures -> Signatures.of(mapToDocumentSignaturesList(batchSignatures)));
+    }
+
+    public Result<SignaturesContainer<DocumentSignature>, TextError> signMultipleDocumentHashesWithValidationData(
+            String workerName, List<String> data, String keyAlias, String encryptionAlgorithm, String digestAlgorithm
+    ) {
+        return multisign(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
+                .flatMap(encodedSignatures -> mapToObject(encodedSignatures,
                                                           BatchSignatureWithValidationData.class
                 ))
                 .map(batchSignatures -> {
-                    List<Signature> signatures = mapToSignaturesList(batchSignatures.signatureData(), decoder);
-                    return new SignedDocuments(
+                    List<DocumentSignature> signatures = mapToDocumentSignaturesList(batchSignatures.signatureData());
+                    return new SignaturesWithValidationInfo<>(
                             signatures,
                             new HashSet<>(batchSignatures.validationData().crl()),
                             new HashSet<>(batchSignatures.validationData().ocsp()),
                             new HashSet<>(batchSignatures.validationData().certificates())
                     );
                 });
+    }
+
+    // Plain Signature Methods
+    public Result<SignaturesContainer<PlainSignature>, TextError> signPlainSingleHash(
+            String workerName, byte[] data, String keyAlias, String encryptionAlgorithm, String digestAlgorithm
+    ) {
+
+        return singleSignRawHash(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
+                .flatMap(this::base64Decode)
+                .map(signatureBytes -> {
+                    var documentSignature = new PlainSignature(signatureBytes);
+                    return Signatures.of(documentSignature);
+                });
+    }
+
+    public Result<SignaturesContainer<PlainSignature>, TextError> signPlainMultipleHashes(String workerName,
+                                                                                          List<String> data,
+                                                                                          String keyAlias,
+                                                                                          String encryptionAlgorithm,
+                                                                                          String digestAlgorithm
+    ) {
+        return multisign(workerName, data, keyAlias, encryptionAlgorithm, digestAlgorithm)
+                .flatMap(encodedSignatures -> mapToObject(encodedSignatures, BatchSignaturesResponse.class))
+                .map(batchSignatures -> Signatures.of(mapToPlainSignaturesList(batchSignatures)));
     }
 
     public Result<byte[], TextError> generateCSR(
@@ -207,7 +240,9 @@ public class SignserverClient {
                 .flatMap(keys -> {
                     if (keys.isEmpty()) {
                         return Result.error(
-                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias, cryptoToken.name())
+                                TextError.of("Key with alias %s not found in crypto token %s", keyAlias,
+                                             cryptoToken.name()
+                                )
                         );
                     }
                     if (keys.size() > 1) {
@@ -248,25 +283,36 @@ public class SignserverClient {
         return signserverWSClient.removeKey(workerId, keyAlias, true);
     }
 
-    private Result<byte[], TextError> singleSign(
+    private Result<byte[], TextError> singleSignDocumentHash(
             String workerName, byte[] data, String keyAlias, String digestAlgorithm
     ) {
         var metadata = new HashMap<String, String>();
         metadata.put("USING_CLIENTSUPPLIED_HASH", "true");
         metadata.put("CLIENTSIDE_HASHDIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
+        // so we instruct signserver to not decode it.
+        return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
+    }
 
-        // SignserverProcessEncoding.NONE is used as hash is already base64 encoded, so no need to encode it again
+    private Result<byte[], TextError> singleSignRawHash(
+            String workerName, byte[] data, String keyAlias, String encryptionAlgorithm, String digestAlgorithm
+    ) {
+        var metadata = new HashMap<String, String>();
+        metadata.put("DIGESTALGORITHM", DigestAlgorithmJavaName.get(digestAlgorithm));
+        metadata.put("ENCRYPTIONALGORITHM", encryptionAlgorithm);
+        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer,
+        // so we instruct signserver to not decode it.
         return sign(workerName, data, keyAlias, metadata, SignserverProcessEncoding.NONE);
     }
 
     private Result<byte[], TextError> multisign(String workerName, List<String> data, String keyAlias,
-                                                String digestAlgorithm
+                                                String encryptionAlgorithm, String digestAlgorithm
     ) {
         var signatureRequests = new ArrayList<BatchSignatureRequest>();
         int i = 0;
 
         for (String hash : data) {
-            var signatureRequest = new BatchSignatureRequest(hash,
+            var signatureRequest = new BatchSignatureRequest(hash, encryptionAlgorithm,
                                                              DigestAlgorithmJavaName.get(digestAlgorithm),
                                                              "r" + i
             );
@@ -286,15 +332,15 @@ public class SignserverClient {
             throw new RuntimeException("Serialization of batch signature request has failed.", e);
         }
 
-        return sign(workerName, requestBytes, keyAlias, metadata,
-                    SignserverProcessEncoding.NONE
-        );
+        // SignserverProcessEncoding.NONE - the data is base64 encoded, but the decoding is handled by signer, so
+        // we instruct signserver to not decode.
+        return sign(workerName, requestBytes, keyAlias, metadata, SignserverProcessEncoding.NONE);
     }
 
     // Returns the signed data encoded in base64
     private Result<byte[], TextError> sign(String workerName, byte[] data, String keyAlias,
-                        Map<String, String> metadata,
-                        SignserverProcessEncoding encoding
+                                           Map<String, String> metadata,
+                                           SignserverProcessEncoding encoding
     ) {
         metadata.put("ALIAS", keyAlias);
         return signserverRestClient.process(workerName, data, metadata, encoding);
@@ -317,7 +363,7 @@ public class SignserverClient {
         return Result.success(alias);
     }
 
-    private Result<byte[], TextError> base64Decode(Base64.Decoder decoder, byte[] encodedSignatureData) {
+    private Result<byte[], TextError> base64Decode(byte[] encodedSignatureData) {
         try {
             byte[] decoded = decoder.decode(encodedSignatureData);
             return Result.success(decoded);
@@ -327,7 +373,7 @@ public class SignserverClient {
         }
     }
 
-    private <T> Result<T, TextError> mapToObject(Base64.Decoder decoder, byte[] encodedSignatureData, Class<T> clazz) {
+    private <T> Result<T, TextError> mapToObject(byte[] encodedSignatureData, Class<T> clazz) {
         try {
             byte[] decoded = decoder.decode(encodedSignatureData);
             return Result.success(objectMapper.readValue(decoded, clazz));
@@ -337,14 +383,23 @@ public class SignserverClient {
         }
     }
 
-    private static List<Signature> mapToSignaturesList(BatchSignaturesResponse batchSignatures, Base64.Decoder decoder
+    private List<DocumentSignature> mapToDocumentSignaturesList(
+            BatchSignaturesResponse batchSignatures
     ) {
-        List<Signature> signatures = new ArrayList<>();
+        List<DocumentSignature> signatures = new ArrayList<>();
         for (BatchSignatureResponse response : batchSignatures.signatures()) {
-            signatures.add(new Signature(decoder.decode(response.signature()), SignaturePackaging.DETACHED));
+            signatures.add(new DocumentSignature(decoder.decode(response.signature()), SignaturePackaging.DETACHED));
+        }
+        return signatures;
+    }
+
+    private List<PlainSignature> mapToPlainSignaturesList(
+            BatchSignaturesResponse batchSignatures
+    ) {
+        List<PlainSignature> signatures = new ArrayList<>();
+        for (BatchSignatureResponse response : batchSignatures.signatures()) {
+            signatures.add(new PlainSignature(decoder.decode(response.signature())));
         }
         return signatures;
     }
 }
-
-

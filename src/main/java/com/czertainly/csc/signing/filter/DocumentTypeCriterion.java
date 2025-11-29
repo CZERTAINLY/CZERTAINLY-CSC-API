@@ -15,6 +15,6 @@ public class DocumentTypeCriterion implements Criterion<WorkerCapabilities> {
     public boolean matches(WorkerCapabilities element) {
         // check if the worker supports the specified document type
         return element.documentTypes().stream()
-                .anyMatch(type -> type.equals(documentType));
+                      .anyMatch(type -> type.equals(documentType));
     }
 }

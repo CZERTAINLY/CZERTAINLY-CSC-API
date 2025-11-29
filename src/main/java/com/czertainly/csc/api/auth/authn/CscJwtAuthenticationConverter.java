@@ -11,7 +11,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,14 +82,18 @@ public class CscJwtAuthenticationConverter implements Converter<Jwt, AbstractAut
 
                 return Set.copyOf((List<String>) claim);
             } else {
-                logger.warn(String.format("The '%s' claim is not a list of strings. The claim will be ignored.", claimName));
+                logger.warn(String.format("The '%s' claim is not a list of strings. The claim will be ignored.",
+                                          claimName
+                ));
                 return Set.of();
             }
         } else if (claim instanceof String s) {
             var parts = s.split(",");
             return Stream.of(parts).map(String::strip).collect(Collectors.toSet());
         } else {
-            logger.warn(String.format("The '%s' claim is not a list of strings or string. The claim will be ignored.", claimName));
+            logger.warn(String.format("The '%s' claim is not a list of strings or string. The claim will be ignored.",
+                                      claimName
+            ));
             return Set.of();
         }
     }

@@ -39,13 +39,20 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
                                             String caName, String certificateProfileName, String endEntityProfileName
     ) {
         try {
-            logger.info("Editing EJBCA user '{} '.", username); logger.trace("Subject DN: {}, SAN {}", subjectDn, san);
-            var request = new EditUser(); var userDataVOWS = new UserDataVOWS(); userDataVOWS.setUsername(username);
-            userDataVOWS.setPassword(password); userDataVOWS.setSubjectDN(subjectDn);
-            userDataVOWS.setSubjectAltName(san); userDataVOWS.setCaName(caName);
+            logger.info("Editing EJBCA user '{} '.", username);
+            logger.trace("Subject DN: {}, SAN {}", subjectDn, san);
+            var request = new EditUser();
+            var userDataVOWS = new UserDataVOWS();
+            userDataVOWS.setUsername(username);
+            userDataVOWS.setPassword(password);
+            userDataVOWS.setSubjectDN(subjectDn);
+            userDataVOWS.setSubjectAltName(san);
+            userDataVOWS.setCaName(caName);
             userDataVOWS.setEndEntityProfileName(endEntityProfileName);
-            userDataVOWS.setCertificateProfileName(certificateProfileName); userDataVOWS.setStatus(10); // 10 = New
-            userDataVOWS.setTokenType("USERGENERATED"); request.setArg0(userDataVOWS);
+            userDataVOWS.setCertificateProfileName(certificateProfileName);
+            userDataVOWS.setStatus(10); // 10 = New
+            userDataVOWS.setTokenType("USERGENERATED");
+            request.setArg0(userDataVOWS);
 
             getWebServiceTemplate().marshalSendAndReceive(request);
             return Result.emptySuccess();
@@ -65,15 +72,20 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
     ) {
         try {
             logger.debug("Requesting certificate for EJBCA user '{}", username);
-            var csrBase64 = Base64.getEncoder().encodeToString(csr); var request = new CertificateRequest();
-            var userDataVOWS = new UserDataVOWS(); userDataVOWS.setUsername(username);
-            userDataVOWS.setPassword(password); userDataVOWS.setSubjectDN(subjectDn);
+            var csrBase64 = Base64.getEncoder().encodeToString(csr);
+            var request = new CertificateRequest();
+            var userDataVOWS = new UserDataVOWS();
+            userDataVOWS.setUsername(username);
+            userDataVOWS.setPassword(password);
+            userDataVOWS.setSubjectDN(subjectDn);
             userDataVOWS.setStartTime(dateTimeFormatter.format(certificateValidityStart));
-            userDataVOWS.setEndTime(dateTimeFormatter.format(certificateValidityEnd)); userDataVOWS.setCaName(caName);
+            userDataVOWS.setEndTime(dateTimeFormatter.format(certificateValidityEnd));
+            userDataVOWS.setCaName(caName);
             userDataVOWS.setEndEntityProfileName(endEntityProfileName);
             userDataVOWS.setCertificateProfileName(certificateProfileName);
 
-            request.setArg0(userDataVOWS); request.setArg1(csrBase64); // requestData
+            request.setArg0(userDataVOWS);
+            request.setArg1(csrBase64); // requestData
             request.setArg2(0); // requestType; PKCS10 certificate request
             request.setArg3(null); // hardTokenSN; support dropped in EJBCA 7.1.0
             request.setArg4("PKCS7WITHCHAIN"); // responseType
@@ -97,7 +109,9 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
                          serialNumberHex, issuerDn
             );
 
-            var request = new CheckRevokationStatus(); request.setArg0(issuerDn); request.setArg1(serialNumberHex);
+            var request = new CheckRevokationStatus();
+            request.setArg0(issuerDn);
+            request.setArg1(serialNumberHex);
 
             var response = (JAXBElement<CheckRevokationStatusResponse>) getWebServiceTemplate().marshalSendAndReceive(
                     request);
@@ -106,22 +120,26 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         } catch (WebServiceIOException e) {
             logger.error("Failed to check revocation status for certificate with serial number {} issued by {}.",
                          serialNumberHex, issuerDn, e
-            ); return Result.error(TextErrorWithRetryIndication.doRetry("Failed to check revocation status."));
+            );
+            return Result.error(TextErrorWithRetryIndication.doRetry("Failed to check revocation status."));
         } catch (Exception e) {
             logger.error("Failed to check revocation status for certificate with serial number {} issued by {}.",
                          serialNumberHex, issuerDn, e
-            ); return Result.error(TextErrorWithRetryIndication.doNotRetry("Failed to check revocation status."));
+            );
+            return Result.error(TextErrorWithRetryIndication.doNotRetry("Failed to check revocation status."));
         }
     }
 
     public Result<Void, TextError> revokeCertificate(String certificateSerialNumberHex, String issuerDN,
-                                                     CertificateRevocationReason revocationReason) {
+                                                     CertificateRevocationReason revocationReason
+    ) {
         try {
             logger.info("Revoking certificate with serial number '{}' issued by '{}' because of a reason '{}'.",
                         certificateSerialNumberHex, issuerDN, revocationReason
             );
 
-            var request = new RevokeCert(); request.setArg0(issuerDN); // certificateSerialNumberHex
+            var request = new RevokeCert();
+            request.setArg0(issuerDN); // certificateSerialNumberHex
             request.setArg1(certificateSerialNumberHex); // issuerDN
             request.setArg2(revocationReason.getReasonCode()); // reason
 
@@ -130,11 +148,13 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         } catch (WebServiceIOException e) {
             logger.error("Failed to revoke certificate with serial number '{}' issued by '{}'.",
                          certificateSerialNumberHex, issuerDN, e
-            ); return Result.error(TextErrorWithRetryIndication.doRetry("Failed to revoke certificate."));
+            );
+            return Result.error(TextErrorWithRetryIndication.doRetry("Failed to revoke certificate."));
         } catch (Exception e) {
             logger.error("Failed to revoke certificate with serial number '{}' issued by '{}'.",
                          certificateSerialNumberHex, issuerDN, e
-            ); return Result.error(TextErrorWithRetryIndication.doNotRetry("Failed to revoke certificate."));
+            );
+            return Result.error(TextErrorWithRetryIndication.doNotRetry("Failed to revoke certificate."));
         }
     }
 
@@ -142,9 +162,12 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
         try {
             logger.debug("Fetching user data for EJBCA user '{}'.", username);
 
-            var request = new FindUser(); var userMatch = new UserMatch(); userMatch.setMatchwith(0); // 0 = username
+            var request = new FindUser();
+            var userMatch = new UserMatch();
+            userMatch.setMatchwith(0); // 0 = username
             userMatch.setMatchtype(0); // 0 = exact match
-            userMatch.setMatchvalue(username); request.setArg0(userMatch);
+            userMatch.setMatchvalue(username);
+            request.setArg0(userMatch);
 
             var response = (JAXBElement<FindUserResponse>) getWebServiceTemplate().marshalSendAndReceive(request);
             List<UserDataVOWS> data = response.getValue().getReturn();

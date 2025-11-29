@@ -1,7 +1,6 @@
 package com.czertainly.csc.signing.filter;
 
 import com.czertainly.csc.signing.configuration.DocumentType;
-import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.WorkerCapabilities;
 import com.czertainly.csc.utils.configuration.WorkerCapabilitiesBuilder;
 import org.junit.jupiter.api.Test;
@@ -17,11 +16,11 @@ public class DocumentTypeCriterionTest {
     void matchesReturnsTrueOnMatchingDocumentTypes() {
         // given
         WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
-                .withDocumentTypes(List.of(
-                        DocumentType.HASH,
-                        DocumentType.FULL
-                ))
-                .build();
+                                                                         .withDocumentTypes(List.of(
+                                                                                 DocumentType.HASH,
+                                                                                 DocumentType.FULL
+                                                                         ))
+                                                                         .build();
         DocumentTypeCriterion documentTypeCriterion = new DocumentTypeCriterion(DocumentType.HASH);
 
         // when
@@ -35,10 +34,10 @@ public class DocumentTypeCriterionTest {
     void matchesReturnsFalseOnNonMatchingDocumentTypes() {
         // given
         WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
-                .withDocumentTypes(List.of(
-                        DocumentType.HASH
-                ))
-                .build();
+                                                                         .withDocumentTypes(List.of(
+                                                                                 DocumentType.HASH
+                                                                         ))
+                                                                         .build();
         DocumentTypeCriterion documentTypeCriterion = new DocumentTypeCriterion(DocumentType.FULL);
 
         // when

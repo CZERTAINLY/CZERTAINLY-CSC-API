@@ -2,8 +2,11 @@ package com.czertainly.csc.api.mappers.credentials;
 
 import com.czertainly.csc.api.management.CreateCredentialDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
+import com.czertainly.csc.model.csc.CertificateReturnType;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
 import org.springframework.stereotype.Component;
+
+import static com.czertainly.csc.common.utils.CertificateMapperUtil.resolveCertificateReturnType;
 
 @Component
 public class CreateCredentialRequestMapper {
@@ -47,16 +50,31 @@ public class CreateCredentialRequestMapper {
             throw InvalidInputDataException.of("The description field must be at most 255 characters long.");
         }
 
+        // If usePreGeneratedKey is not provided, set it to false.
+        Boolean usePreGeneratedKey = dto.usePreGeneratedKey();
+        if (usePreGeneratedKey == null) {
+            usePreGeneratedKey = false;
+        }
+
+        CertificateReturnType certificateReturnType;
+        try {
+            certificateReturnType = resolveCertificateReturnType(dto.certificates());
+        } catch (IllegalArgumentException e) {
+            throw InvalidInputDataException.of("Invalid parameter certificates.");
+        }
+
         return new CreateCredentialRequest(
-                        dto.cryptoTokenName(),
-                        dto.credentialProfileName(),
-                        dto.userId(),
-                        dto.signatureQualifier(),
-                        numberOfSignaturesPerAuthorization,
-                        dto.scal(),
-                        dto.dn(),
-                        dto.san(),
-                        dto.description()
+                dto.cryptoTokenName(),
+                dto.credentialProfileName(),
+                dto.userId(),
+                dto.signatureQualifier(),
+                numberOfSignaturesPerAuthorization,
+                dto.scal(),
+                dto.dn(),
+                dto.san(),
+                dto.description(),
+                usePreGeneratedKey,
+                certificateReturnType
         );
     }
 }

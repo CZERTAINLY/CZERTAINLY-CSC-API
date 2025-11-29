@@ -3,7 +3,8 @@ package com.czertainly.csc.signing.configuration.process.signers;
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.DocumentSignature;
+import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.DocumentContentSignatureProcessConfiguration;
 import com.czertainly.csc.signing.configuration.process.token.SigningToken;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Base64;
 import java.util.List;
 
-public class DocumentContentSigner<C extends DocumentContentSignatureProcessConfiguration> implements DocumentSigner<C> {
+public class DocumentContentSigner<C extends DocumentContentSignatureProcessConfiguration> implements Signer<C, DocumentSignature> {
 
     public static final Logger logger = LoggerFactory.getLogger(DocumentContentSigner.class);
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
@@ -27,10 +28,10 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
     }
 
     @Override
-    public Result<SignedDocuments, TextError> sign(
+    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
-        Result<SignedDocuments, TextError> result;
+        Result<SignaturesContainer<DocumentSignature>, TextError> result;
         if (data.size() == 1) {
             if (configuration.returnValidationInfo()) {
                 result = signSingleContentWithValidationInfo(data, configuration, signingToken, worker);
@@ -44,21 +45,10 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
         return result.flatMap(signed -> verifyNumberOfSignatures(data, signed));
     }
 
-    private Result<SignedDocuments, TextError> signSingleContent(
+    private Result<SignaturesContainer<DocumentSignature>, TextError> signSingleContent(
             List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
     ) {
-        return signserverClient.signSingleContent(
-                worker.worker().workerName(),
-                BASE64_DECODER.decode(data.getFirst()),
-                signingToken.getKeyAlias(),
-                configuration.signaturePackaging()
-        ).map(SignedDocuments::of);
-    }
-
-    private Result<SignedDocuments, TextError> signSingleContentWithValidationInfo(
-            List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
-    ) {
-        return signserverClient.signSingleContentWithValidationData(
+        return signserverClient.signSingleDocument(
                 worker.worker().workerName(),
                 BASE64_DECODER.decode(data.getFirst()),
                 signingToken.getKeyAlias(),
@@ -66,7 +56,20 @@ public class DocumentContentSigner<C extends DocumentContentSignatureProcessConf
         );
     }
 
-    private Result<SignedDocuments, TextError> verifyNumberOfSignatures(List<String> data, SignedDocuments signed) {
+    private Result<SignaturesContainer<DocumentSignature>, TextError> signSingleContentWithValidationInfo(
+            List<String> data, C configuration, SigningToken signingToken, WorkerWithCapabilities worker
+    ) {
+        return signserverClient.signSingleDocumentWithValidationData(
+                worker.worker().workerName(),
+                BASE64_DECODER.decode(data.getFirst()),
+                signingToken.getKeyAlias(),
+                configuration.signaturePackaging()
+        );
+    }
+
+    private Result<SignaturesContainer<DocumentSignature>, TextError> verifyNumberOfSignatures(List<String> data,
+                                                                                               SignaturesContainer<DocumentSignature> signed
+    ) {
         if (signed.signatures().size() != data.size()) {
             logger.error("The number of signatures does not match the number of documents.");
             return Result.error(TextError.of("The number of signatures does not match the number of documents."));

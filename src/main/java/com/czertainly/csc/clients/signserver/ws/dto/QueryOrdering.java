@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -9,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for queryOrdering complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="queryOrdering"&gt;
  *   &lt;complexContent&gt;
@@ -24,13 +23,13 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "queryOrdering", propOrder = {
-    "column",
-    "order"
+        "column",
+        "order"
 })
 public class QueryOrdering {
 
@@ -40,11 +39,10 @@ public class QueryOrdering {
 
     /**
      * Gets the value of the column property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getColumn() {
         return column;
@@ -52,11 +50,10 @@ public class QueryOrdering {
 
     /**
      * Sets the value of the column property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setColumn(String value) {
         this.column = value;
@@ -64,11 +61,10 @@ public class QueryOrdering {
 
     /**
      * Gets the value of the order property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Order }
-     *     
+     *
+     * @return possible object is
+     * {@link Order }
+     *
      */
     public Order getOrder() {
         return order;
@@ -76,11 +72,10 @@ public class QueryOrdering {
 
     /**
      * Sets the value of the order property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Order }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Order }
+     *
      */
     public void setOrder(Order value) {
         this.order = value;

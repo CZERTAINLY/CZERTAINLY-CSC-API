@@ -10,8 +10,8 @@ import com.czertainly.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.crypto.AlgorithmPair;
 import com.czertainly.csc.crypto.AlgorithmUnifier;
-import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.DocumentContentToSign;
+import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignDocParameters;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
 import com.czertainly.csc.signing.configuration.SignatureFormat;
@@ -51,12 +51,11 @@ public class SignDocValidatingRequestMapper {
         try {
             if (credentialId != null) {
                 credentialIdUUID = UUID.fromString(credentialId);
-            }
-            else {
+            } else {
                 credentialIdUUID = null;
             }
         } catch (IllegalArgumentException e) {
-            throw InvalidInputDataException.of("Invalid string parameter SAD");
+            throw InvalidInputDataException.of("Invalid string parameter credentialID");
         }
 
         final String signatureQualifier = dto.getSignatureQualifier().orElse(null);
@@ -65,7 +64,7 @@ public class SignDocValidatingRequestMapper {
             throw InvalidInputDataException.of("Missing (or invalid type) string parameter SAD");
         } else if (dto.getSAD().isPresent() && sad != null) {
             throw InvalidInputDataException.of("Signature activation data was provided in both the request" +
-                                                 " and the access token. Please provide it only at one place.");
+                                                       " and the access token. Please provide it only at one place.");
         } else if (dto.getSAD().isPresent()) {
             String sadString = dto.getSAD().get();
             sad = sadParser.parse(sadString);
@@ -76,16 +75,17 @@ public class SignDocValidatingRequestMapper {
         if (dto.getDocuments().isEmpty() && dto.getDocumentDigests().isEmpty()) {
             throw InvalidInputDataException.of("Either documentDigests or documents must be present in the request.");
         } else if (!dto.getDocuments().isEmpty() && !dto.getDocumentDigests().isEmpty()) {
-            throw InvalidInputDataException.of("Cannot provide both documentDigests and documents parameters simultaneously.");
+            throw InvalidInputDataException.of(
+                    "Cannot provide both documentDigests and documents parameters simultaneously.");
         }
 
         SignatureActivationData finalSad = sad;
         documentsToSign = dto.getDocuments().stream()
-                                 .map(doc -> mapDocument(doc, finalSad))
-                                 .toList();
-            documentDigestsToSign = dto.getDocumentDigests().stream()
-                                 .map(this::mapDocumentDigests)
-                                 .toList();
+                             .map(doc -> mapDocument(doc, finalSad))
+                             .toList();
+        documentDigestsToSign = dto.getDocumentDigests().stream()
+                                   .map(this::mapDocumentDigests)
+                                   .toList();
 
         final String operationModeString = dto.getOperationMode().orElse("S");
         final OperationMode operationMode;
@@ -104,7 +104,8 @@ public class SignDocValidatingRequestMapper {
                                  .orElseThrow(() -> InvalidInputDataException.of(
                                          "Missing userID in Signature Activation Data"));
 
-        StructuredClientDataMapper.StructuredClientData structuredClientData = structuredClientDataMapper.map(clientData);
+        StructuredClientDataMapper.StructuredClientData structuredClientData = structuredClientDataMapper.map(
+                clientData);
 
         return new SignDocParameters(
                 userID,
@@ -173,8 +174,9 @@ public class SignDocValidatingRequestMapper {
         }
 
         // TODO: Implement signedAttributes
-        return new DocumentContentToSign(document, signatureFormat, conformanceLevel, keyAlgo, digestAlgo, signAlgoParams,
-                                  new HashMap<>(), signaturePackaging
+        return new DocumentContentToSign(document, signatureFormat, conformanceLevel, keyAlgo, digestAlgo,
+                                         signAlgoParams,
+                                         new HashMap<>(), signaturePackaging
         );
     }
 
@@ -233,7 +235,7 @@ public class SignDocValidatingRequestMapper {
 
         // TODO: Implement signedAttributes
         return new DocumentDigestsToSign(hashes, signatureFormat, conformanceLevel, keyAlgo, digestAlgo, signAlgoParams,
-                                  new HashMap<>(), signaturePackaging
+                                         new HashMap<>(), signaturePackaging
         );
     }
 }

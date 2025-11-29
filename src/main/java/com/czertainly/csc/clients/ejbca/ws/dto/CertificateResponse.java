@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.ejbca.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -8,9 +7,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for certificateResponse complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="certificateResponse"&gt;
  *   &lt;complexContent&gt;
@@ -23,13 +22,13 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "certificateResponse", propOrder = {
-    "responseType",
-    "data"
+        "responseType",
+        "data"
 })
 public class CertificateResponse {
 
@@ -38,11 +37,10 @@ public class CertificateResponse {
 
     /**
      * Gets the value of the responseType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getResponseType() {
         return responseType;
@@ -50,11 +48,10 @@ public class CertificateResponse {
 
     /**
      * Sets the value of the responseType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setResponseType(String value) {
         this.responseType = value;
@@ -62,10 +59,9 @@ public class CertificateResponse {
 
     /**
      * Gets the value of the data property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
+     *
+     * @return possible object is
+     * byte[]
      */
     public byte[] getData() {
         return data;
@@ -73,10 +69,9 @@ public class CertificateResponse {
 
     /**
      * Sets the value of the data property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
+     *
+     * @param value allowed object is
+     *              byte[]
      */
     public void setData(byte[] value) {
         this.data = value;

@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlEnum;
@@ -7,7 +6,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for order.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <pre>
  * &lt;simpleType name="order"&gt;
@@ -17,7 +16,7 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/restriction&gt;
  * &lt;/simpleType&gt;
  * </pre>
- * 
+ *
  */
 @XmlType(name = "order")
 @XmlEnum

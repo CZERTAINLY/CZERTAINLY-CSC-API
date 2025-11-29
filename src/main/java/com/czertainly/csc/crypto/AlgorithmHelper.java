@@ -30,7 +30,7 @@ public class AlgorithmHelper {
             return false;
         }
 
-        boolean isKnown =  defaultSignatureNameFinder.hasAlgorithmName(identifier);
+        boolean isKnown = defaultSignatureNameFinder.hasAlgorithmName(identifier);
         if (!isKnown) {
             logger.debug("Algorithm OID {} does not represent a known signature algorithm.", algorithmOID);
         }

@@ -1,6 +1,8 @@
 cryptoTokens:
   - name: "SigningToken01"
     id: 1
+    keyPoolProfiles:
+      - test-pool
 signers:
   - id: 201
     cryptoToken: "SigningToken01"

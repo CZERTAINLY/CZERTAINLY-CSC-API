@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -12,9 +11,9 @@ import java.util.List;
 
 /**
  * <p>Java class for tokenSearchResults complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="tokenSearchResults"&gt;
  *   &lt;complexContent&gt;
@@ -28,14 +27,14 @@ import java.util.List;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tokenSearchResults", propOrder = {
-    "entries",
-    "moreEntriesAvailable",
-    "numMoreEntries"
+        "entries",
+        "moreEntriesAvailable",
+        "numMoreEntries"
 })
 public class TokenSearchResults {
 
@@ -46,25 +45,25 @@ public class TokenSearchResults {
 
     /**
      * Gets the value of the entries property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the entries property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getEntries().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link TokenEntry }
-     * 
-     * 
+     *
+     *
      */
     public List<TokenEntry> getEntries() {
         if (entries == null) {
@@ -75,11 +74,10 @@ public class TokenSearchResults {
 
     /**
      * Gets the value of the moreEntriesAvailable property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
+     *
+     * @return possible object is
+     * {@link Boolean }
+     *
      */
     public Boolean isMoreEntriesAvailable() {
         return moreEntriesAvailable;
@@ -87,11 +85,10 @@ public class TokenSearchResults {
 
     /**
      * Sets the value of the moreEntriesAvailable property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
+     *
      */
     public void setMoreEntriesAvailable(Boolean value) {
         this.moreEntriesAvailable = value;
@@ -99,11 +96,10 @@ public class TokenSearchResults {
 
     /**
      * Gets the value of the numMoreEntries property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Long }
-     *     
+     *
+     * @return possible object is
+     * {@link Long }
+     *
      */
     public Long getNumMoreEntries() {
         return numMoreEntries;
@@ -111,11 +107,10 @@ public class TokenSearchResults {
 
     /**
      * Sets the value of the numMoreEntries property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Long }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Long }
+     *
      */
     public void setNumMoreEntries(Long value) {
         this.numMoreEntries = value;

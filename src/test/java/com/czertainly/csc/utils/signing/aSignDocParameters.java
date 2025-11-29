@@ -1,6 +1,5 @@
 package com.czertainly.csc.utils.signing;
 
-import com.czertainly.csc.api.OperationMode;
 import com.czertainly.csc.model.SignDocParameters;
 import org.instancio.Instancio;
 import org.instancio.InstancioClassApi;

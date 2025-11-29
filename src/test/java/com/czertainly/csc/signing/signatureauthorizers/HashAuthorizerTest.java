@@ -15,14 +15,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class DocumentHashAuthorizerTest {
+class HashAuthorizerTest {
 
-    private DocumentHashAuthorizer authorizer;
+    private HashAuthorizer authorizer;
     private SignatureActivationData sad;
 
     @BeforeEach
     void setUp() {
-        authorizer = new DocumentHashAuthorizer();
+        authorizer = new HashAuthorizer();
         sad = mock(SignatureActivationData.class);
     }
 

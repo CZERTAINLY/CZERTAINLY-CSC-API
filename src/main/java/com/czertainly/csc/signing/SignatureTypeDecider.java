@@ -10,8 +10,10 @@ public class SignatureTypeDecider {
 
     public Result<SignatureType, TextError> decideType(SignDocParameters parameters) {
 
-        if (parameters.sessionId().isPresent() && parameters.credentialID() != null && parameters.signatureQualifier() != null) {
-            return Result.error(TextError.of("Session ID, signature qualifier and credential ID must not be present at the same time."));
+        if (parameters.sessionId()
+                      .isPresent() && parameters.credentialID() != null && parameters.signatureQualifier() != null) {
+            return Result.error(TextError.of(
+                    "Session ID, signature qualifier and credential ID must not be present at the same time."));
         }
 
         if (parameters.sessionId().isPresent()) {
@@ -32,7 +34,8 @@ public class SignatureTypeDecider {
         } else if (parameters.credentialID() != null) {
             return Result.success(SignatureType.LONG_TERM);
         } else {
-            return Result.error(TextError.of("Neither session ID nor signature qualifier nor credential ID is present."));
+            return Result.error(
+                    TextError.of("Neither session ID nor signature qualifier nor credential ID is present."));
         }
     }
 }

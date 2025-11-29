@@ -93,7 +93,10 @@ class SessionKeyRepositoryPostgresTest extends PostgresTest {
         insertKeyEntity("Key5", 3, "ECDSA", true, ZonedDateTime.now().minusHours(3));
 
         // when
-        var keys = sessionKeyRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, ZonedDateTime.now().minusMinutes(90));
+        var keys = sessionKeyRepository.findByInUseAndAcquiredAtBeforeOrderByAcquiredAtAsc(true, ZonedDateTime.now()
+                                                                                                              .minusMinutes(
+                                                                                                                      90)
+        );
 
         // then
         assertEquals(2, keys.size());

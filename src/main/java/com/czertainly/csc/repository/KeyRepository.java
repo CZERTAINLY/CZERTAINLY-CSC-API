@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.CannotCreateTransactionException;
 
 import java.sql.SQLNonTransientConnectionException;

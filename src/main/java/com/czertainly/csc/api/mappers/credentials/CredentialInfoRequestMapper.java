@@ -1,9 +1,7 @@
 package com.czertainly.csc.api.mappers.credentials;
 
 import com.czertainly.csc.api.auth.CscAuthenticationToken;
-import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.credentials.GetCredentialInfoDto;
-import com.czertainly.csc.api.credentials.ListCredentialsRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.czertainly.csc.common.utils.CertificateMapperUtil;
 import com.czertainly.csc.model.csc.CertificateReturnType;
@@ -39,11 +37,11 @@ public class CredentialInfoRequestMapper {
 
 
         return new CredentialInfoRequest(
-                        userId,
-                        credentialID,
-                        certificateReturnType,
-                        returnCertificateInfo,
-                        returnAuthInfo
+                userId,
+                credentialID,
+                certificateReturnType,
+                returnCertificateInfo,
+                returnAuthInfo
         );
     }
 
@@ -54,7 +52,8 @@ public class CredentialInfoRequestMapper {
                 throw InvalidInputDataException.of("Missing userID claim in the access token.");
             }
             if (!(usernameClaim instanceof String username)) {
-                throw InvalidInputDataException.of("Invalid type of userID claim in the access token. The userID must be a string.");
+                throw InvalidInputDataException.of(
+                        "Invalid type of userID claim in the access token. The userID must be a string.");
             } else {
                 return username;
             }

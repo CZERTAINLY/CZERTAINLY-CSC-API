@@ -8,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for getPKCS10CertificateRequestForAlias2 complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="getPKCS10CertificateRequestForAlias2"&gt;
  *   &lt;complexContent&gt;
@@ -25,16 +25,16 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlRootElement(namespace = "http://adminws.signserver.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "getPKCS10CertificateRequestForAlias2", propOrder = {
-    "signerId",
-    "certReqInfo",
-    "explicitEccParameters",
-    "keyAlias"
+        "signerId",
+        "certReqInfo",
+        "explicitEccParameters",
+        "keyAlias"
 })
 public class GetPKCS10CertificateRequestForAlias2 {
 
@@ -45,7 +45,7 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Gets the value of the signerId property.
-     * 
+     *
      */
     public int getSignerId() {
         return signerId;
@@ -53,7 +53,7 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Sets the value of the signerId property.
-     * 
+     *
      */
     public void setSignerId(int value) {
         this.signerId = value;
@@ -61,11 +61,10 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Gets the value of the certReqInfo property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Pkcs10CertReqInfo }
-     *     
+     *
+     * @return possible object is
+     * {@link Pkcs10CertReqInfo }
+     *
      */
     public Pkcs10CertReqInfo getCertReqInfo() {
         return certReqInfo;
@@ -73,11 +72,10 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Sets the value of the certReqInfo property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Pkcs10CertReqInfo }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Pkcs10CertReqInfo }
+     *
      */
     public void setCertReqInfo(Pkcs10CertReqInfo value) {
         this.certReqInfo = value;
@@ -85,7 +83,7 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Gets the value of the explicitEccParameters property.
-     * 
+     *
      */
     public boolean isExplicitEccParameters() {
         return explicitEccParameters;
@@ -93,7 +91,7 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Sets the value of the explicitEccParameters property.
-     * 
+     *
      */
     public void setExplicitEccParameters(boolean value) {
         this.explicitEccParameters = value;
@@ -101,11 +99,10 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Gets the value of the keyAlias property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getKeyAlias() {
         return keyAlias;
@@ -113,11 +110,10 @@ public class GetPKCS10CertificateRequestForAlias2 {
 
     /**
      * Sets the value of the keyAlias property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setKeyAlias(String value) {
         this.keyAlias = value;

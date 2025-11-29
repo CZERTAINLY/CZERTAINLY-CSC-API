@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -9,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for removeKeyResponse complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="removeKeyResponse"&gt;
  *   &lt;complexContent&gt;
@@ -23,12 +22,12 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "removeKeyResponse", propOrder = {
-    "_return"
+        "_return"
 })
 public class RemoveKeyResponse {
 
@@ -37,7 +36,7 @@ public class RemoveKeyResponse {
 
     /**
      * Gets the value of the return property.
-     * 
+     *
      */
     public boolean isReturn() {
         return _return;
@@ -45,7 +44,7 @@ public class RemoveKeyResponse {
 
     /**
      * Sets the value of the return property.
-     * 
+     *
      */
     public void setReturn(boolean value) {
         this._return = value;

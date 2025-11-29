@@ -33,7 +33,9 @@ public class OptionalPatternReplacer {
             String name = matcher.group(1);
             String variable = matcher.group(2);
             var component = new PatternComponent(name, variable);
-            logger.debug("Adding component '{}' with replaceable value '{}' into '{}'", component.name(), component.variable, replacerName);
+            logger.debug("Adding component '{}' with replaceable value '{}' into '{}'", component.name(),
+                         component.variable, replacerName
+            );
             components.add(component);
         }
         return components;
@@ -48,7 +50,7 @@ public class OptionalPatternReplacer {
             var isComponentRequired = requiredComponents.contains(component.name());
             if (!isValueAvailable && isComponentRequired) {
                 throw new InvalidInputDataException(
-                        replacerName + ": Missing value of '" + component.variable + "' for required component '" + component.name +"'.");
+                        replacerName + ": Missing value of '" + component.variable + "' for required component '" + component.name + "'.");
             } else if (isValueAvailable) {
                 substitutedComponents.add(component.name() + "=" + keyValueSource.get().get(component.variable));
             }
@@ -58,5 +60,5 @@ public class OptionalPatternReplacer {
         return String.join(", ", substitutedComponents);
     }
 
-    private record PatternComponent(String name, String variable) { }
+    private record PatternComponent(String name, String variable) {}
 }

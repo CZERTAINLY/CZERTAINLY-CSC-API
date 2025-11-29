@@ -16,7 +16,7 @@ public class PatternUsernameProvider implements UsernameProvider {
         if (pattern == null || pattern.isBlank()) {
             throw new ApplicationConfigurationException("Username pattern is not set.");
         }
-        this.patternReplacer = new PatternReplacer(pattern, "Username Provider");;
+        this.patternReplacer = new PatternReplacer(pattern, "Username Provider");
     }
 
     @Override
@@ -24,7 +24,8 @@ public class PatternUsernameProvider implements UsernameProvider {
         try {
             return Result.success(patternReplacer.replacePattern(keyValueSource));
         } catch (Exception e) {
-            return Result.error(TextError.of("Could not create Username based on the provided pattern.", e.getMessage()));
+            return Result.error(
+                    TextError.of("Could not create Username based on the provided pattern.", e.getMessage()));
         }
     }
 }

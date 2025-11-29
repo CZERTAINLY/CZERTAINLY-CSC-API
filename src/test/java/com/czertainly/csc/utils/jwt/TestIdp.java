@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.czertainly.csc.utils.jwt.Constants.*;
+import static com.czertainly.csc.utils.jwt.Constants.CREDENTIAL_SCOPE;
 
 public class TestIdp {
 

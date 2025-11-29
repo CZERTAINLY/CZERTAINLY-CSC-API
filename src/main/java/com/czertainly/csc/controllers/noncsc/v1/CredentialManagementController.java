@@ -1,12 +1,14 @@
 package com.czertainly.csc.controllers.noncsc.v1;
 
 import com.czertainly.csc.api.common.ErrorDto;
+import com.czertainly.csc.api.credentials.CredentialDto;
 import com.czertainly.csc.api.management.*;
 import com.czertainly.csc.api.mappers.credentials.CreateCredentialRequestMapper;
 import com.czertainly.csc.api.mappers.credentials.CredentialUUIDMapper;
 import com.czertainly.csc.api.mappers.credentials.RekeyCertificateRequestMapper;
 import com.czertainly.csc.api.mappers.credentials.RemoveCredentialRequestMapper;
 import com.czertainly.csc.common.result.TextError;
+import com.czertainly.csc.components.DateConverter;
 import com.czertainly.csc.controllers.exceptions.InternalErrorException;
 import com.czertainly.csc.model.csc.requests.CreateCredentialRequest;
 import com.czertainly.csc.model.csc.requests.RekeyCredentialRequest;
@@ -66,18 +68,21 @@ public class CredentialManagementController {
     private final CredentialUUIDMapper credentialUUIDMapper;
     private final RekeyCertificateRequestMapper rekeyCertificateRequestMapper;
     private final RemoveCredentialRequestMapper removeCredentialRequestMapper;
+    private final DateConverter dateConverter;
 
     public CredentialManagementController(@Autowired CredentialsService credentialsService,
                                           CreateCredentialRequestMapper createCredentialRequestMapper,
                                           CredentialUUIDMapper credentialUUIDMapper,
                                           RekeyCertificateRequestMapper rekeyCertificateRequestMapper,
-                                          RemoveCredentialRequestMapper removeCredentialRequestMapper
+                                          RemoveCredentialRequestMapper removeCredentialRequestMapper,
+                                          DateConverter dateConverter
     ) {
         this.credentialsService = credentialsService;
         this.createCredentialRequestMapper = createCredentialRequestMapper;
         this.credentialUUIDMapper = credentialUUIDMapper;
         this.rekeyCertificateRequestMapper = rekeyCertificateRequestMapper;
         this.removeCredentialRequestMapper = removeCredentialRequestMapper;
+        this.dateConverter = dateConverter;
     }
 
     @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json")
@@ -89,14 +94,14 @@ public class CredentialManagementController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Successful operation",
-                            content = @Content(schema = @Schema(implementation = CredentialIdDto.class))
+                            content = @Content(schema = @Schema(implementation = CredentialDto.class))
                     )
             }
     )
-    public CredentialIdDto createCredential(@RequestBody CreateCredentialDto createCredentialDto) {
+    public CredentialDto createCredential(@RequestBody CreateCredentialDto createCredentialDto) {
         CreateCredentialRequest request = createCredentialRequestMapper.map(createCredentialDto);
         return this.credentialsService.createCredential(request)
-                                      .map(CredentialIdDto::from)
+                                      .map(credential -> CredentialDto.fromModel(credential, dateConverter))
                                       .mapError(e -> e.extend("Failed to create credential for user %s",
                                                               createCredentialDto.userId()
                                       ))

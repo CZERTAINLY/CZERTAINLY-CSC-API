@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -8,9 +7,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for pkcs10CertReqInfo complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="pkcs10CertReqInfo"&gt;
  *   &lt;complexContent&gt;
@@ -24,14 +23,14 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "pkcs10CertReqInfo", propOrder = {
-    "attributes",
-    "signatureAlgorithm",
-    "subjectDN"
+        "attributes",
+        "signatureAlgorithm",
+        "subjectDN"
 })
 public class Pkcs10CertReqInfo {
 
@@ -41,11 +40,10 @@ public class Pkcs10CertReqInfo {
 
     /**
      * Gets the value of the attributes property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Asn1Set }
-     *     
+     *
+     * @return possible object is
+     * {@link Asn1Set }
+     *
      */
     public Asn1Set getAttributes() {
         return attributes;
@@ -53,11 +51,10 @@ public class Pkcs10CertReqInfo {
 
     /**
      * Sets the value of the attributes property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Asn1Set }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Asn1Set }
+     *
      */
     public void setAttributes(Asn1Set value) {
         this.attributes = value;
@@ -65,11 +62,10 @@ public class Pkcs10CertReqInfo {
 
     /**
      * Gets the value of the signatureAlgorithm property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getSignatureAlgorithm() {
         return signatureAlgorithm;
@@ -77,11 +73,10 @@ public class Pkcs10CertReqInfo {
 
     /**
      * Sets the value of the signatureAlgorithm property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setSignatureAlgorithm(String value) {
         this.signatureAlgorithm = value;
@@ -89,11 +84,10 @@ public class Pkcs10CertReqInfo {
 
     /**
      * Gets the value of the subjectDN property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getSubjectDN() {
         return subjectDN;
@@ -101,11 +95,10 @@ public class Pkcs10CertReqInfo {
 
     /**
      * Sets the value of the subjectDN property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setSubjectDN(String value) {
         this.subjectDN = value;

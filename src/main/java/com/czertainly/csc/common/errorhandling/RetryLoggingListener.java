@@ -13,8 +13,12 @@ public class RetryLoggingListener implements RetryListener {
     private static final Logger logger = LoggerFactory.getLogger(RetryLoggingListener.class);
 
     @Override
-    public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
-        logger.info("Retry attempt {} failed due to: {} ({})", context.getRetryCount(), throwable.getMessage(), throwable.getClass().getName());
+    public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+                                                 Throwable throwable
+    ) {
+        logger.info("Retry attempt {} failed due to: {} ({})", context.getRetryCount(), throwable.getMessage(),
+                    throwable.getClass().getName()
+        );
     }
 
     @Override

@@ -268,7 +268,9 @@ class AlgorithmHelperTest {
         var signatureAlgorithm = "1.2.840.10045.4.3.2"; // ECDSA with SHA256
 
         // when
-        boolean result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestAlgorithm, signatureAlgorithm);
+        boolean result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestAlgorithm,
+                                                                                           signatureAlgorithm
+        );
 
         // then
         assertTrue(result);
@@ -281,7 +283,9 @@ class AlgorithmHelperTest {
         var signatureAlgorithm = "1.2.840.10045.4.3.2"; // ECDSA with SHA256
 
         // when
-        boolean result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestAlgorithm, signatureAlgorithm);
+        boolean result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestAlgorithm,
+                                                                                           signatureAlgorithm
+        );
 
         // then
         assertFalse(result);

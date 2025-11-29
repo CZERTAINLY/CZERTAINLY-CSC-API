@@ -20,7 +20,8 @@ public record LongTermToken(CredentialMetadata credentialMetadata) implements Si
         if (credentialMetadata.multisign() < data.size()) {
             logger.warn(
                     "LongTermToken '{}' cannot sign requested '{}' documents, because it is configured to sign only '{}' documents at once.",
-                    credentialMetadata.keyAlias(), data.size(), credentialMetadata.multisign());
+                    credentialMetadata.keyAlias(), data.size(), credentialMetadata.multisign()
+            );
             return false;
         }
 

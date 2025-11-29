@@ -28,12 +28,14 @@ public class WorkerConfigurationLoader {
     private final WorkerConfigurationFile configuration;
     private final Map<String, KeyPoolProfile> keyPoolMap;
 
-    public WorkerConfigurationLoader(CscConfiguration cscConfiguration, KeyPoolProfilesConfiguration keyPoolProfilesConfiguration) {
+    public WorkerConfigurationLoader(CscConfiguration cscConfiguration,
+                                     KeyPoolProfilesConfiguration keyPoolProfilesConfiguration
+    ) {
         this.keyPoolMap = keyPoolProfilesConfiguration.keyPoolProfiles()
-                                          .stream()
-                                          .collect(Collectors.toMap(KeyPoolProfile::name,
-                                                                    Function.identity()
-                                          ));
+                                                      .stream()
+                                                      .collect(Collectors.toMap(KeyPoolProfile::name,
+                                                                                Function.identity()
+                                                      ));
         Yaml yaml = new Yaml(new Constructor(WorkerConfigurationFile.class, new LoaderOptions()));
         try {
             configuration = yaml.load(new BufferedReader(new FileReader(cscConfiguration.workerConfigurationFile())));
@@ -47,7 +49,7 @@ public class WorkerConfigurationLoader {
         List<WorkerWithCapabilities> workersWithCapabilities = new ArrayList<>();
 
         Map<String, CryptoToken> cryptoTokenMap = getCryptoTokenMap(configuration.getCryptoTokens());
-        List<WorkerConfiguration> workerConfigurations = configuration.getSigners()  != null? configuration.getSigners() : List.of();
+        List<WorkerConfiguration> workerConfigurations = configuration.getSigners() != null ? configuration.getSigners() : List.of();
         for (WorkerConfiguration workerConfiguration : workerConfigurations) {
             String workerName = workerConfiguration.getName();
             if (workerName == null) {
@@ -70,7 +72,16 @@ public class WorkerConfigurationLoader {
                         "Worker configuration is not valid. Worker '" + workerName + "' references an unknown CryptoToken '" + tokenName + "'.");
             }
 
-            WorkerCapabilities capabilities = getCapabilities(workerConfiguration.getCapabilities(), workerName);
+            WorkerCapabilities capabilities;
+            if (workerConfiguration.getCapabilities()
+                                   .getDocumentTypes() != null && workerConfiguration.getCapabilities()
+                                                                                     .getDocumentTypes()
+                                                                                     .contains(DocumentType.RAW)) {
+                capabilities = getRawSignerCapabilities(workerConfiguration.getCapabilities(), workerName);
+            } else {
+                capabilities = getDocumentSignerCapabilities(workerConfiguration.getCapabilities(), workerName);
+            }
+
             Worker worker = new Worker(workerName, workerId, cryptoToken);
 
             workersWithCapabilities.add(new WorkerWithCapabilities(worker, capabilities));
@@ -79,8 +90,8 @@ public class WorkerConfigurationLoader {
         return workersWithCapabilities;
     }
 
-    private WorkerCapabilities getCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
-                                               String workerName
+    private WorkerCapabilities getDocumentSignerCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
+                                                             String workerName
     ) {
         List<String> signatureQualifiers = capabilitiesConfiguration.getSignatureQualifiers();
         if (signatureQualifiers == null) {
@@ -114,7 +125,8 @@ public class WorkerConfigurationLoader {
 
         boolean returnsValidationInfo = capabilitiesConfiguration.isReturnsValidationInfo();
 
-        if (capabilitiesConfiguration.getDocumentTypes() == null || capabilitiesConfiguration.getDocumentTypes().isEmpty()) {
+        if (capabilitiesConfiguration.getDocumentTypes() == null || capabilitiesConfiguration.getDocumentTypes()
+                                                                                             .isEmpty()) {
             capabilitiesConfiguration.setDocumentTypes(List.of(DocumentType.HASH));
         }
 
@@ -125,6 +137,25 @@ public class WorkerConfigurationLoader {
                     SignaturePackaging.fromString(signaturePackaging),
                     supportedSignatureAlgorithms, returnsValidationInfo,
                     capabilitiesConfiguration.getDocumentTypes()
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);
+        }
+    }
+
+    private WorkerCapabilities getRawSignerCapabilities(WorkerCapabilitiesConfiguration capabilitiesConfiguration,
+                                                        String workerName
+    ) {
+        List<String> supportedSignatureAlgorithms = capabilitiesConfiguration.getSignatureAlgorithms();
+        if (supportedSignatureAlgorithms == null) {
+            throw new ApplicationConfigurationException(
+                    "Worker configuration is not valid. Worker '" + workerName + "' is missing a 'signatureAlgorithms' capability."
+            );
+        }
+
+        try {
+            return new WorkerCapabilities(
+                    null, null, null, null, supportedSignatureAlgorithms, false, List.of(DocumentType.RAW)
             );
         } catch (IllegalArgumentException e) {
             throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);

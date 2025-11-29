@@ -71,7 +71,9 @@ public class MysqlTest {
     static void configureProperties(DynamicPropertyRegistry registry) throws IOException {
         var toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         proxy = toxiproxyClient.createProxy("mysql", "0.0.0.0:8666", "mysql:3306");
-        var jdbcUrl = "jdbc:mysql://%s:%d/%s".formatted(toxiproxy.getHost(), toxiproxy.getMappedPort(8666), databaseContainer.getDatabaseName());
+        var jdbcUrl = "jdbc:mysql://%s:%d/%s".formatted(toxiproxy.getHost(), toxiproxy.getMappedPort(8666),
+                                                        databaseContainer.getDatabaseName()
+        );
         registry.add("spring.datasource.url", () -> jdbcUrl);
         registry.add("spring.datasource.username", databaseContainer::getUsername);
         registry.add("spring.datasource.password", databaseContainer::getPassword);

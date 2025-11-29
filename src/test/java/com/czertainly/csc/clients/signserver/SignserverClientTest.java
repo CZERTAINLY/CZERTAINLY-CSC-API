@@ -4,8 +4,8 @@ import com.czertainly.csc.clients.signserver.rest.SignserverRestClient;
 import com.czertainly.csc.clients.signserver.ws.SignserverWsClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.crypto.CertificateParser;
-import com.czertainly.csc.model.SignedDocuments;
-import com.czertainly.csc.signing.Signature;
+import com.czertainly.csc.model.DocumentSignature;
+import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,75 +55,79 @@ class SignserverClientTest {
     List<String> multipleHashes = List.of("dummyData1", "dummyData2");
     String keyAlias = "signingKey01";
     String digestAlgorithm = "SHA-256";
+    String encryptionAlgorithm = "RSA";
 
 
     @Test
-    void signSingleHash() throws IOException {
+    void signSingleDocumentHash() throws IOException {
         // given
         byte[] singleSignedHash = loadSignature("signatureSingleHash");
         when(signserverRestClient.process(eq(signerName), eq(singleHash), any(), any())).thenReturn(
                 Result.success(singleSignedHash));
 
         // when
-        var signingresult = signserverClient.signSingleHash(signerName, singleHash, keyAlias, digestAlgorithm);
+        var signingresult = signserverClient.signSingleDocumentHash(signerName, singleHash, keyAlias, digestAlgorithm);
 
         // then
-        Signature signature = assertSuccessAndGet(signingresult);
-        assertEquals(SignaturePackaging.DETACHED, signature.packaging());
+        SignaturesContainer<DocumentSignature> signature = assertSuccessAndGet(signingresult);
+        assertEquals(SignaturePackaging.DETACHED, signature.signatures().getFirst().packaging());
     }
 
     @Test
-    void signSingleHashWithValidationInfo() throws IOException {
+    void signSingleDocumentHashWithValidationInfo() throws IOException {
         // given
         byte[] singleSignedHashWithValidationData = loadSignature("signatureSingleHashWithValidationData");
         when(signserverRestClient.process(eq(signerName), eq(singleHash), any(), any())).thenReturn(
                 Result.success(singleSignedHashWithValidationData));
 
         // when
-        var signingresult = signserverClient.signSingleHashWithValidationData(signerName, singleHash, keyAlias,
-                                                                              digestAlgorithm
+        var signingresult = signserverClient.signSingleDocumentHashWithValidationData(signerName, singleHash, keyAlias,
+                                                                                      digestAlgorithm
         );
 
         // then
-        SignedDocuments signature = assertSuccessAndGet(signingresult);
-        assertEquals(1, signature.signatures().size());
-        assertEquals(SignaturePackaging.DETACHED, signature.signatures().getFirst().packaging());
+        SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
+        assertEquals(1, container.signatures().size());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getFirst().packaging());
     }
 
     @Test
-    void signMultipleHashes() throws IOException {
+    void signMultipleDocumentHashes() throws IOException {
         // given
         byte[] multipleSignedHashes = loadSignature("signatureMultipleHashes");
         when(signserverRestClient.process(eq(signerName), any(), any(), any())).thenReturn(
                 Result.success(multipleSignedHashes));
 
         // when
-        var signingresult = signserverClient.signMultipleHashes(signerName, multipleHashes, keyAlias, digestAlgorithm);
+        var signingresult = signserverClient.signMultipleDocumentHashes(signerName, multipleHashes, keyAlias,
+                                                                        encryptionAlgorithm, digestAlgorithm
+        );
 
         // then
-        List<Signature> signatures = assertSuccessAndGet(signingresult);
-        assertEquals(2, signatures.size());
-        assertEquals(SignaturePackaging.DETACHED, signatures.getFirst().packaging());
-        assertEquals(SignaturePackaging.DETACHED, signatures.getLast().packaging());
+        SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
+        assertEquals(2, container.signatures().size());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getFirst().packaging());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getLast().packaging());
     }
 
     @Test
-    void signMultipleHashesWithValidationInfo() throws IOException {
+    void signMultipleDocumentHashesWithValidationInfo() throws IOException {
         // given
         byte[] multipleSignedHashesWithValidationData = loadSignature("signatureMultipleHashesWithValidationData");
         when(signserverRestClient.process(eq(signerName), any(), any(), any())).thenReturn(
                 Result.success(multipleSignedHashesWithValidationData));
 
         // when
-        var signingresult = signserverClient.signMultipleHashesWithValidationData(signerName, multipleHashes, keyAlias,
-                                                                                  digestAlgorithm
+        var signingresult = signserverClient.signMultipleDocumentHashesWithValidationData(signerName, multipleHashes,
+                                                                                          keyAlias, encryptionAlgorithm,
+                                                                                          digestAlgorithm
         );
 
         // then
-        SignedDocuments signatures = assertSuccessAndGet(signingresult);
-        assertEquals(2, signatures.signatures().size());
-        assertEquals(SignaturePackaging.DETACHED, signatures.signatures().getFirst().packaging());
-        assertEquals(SignaturePackaging.DETACHED, signatures.signatures().getLast().packaging());
+        SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
+        assertEquals(2, container.signatures().size());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getFirst().packaging());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getLast().packaging());
     }
 
     private byte[] loadSignature(String name) throws IOException {

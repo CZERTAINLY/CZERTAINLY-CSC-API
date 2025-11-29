@@ -43,24 +43,25 @@ public enum CertificateRevocationReason {
     @JsonCreator
     public static CertificateRevocationReason fromCode(String code) {
         return Arrays.stream(VALUES)
-                .filter(r -> r.code.equals(code))
-                .findFirst()
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid Certificate Revocation Reason code: " + code));
+                     .filter(r -> r.code.equals(code))
+                     .findFirst()
+                     .orElseThrow(() ->
+                                          new IllegalArgumentException(
+                                                  "Invalid Certificate Revocation Reason code: " + code));
     }
 
     public static CertificateRevocationReason fromReasonCode(int reasonCode) {
         return Arrays.stream(VALUES)
-                .filter(r -> r.reasonCode == reasonCode)
-                .findFirst()
-                .orElse(null);
+                     .filter(r -> r.reasonCode == reasonCode)
+                     .findFirst()
+                     .orElse(null);
     }
 
     public static CertificateRevocationReason fromCrlReason(CRLReason crlReason) {
         return Arrays.stream(VALUES)
-                .filter(r -> r.crlReason == crlReason)
-                .findFirst()
-                .orElse(null);
+                     .filter(r -> r.crlReason == crlReason)
+                     .findFirst()
+                     .orElse(null);
     }
 
     @JsonValue

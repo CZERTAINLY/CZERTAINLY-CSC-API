@@ -1,0 +1,16 @@
+cryptoTokens:
+  - name: "SigningToken01"
+    id: 1
+    keyPoolProfiles:
+      - test-pool
+signers:
+  - name: "RawSigner"
+    id: 301
+    cryptoToken: "SigningToken01"
+    capabilities:
+      documentTypes:
+        - RAW
+      signatureAlgorithms:
+        - SHA256withRSA
+        - SHA384withRSA
+        - SHA512withRSA

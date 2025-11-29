@@ -7,8 +7,9 @@ import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.crypto.AlgorithmHelper;
 import com.czertainly.csc.model.DocumentContentToSign;
+import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.SignDocParameters;
-import com.czertainly.csc.model.SignedDocuments;
+import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.service.credentials.CredentialsService;
 import com.czertainly.csc.service.credentials.SessionCredentialsService;
 import com.czertainly.csc.service.credentials.SignatureQualifierBasedCredentialFactory;
@@ -18,12 +19,15 @@ import com.czertainly.csc.service.keys.OneTimeKeysService;
 import com.czertainly.csc.service.keys.SessionKeysService;
 import com.czertainly.csc.signing.configuration.WorkerRepository;
 import com.czertainly.csc.signing.configuration.process.SignatureProcessTemplate;
-import com.czertainly.csc.signing.configuration.process.configuration.*;
+import com.czertainly.csc.signing.configuration.process.configuration.DocumentContentSignatureProcessConfiguration;
+import com.czertainly.csc.signing.configuration.process.configuration.LongTermTokenConfiguration;
+import com.czertainly.csc.signing.configuration.process.configuration.OneTimeTokenConfiguration;
+import com.czertainly.csc.signing.configuration.process.configuration.SessionTokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.signers.DocumentContentSigner;
 import com.czertainly.csc.signing.configuration.process.token.*;
 import com.czertainly.csc.signing.configuration.profiles.CredentialProfileRepository;
 import com.czertainly.csc.signing.signatureauthorizers.DocumentAuthorizer;
-import com.czertainly.csc.signing.signatureauthorizers.DocumentHashAuthorizer;
+import com.czertainly.csc.signing.signatureauthorizers.HashAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,14 +39,11 @@ public class DocumentContentSigning {
 
     private final static Logger logger = LoggerFactory.getLogger(DocumentContentSigning.class);
 
-    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentContentSignatureProcessConfiguration, LongTermToken> longTermContentSignature;
-    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentContentSignatureProcessConfiguration, OneTimeToken> oneTimeContentSignature;
-    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentContentSignatureProcessConfiguration, SessionToken> sessionContentSignature;
+    private final SignatureProcessTemplate<LongTermTokenConfiguration, DocumentContentSignatureProcessConfiguration, LongTermToken, DocumentSignature> longTermContentSignature;
+    private final SignatureProcessTemplate<OneTimeTokenConfiguration, DocumentContentSignatureProcessConfiguration, OneTimeToken, DocumentSignature> oneTimeContentSignature;
+    private final SignatureProcessTemplate<SessionTokenConfiguration, DocumentContentSignatureProcessConfiguration, SessionToken, DocumentSignature> sessionContentSignature;
 
     private final SignatureTypeDecider signatureTypeDecider;
-
-    SignserverClient signserverClient;
-    WorkerRepository workerRepository;
 
 
     public DocumentContentSigning(WorkerRepository workerRepository,
@@ -58,7 +59,7 @@ public class DocumentContentSigning {
     ) {
         this.signatureTypeDecider = signatureTypeDecider;
         DocumentAuthorizer documentAuthorizer = new DocumentAuthorizer(
-                new AlgorithmHelper(), new DocumentHashAuthorizer()
+                new AlgorithmHelper(), new HashAuthorizer()
         );
 
         LongTermTokenProvider<DocumentContentSignatureProcessConfiguration> longTermTokenProvider = new LongTermTokenProvider<>(
@@ -81,8 +82,6 @@ public class DocumentContentSigning {
         DocumentContentSigner<DocumentContentSignatureProcessConfiguration> documentContentSigner = new DocumentContentSigner<>(
                 signserverClient);
 
-        this.signserverClient = signserverClient;
-        this.workerRepository = workerRepository;
 
         longTermContentSignature = new SignatureProcessTemplate<>(
                 documentAuthorizer,
@@ -104,12 +103,14 @@ public class DocumentContentSigning {
         );
     }
 
-    public Result<SignedDocuments, TextError> sign(SignDocParameters parameters, CscAuthenticationToken cscAuthenticationToken) {
+    public Result<SignaturesContainer<DocumentSignature>, TextError> sign(SignDocParameters parameters,
+                                                                          CscAuthenticationToken cscAuthenticationToken
+    ) {
         if (parameters.documentsToSign().isEmpty()) {
             return Result.error(TextError.of("No documents to sign."));
         }
 
-        SignedDocuments signedDocuments = SignedDocuments.empty();
+        SignaturesContainer<DocumentSignature> signatures = null;
         for (DocumentContentToSign documentToSign : parameters.documentsToSign()) {
             DocumentContentSignatureProcessConfiguration configuration = new DocumentContentSignatureProcessConfiguration(
                     parameters.userID(),
@@ -122,7 +123,7 @@ public class DocumentContentSigning {
                     parameters.returnValidationInfo()
             );
 
-            Result<SignedDocuments, TextError> signatureResult = null;
+            Result<SignaturesContainer<DocumentSignature>, TextError> signatureResult = null;
             Result<SignatureType, TextError> getSignatureType = signatureTypeDecider.decideType(parameters);
             if (getSignatureType instanceof Error(var err))
                 return Result.error(err.extend("Failed to determine signature type."));
@@ -135,7 +136,7 @@ public class DocumentContentSigning {
                             parameters.credentialID()
                     );
                     signatureResult = longTermContentSignature.sign(configuration, tokenConfiguration,
-                            List.of(documentToSign.content())
+                                                                    List.of(documentToSign.content())
                     );
                 }
                 case ONE_TIME -> {
@@ -144,7 +145,7 @@ public class DocumentContentSigning {
                             cscAuthenticationToken
                     );
                     signatureResult = oneTimeContentSignature.sign(configuration, tokenConfiguration,
-                            List.of(documentToSign.content())
+                                                                   List.of(documentToSign.content())
                     );
                 }
                 case SESSION -> {
@@ -153,17 +154,23 @@ public class DocumentContentSigning {
                             parameters.sessionId().orElseThrow(), cscAuthenticationToken
                     );
                     signatureResult = sessionContentSignature.sign(configuration, tokenConfiguration,
-                            List.of(documentToSign.content()));
+                                                                   List.of(documentToSign.content())
+                    );
                 }
             }
 
             if (signatureResult instanceof Error(var err))
                 return Result.error(err.extend("Failed to sign one of the document digest to sign."));
-            SignedDocuments docs = signatureResult.unwrap();
-            signedDocuments.extend(docs);
+            SignaturesContainer<DocumentSignature> docs = signatureResult.unwrap();
+            if (signatures != null) {
+                signatures.extend(docs);
+            } else {
+                signatures = docs;
+            }
+
         }
 
-        return Result.success(signedDocuments);
+        return Result.success(signatures);
     }
 
 }

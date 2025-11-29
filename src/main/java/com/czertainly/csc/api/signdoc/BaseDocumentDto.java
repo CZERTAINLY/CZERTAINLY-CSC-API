@@ -1,7 +1,7 @@
 package com.czertainly.csc.api.signdoc;
 
-import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
+import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -84,13 +84,13 @@ public class BaseDocumentDto {
 
 
     public BaseDocumentDto(String signatureFormat, String conformanceLevel, String signAlgo,
-                       String signAlgoParams, List<AttributeDto> signedAttributes, String signaturePackaging
+                           String signAlgoParams, List<AttributeDto> signedAttributes, String signaturePackaging
     ) {
         this.signatureFormat = signatureFormat;
         this.conformanceLevel = conformanceLevel;
         this.signAlgo = signAlgo;
         this.signAlgoParams = signAlgoParams;
-        this.signedAttributes =  signedAttributes == null ? List.of() : signedAttributes;
+        this.signedAttributes = signedAttributes == null ? List.of() : signedAttributes;
         this.signaturePackaging = signaturePackaging;
     }
 

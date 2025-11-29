@@ -61,7 +61,8 @@ public class CredentialsListRequestMapper {
                 throw InvalidInputDataException.of("Missing userID claim in the access token.");
             }
             if (!(usernameClaim instanceof String username)) {
-                throw InvalidInputDataException.of("Invalid type of userID claim in the access token. The userID must be a string.");
+                throw InvalidInputDataException.of(
+                        "Invalid type of userID claim in the access token. The userID must be a string.");
             } else {
                 return username;
             }

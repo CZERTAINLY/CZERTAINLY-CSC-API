@@ -126,7 +126,9 @@ public class SignatureQualifierBasedCredentialFactory {
         ));
     }
 
-    public <K extends SigningKey> void rollbackCredentialCreation(SignatureQualifierBasedCredentialMetadata<K> credentialMetadata) {
+    public <K extends SigningKey> void rollbackCredentialCreation(
+            SignatureQualifierBasedCredentialMetadata<K> credentialMetadata
+    ) {
         revokeCertificate(credentialMetadata.certificate());
     }
 
@@ -134,14 +136,14 @@ public class SignatureQualifierBasedCredentialFactory {
             SigningKey key, String dn, EndEntity endEntity, SignatureQualifierProfile signatureQualifierProfile
     ) {
         var csrSignResult = signserverClient.generateCSR(
-                                       key.cryptoToken(), key.keyAlias(), dn,
-                                       signatureQualifierProfile.getCsrSignatureAlgorithm()
-                               )
-                               .flatMap(csr -> ejbcaClient.signCertificateRequest(
-                                       endEntity,
-                                       signatureQualifierProfile,
-                                       csr
-                               ));
+                                                    key.cryptoToken(), key.keyAlias(), dn,
+                                                    signatureQualifierProfile.getCsrSignatureAlgorithm()
+                                            )
+                                            .flatMap(csr -> ejbcaClient.signCertificateRequest(
+                                                    endEntity,
+                                                    signatureQualifierProfile,
+                                                    csr
+                                            ));
 
         if (csrSignResult instanceof Error(var err)) {
             return Result.error(err);
@@ -166,15 +168,15 @@ public class SignatureQualifierBasedCredentialFactory {
                     certificate.getSerialNumber()
         );
         ejbcaClient.revokeCertificate(
-                        certificate.getSerialNumber().toString(16), certificate.getIssuer().toString(),
-                        CertificateRevocationReason.UNSPECIFIED
-                )
-                .consumeError(e -> logger.error(
-                        e.extend(
-                                "Failed to revoke certificate '%s'. The certificate should be revoked manually.",
-                                certificate.getSerialNumber()
-                        ).getErrorText()
-                ));
+                           certificate.getSerialNumber().toString(16), certificate.getIssuer().toString(),
+                           CertificateRevocationReason.UNSPECIFIED
+                   )
+                   .consumeError(e -> logger.error(
+                           e.extend(
+                                   "Failed to revoke certificate '%s'. The certificate should be revoked manually.",
+                                   certificate.getSerialNumber()
+                           ).getErrorText()
+                   ));
 
     }
 }

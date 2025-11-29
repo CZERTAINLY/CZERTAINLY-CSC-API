@@ -59,7 +59,8 @@ public class IdpClient {
     public Result<UserInfo, TextError> downloadUserInfo(String token) {
         try {
             if (!canDownloadUserInfo) {
-                Result.error(TextErrorWithRetryIndication.doNotRetry("Application is not configured to download user info."));
+                Result.error(TextErrorWithRetryIndication.doNotRetry(
+                        "Application is not configured to download user info."));
             }
             logger.debug("Downloading user info from IDP.");
             logger.trace("Using token '{}' to download the user info.", token);
@@ -102,8 +103,7 @@ public class IdpClient {
         } catch (ResourceAccessException e) {
             logger.error("Failed to download JWKS from the IDP.", e);
             return Result.error(TextErrorWithRetryIndication.doRetry("Failed to obtain JWKS from the IDP."));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to download JWKS from the IDP.", e);
             return Result.error(TextErrorWithRetryIndication.doNotRetry("Failed to obtain JWKS from the IDP."));
         }

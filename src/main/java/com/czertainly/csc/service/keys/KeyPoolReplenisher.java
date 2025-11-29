@@ -18,7 +18,9 @@ public class KeyPoolReplenisher<K extends SigningKey> {
     private final List<CryptoToken> cryptoTokens;
     private final ExecutorService keyGenerationExecutor;
 
-    public KeyPoolReplenisher(List<CryptoToken> cryptoTokens, KeysService<K> keysService, ExecutorService keyGenerationExecutor) {
+    public KeyPoolReplenisher(List<CryptoToken> cryptoTokens, KeysService<K> keysService,
+                              ExecutorService keyGenerationExecutor
+    ) {
         this.keysService = keysService;
         this.cryptoTokens = cryptoTokens;
         this.keyGenerationExecutor = keyGenerationExecutor;
@@ -31,12 +33,14 @@ public class KeyPoolReplenisher<K extends SigningKey> {
                            .flatMap(numOfFreeKeys -> replenishPool(cryptoToken, keyPoolProfile, numOfFreeKeys))
                            .consume(numberOfKeysGenerated -> logger.debug(
                                    "Triggered replenishment of {} new keys from Key Pool of CryptoToken '{}' with algorithm '{}' and usage '{}'.",
-                                   numberOfKeysGenerated, cryptoToken.name(), keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage()
+                                   numberOfKeysGenerated, cryptoToken.name(), keyPoolProfile.keyAlgorithm(),
+                                   keyPoolProfile.designatedUsage()
                            ))
                            .consumeError(error ->
                                                  logger.error(
                                                          "Failed to trigger replenishment from Key Pool of CryptoToken '{}'  with algorithm '{}' and usage '{}'. {}",
-                                                         cryptoToken.name(), keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage(), error.getErrorText()
+                                                         cryptoToken.name(), keyPoolProfile.keyAlgorithm(),
+                                                         keyPoolProfile.designatedUsage(), error.getErrorText()
                                                  )
                            );
             }
@@ -72,20 +76,20 @@ public class KeyPoolReplenisher<K extends SigningKey> {
         for (int i = 0; i < numOfKeysToGenerate; i++) {
             keyGenerationExecutor.execute(() -> {
                 logger.info("Replenishing key pool of CryptoToken '{}' with algorithm '{}' and usage '{}'.",
-                        cryptoToken.name(),
-                        keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage()
+                            cryptoToken.name(),
+                            keyPoolProfile.keyAlgorithm(), keyPoolProfile.designatedUsage()
                 );
                 String keyAlias = getUniqueKeyAlias(keyPoolProfile.keyPrefix());
                 var generateKeyResult = keysService.generateKey(
-                                cryptoToken, keyAlias, keyPoolProfile.keyAlgorithm(),
-                                keyPoolProfile.keySpecification()
-                        )
-                        .mapError(error -> error.extend(
-                                        "Generation of a key '%s' for key poll of CryptoToken '%s' has failed.",
-                                        keyAlias, cryptoToken.name()
-                                )
-                        )
-                        .consumeError(error -> logger.error(error.getErrorText()));
+                                                           cryptoToken, keyAlias, keyPoolProfile.keyAlgorithm(),
+                                                           keyPoolProfile.keySpecification()
+                                                   )
+                                                   .mapError(error -> error.extend(
+                                                                     "Generation of a key '%s' for key poll of CryptoToken '%s' has failed.",
+                                                                     keyAlias, cryptoToken.name()
+                                                             )
+                                                   )
+                                                   .consumeError(error -> logger.error(error.getErrorText()));
             });
         }
 

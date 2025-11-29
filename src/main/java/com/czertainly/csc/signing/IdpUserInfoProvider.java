@@ -22,7 +22,7 @@ public class IdpUserInfoProvider implements UserInfoProvider {
     @Override
     public Result<UserInfo, TextError> getUserInfo(String token) {
         if (idpClient.canDownloadUserInfo()) {
-                return idpClient.downloadUserInfo(token);
+            return idpClient.downloadUserInfo(token);
         } else {
             logger.debug("Application is not configured to download user info. Empty user info will be returned.");
             return Result.success(UserInfo.empty());

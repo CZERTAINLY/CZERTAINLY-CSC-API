@@ -52,7 +52,8 @@ public class SignHashRequestDto extends BaseSignatureRequestDto {
     )
     private final String signAlgoParams;
 
-    public SignHashRequestDto(String credentialID, String SAD, List<String> hashes, String hashAlgorithmOID, String signAlgo,
+    public SignHashRequestDto(String credentialID, String SAD, List<String> hashes, String hashAlgorithmOID,
+                              String signAlgo,
                               String signAlgoParams, String operationMode, Integer validity_period, String response_uri,
                               String clientData
     ) {

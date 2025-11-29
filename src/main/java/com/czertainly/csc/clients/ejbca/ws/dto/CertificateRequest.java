@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.ejbca.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -9,9 +8,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for certificateRequest complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="certificateRequest"&gt;
  *   &lt;complexContent&gt;
@@ -27,17 +26,17 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlRootElement(namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "certificateRequest", propOrder = {
-    "arg0",
-    "arg1",
-    "arg2",
-    "arg3",
-    "arg4"
+        "arg0",
+        "arg1",
+        "arg2",
+        "arg3",
+        "arg4"
 })
 public class CertificateRequest {
 
@@ -49,11 +48,10 @@ public class CertificateRequest {
 
     /**
      * Gets the value of the arg0 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link UserDataVOWS }
-     *     
+     *
+     * @return possible object is
+     * {@link UserDataVOWS }
+     *
      */
     public UserDataVOWS getArg0() {
         return arg0;
@@ -61,11 +59,10 @@ public class CertificateRequest {
 
     /**
      * Sets the value of the arg0 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link UserDataVOWS }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link UserDataVOWS }
+     *
      */
     public void setArg0(UserDataVOWS value) {
         this.arg0 = value;
@@ -73,11 +70,10 @@ public class CertificateRequest {
 
     /**
      * Gets the value of the arg1 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getArg1() {
         return arg1;
@@ -85,11 +81,10 @@ public class CertificateRequest {
 
     /**
      * Sets the value of the arg1 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setArg1(String value) {
         this.arg1 = value;
@@ -97,7 +92,7 @@ public class CertificateRequest {
 
     /**
      * Gets the value of the arg2 property.
-     * 
+     *
      */
     public int getArg2() {
         return arg2;
@@ -105,7 +100,7 @@ public class CertificateRequest {
 
     /**
      * Sets the value of the arg2 property.
-     * 
+     *
      */
     public void setArg2(int value) {
         this.arg2 = value;
@@ -113,11 +108,10 @@ public class CertificateRequest {
 
     /**
      * Gets the value of the arg3 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getArg3() {
         return arg3;
@@ -125,11 +119,10 @@ public class CertificateRequest {
 
     /**
      * Sets the value of the arg3 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setArg3(String value) {
         this.arg3 = value;
@@ -137,11 +130,10 @@ public class CertificateRequest {
 
     /**
      * Gets the value of the arg4 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getArg4() {
         return arg4;
@@ -149,11 +141,10 @@ public class CertificateRequest {
 
     /**
      * Sets the value of the arg4 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setArg4(String value) {
         this.arg4 = value;

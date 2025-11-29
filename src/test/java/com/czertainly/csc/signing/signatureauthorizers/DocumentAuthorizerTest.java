@@ -15,10 +15,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentAuthorizerTest {
@@ -27,7 +24,7 @@ class DocumentAuthorizerTest {
     private AlgorithmHelper algorithmHelper;
 
     @Spy
-    private DocumentHashAuthorizer documentHashAuthorizer = new DocumentHashAuthorizer();
+    private HashAuthorizer hashAuthorizer = new HashAuthorizer();
 
     @InjectMocks
     private DocumentAuthorizer documentAuthorizer;
@@ -45,14 +42,16 @@ class DocumentAuthorizerTest {
         when(sad.getHashes()).thenReturn(Optional.of(Set.of("g+SxeJMG09HJkUDfOCfWAA==", "JxVZ7CUmi7m7Ktf9i0z3Gg==")));
         when(sad.getNumSignatures()).thenReturn(2);
         when(algorithmHelper.getDigestAlgorithmName(oid)).thenReturn("MD5");
-        List<String> documents = Arrays.asList(base64Encoder.encodeToString("doc1".getBytes()), base64Encoder.encodeToString("doc2".getBytes()));
+        List<String> documents = Arrays.asList(base64Encoder.encodeToString("doc1".getBytes()),
+                                               base64Encoder.encodeToString("doc2".getBytes())
+        );
 
         // when
         Result<Boolean, TextError> result = documentAuthorizer.authorize(documents, sad);
 
         // then
         assertTrue(result.unwrap());
-        verify(documentHashAuthorizer).authorize(any(), eq(sad));
+        verify(hashAuthorizer).authorize(any(), eq(sad));
     }
 
     @Test
@@ -64,7 +63,9 @@ class DocumentAuthorizerTest {
         Result<Boolean, TextError> result = documentAuthorizer.authorize(Collections.emptyList(), sad);
 
         // then
-        assertEquals("No hash algorithm OID provided in the signature activation data.", result.unwrapError().getErrorText());
+        assertEquals("No hash algorithm OID provided in the signature activation data.",
+                     result.unwrapError().getErrorText()
+        );
     }
 
     @Test
@@ -87,7 +88,9 @@ class DocumentAuthorizerTest {
         String oid = "1.2.3.4.5.6";
         when(sad.getHashAlgorithmOID()).thenReturn(Optional.of(oid));
         when(algorithmHelper.getDigestAlgorithmName(oid)).thenReturn("FOOBAR");
-        List<String> documents = Arrays.asList(base64Encoder.encodeToString("doc1".getBytes()), base64Encoder.encodeToString("doc2".getBytes()));
+        List<String> documents = Arrays.asList(base64Encoder.encodeToString("doc1".getBytes()),
+                                               base64Encoder.encodeToString("doc2".getBytes())
+        );
 
         // when
         Result<Boolean, TextError> result = documentAuthorizer.authorize(documents, sad);

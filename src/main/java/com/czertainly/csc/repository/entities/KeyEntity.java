@@ -1,6 +1,9 @@
 package com.czertainly.csc.repository.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;

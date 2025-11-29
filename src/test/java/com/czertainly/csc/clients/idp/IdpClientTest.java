@@ -127,8 +127,10 @@ public class IdpClientTest {
         @Bean
         public IdpConfiguration idpConfiguration() {
             return IdpConfigurationBuilder.create()
-                                          .withUserInfoUrl(keycloak.getAuthServerUrl() + "/realms/master/protocol/openid-connect/userinfo")
-                                          .withJwksUri(keycloak.getAuthServerUrl() + "/realms/master/protocol/openid-connect/certs")
+                                          .withUserInfoUrl(
+                                                  keycloak.getAuthServerUrl() + "/realms/master/protocol/openid-connect/userinfo")
+                                          .withJwksUri(
+                                                  keycloak.getAuthServerUrl() + "/realms/master/protocol/openid-connect/certs")
                                           .build();
         }
     }

@@ -97,42 +97,47 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
             // This ensures threads wait for the lock WITHOUT holding a database connection
             return acquireKeyInTransaction(cryptoToken, keyAlgorithm)
                     .flatMap(key ->
-                             key.map(acquiredKey -> {
-                                 logger.info("Signing key acquired for CryptoToken '{}' with algorithm '{}'",
-                                              cryptoToken.identifier(), keyAlgorithm
-                                 );
-                                 return Result.<K, TextError>success(acquiredKey);
-                             }).orElseGet(() -> {
-                                 logger.debug(
-                                         "No Signing key found for CryptoToken '{}' with algorithm '{}'. Will generate a new one on the fly.",
-                                         cryptoToken.identifier(), keyAlgorithm
-                                 );
-                                 var genKeyResult = findKeyProfileAndGenerateKeyOnSignserver(cryptoToken, keyAlgorithm)
-                                         .mapError(e -> e.extend(
-                                                 "Couldn't generate a new signing key for CryptoToken '%s.",
-                                                 cryptoToken.identifier()
-                                         ));
+                                     key.map(acquiredKey -> {
+                                         logger.info("Signing key acquired for CryptoToken '{}' with algorithm '{}'. Key alias: '{}'",
+                                                     cryptoToken.identifier(), keyAlgorithm, acquiredKey.keyAlias()
+                                         );
+                                         return Result.<K, TextError>success(acquiredKey);
+                                     }).orElseGet(() -> {
+                                         logger.debug(
+                                                 "No Signing key found for CryptoToken '{}' with algorithm '{}'. Will generate a new one on the fly.",
+                                                 cryptoToken.identifier(), keyAlgorithm
+                                         );
+                                         var genKeyResult = findKeyProfileAndGenerateKeyOnSignserver(cryptoToken,
+                                                                                                     keyAlgorithm
+                                         )
+                                                 .mapError(e -> e.extend(
+                                                         "Couldn't generate a new signing key for CryptoToken '%s.",
+                                                         cryptoToken.identifier()
+                                                 ));
 
-                                 if (genKeyResult instanceof Error(var err)) {
-                                     return Result.error(err.extend(
-                                             "'.",
-                                             cryptoToken.identifier()
-                                     ));
-                                 }
+                                         if (genKeyResult instanceof Error(var err)) {
+                                             return Result.error(err.extend(
+                                                     "'.",
+                                                     cryptoToken.identifier()
+                                             ));
+                                         }
 
-                                 String generatedKeyAlias = genKeyResult.unwrap();
-                                 return saveAndAcquireKeyInTransaction(cryptoToken, keyAlgorithm, generatedKeyAlias);
-                             })
+                                         String generatedKeyAlias = genKeyResult.unwrap();
+                                         return saveAndAcquireKeyInTransaction(cryptoToken, keyAlgorithm,
+                                                                               generatedKeyAlias
+                                         );
+                                     })
                     );
         } catch (Exception e) {
-            logger.error("An exception occurred while acquiring a signing key for CryptoToken '{}' with algorithm '{}'.",
-                         cryptoToken.identifier(), keyAlgorithm, e
+            logger.error(
+                    "An exception occurred while acquiring a signing key for CryptoToken '{}' with algorithm '{}'.",
+                    cryptoToken.identifier(), keyAlgorithm, e
             );
             return Result.error(
-                TextError.of(
-                    "Transaction failed while acquiring a signing key for Crypto Token '%s'.",
-                    cryptoToken.identifier()
-                )
+                    TextError.of(
+                            "Transaction failed while acquiring a signing key for Crypto Token '%s'.",
+                            cryptoToken.identifier()
+                    )
             );
         } finally {
             lock.unlock();
@@ -171,59 +176,79 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
     ) {
         try {
             return transactionTemplate.execute(status ->
-                   saveKey(cryptoToken, generatedKeyAlias, keyAlgorithm)
-                       .flatMap(entity -> {
-                           try {
-                               entity.setAcquiredAt(ZonedDateTime.now());
-                               entity.setInUse(true);
-                               E savedEntity = keysRepository.save(entity);
+                                                       saveKey(cryptoToken, generatedKeyAlias, keyAlgorithm)
+                                                               .flatMap(entity -> {
+                                                                   try {
+                                                                       entity.setAcquiredAt(ZonedDateTime.now());
+                                                                       entity.setInUse(true);
+                                                                       E savedEntity = keysRepository.save(entity);
 
-                               logger.debug(
-                                       "Acquired a newly generated signing key '{}'",
-                                       savedEntity.getId()
-                               );
-                               return Result.success(savedEntity);
-                           } catch (Exception e) {
-                               status.setRollbackOnly();
-                               logger.error("Couldn't mark the newly generated key as acquired in the database.", e);
-                               return Result.error(
-                                       TextError.of("Couldn't mark the newly generated key as acquired in the database.")
-                               );
-                           }
-                       })
-                       .map(savedEntity -> this.mapEntityToSigningKey(savedEntity, cryptoToken))
-                       .mapError(e -> e.extend(
-                               "Couldn't acquire newly generated signing key for CryptoToken '%s'.",
-                               cryptoToken.identifier()
-                       ))
-               );
-            } catch (Exception e) {
-                logger.error("Couldn't save the newly generated key to the database. Going to remove the key '{}' from signserver.", generatedKeyAlias, e);
-                signserverClient.removeKey(cryptoToken.id(), generatedKeyAlias)
-                                .ifError(() -> logger.warn("Couldn't remove the newly generated key {} from signserver.", generatedKeyAlias, e))
-                                .ifSuccess(() -> logger.info("The newly generated key {} was removed from signserver.", generatedKeyAlias));
-                return Result.error(TextError.of("Couldn't save the newly generated key %s to the database.", generatedKeyAlias));
-            }
+                                                                       logger.debug(
+                                                                               "Acquired a newly generated signing key '{}'",
+                                                                               savedEntity.getId()
+                                                                       );
+                                                                       return Result.success(savedEntity);
+                                                                   } catch (Exception e) {
+                                                                       status.setRollbackOnly();
+                                                                       logger.error(
+                                                                               "Couldn't mark the newly generated key as acquired in the database.",
+                                                                               e
+                                                                       );
+                                                                       return Result.error(
+                                                                               TextError.of(
+                                                                                       "Couldn't mark the newly generated key as acquired in the database.")
+                                                                       );
+                                                                   }
+                                                               })
+                                                               .map(savedEntity -> this.mapEntityToSigningKey(
+                                                                       savedEntity, cryptoToken))
+                                                               .mapError(e -> e.extend(
+                                                                       "Couldn't acquire newly generated signing key for CryptoToken '%s'.",
+                                                                       cryptoToken.identifier()
+                                                               ))
+            );
+        } catch (Exception e) {
+            logger.error(
+                    "Couldn't save the newly generated key to the database. Going to remove the key '{}' from signserver.",
+                    generatedKeyAlias, e
+            );
+            signserverClient.removeKey(cryptoToken.id(), generatedKeyAlias)
+                            .ifError(() -> logger.warn("Couldn't remove the newly generated key {} from signserver.",
+                                                       generatedKeyAlias, e
+                            ))
+                            .ifSuccess(() -> logger.info("The newly generated key {} was removed from signserver.",
+                                                         generatedKeyAlias
+                            ));
+            return Result.error(
+                    TextError.of("Couldn't save the newly generated key %s to the database.", generatedKeyAlias));
+        }
 
     }
 
-    private Result<String, TextError> findKeyProfileAndGenerateKeyOnSignserver(CryptoToken cryptoToken, String keyAlgorithm) {
+    private Result<String, TextError> findKeyProfileAndGenerateKeyOnSignserver(CryptoToken cryptoToken,
+                                                                               String keyAlgorithm
+    ) {
         // Select the first KeyPoolProfile that matches the key algorithm and designated usage.
         // If no KeyPoolProfile is found, return Result with an error.
         return cryptoToken.keyPoolProfiles().stream()
-                          .filter(kpp -> kpp.keyAlgorithm().equals(keyAlgorithm) && kpp.designatedUsage() == this.getKeyUsageDesignation())
+                          .filter(kpp -> kpp.keyAlgorithm()
+                                            .equals(keyAlgorithm) && kpp.designatedUsage() == this.getKeyUsageDesignation())
                           .findFirst()
                           .map(kpp -> {
                               String keyAlias = String.format("%s-%s", kpp.keyPrefix(), UUID.randomUUID());
-                              return signserverClient.generateKey(cryptoToken, keyAlias, keyAlgorithm, kpp.keySpecification());
+                              return signserverClient.generateKey(cryptoToken, keyAlias, keyAlgorithm,
+                                                                  kpp.keySpecification()
+                              );
                           })
                           .orElseGet(() -> {
-                              logger.error("No KeyPoolProfile found for key algorithm '{}' in CryptoToken '{}' and usage '{}'.",
-                                           keyAlgorithm, cryptoToken.identifier(), this.getKeyUsageDesignation()
+                              logger.error(
+                                      "No KeyPoolProfile found for key algorithm '{}' in CryptoToken '{}' and usage '{}'.",
+                                      keyAlgorithm, cryptoToken.identifier(), this.getKeyUsageDesignation()
                               );
                               return Result.error(TextError.of(
-                                      "No KeyPoolProfile found for key algorithm '%s' in CryptoToken '%s' and usage  '%s'.",
-                                      keyAlgorithm, cryptoToken.identifier(), this.getKeyUsageDesignation())
+                                                          "No KeyPoolProfile found for key algorithm '%s' in CryptoToken '%s' and usage  '%s'.",
+                                                          keyAlgorithm, cryptoToken.identifier(), this.getKeyUsageDesignation()
+                                                  )
                               );
                           });
     }
@@ -260,7 +285,8 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                                            logger.error("Failed to delete signing key '{}' with id '{}' from database.",
                                                         key.keyAlias(), key.id(), e
                                            );
-                                           Result.error(TextError.of("Key '%s' not deleted from database.", key.keyAlias()));
+                                           return Result.error(
+                                                   TextError.of("Key '%s' not deleted from database.", key.keyAlias()));
                                        }
                                        return Result.emptySuccess();
                                    })

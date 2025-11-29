@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -11,9 +10,9 @@ import java.util.List;
 
 /**
  * <p>Java class for importCertificateChain complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="importCertificateChain"&gt;
  *   &lt;complexContent&gt;
@@ -28,16 +27,16 @@ import java.util.List;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlRootElement(namespace = "http://adminws.signserver.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "importCertificateChain", propOrder = {
-    "workerId",
-    "certificateChain",
-    "alias",
-    "authenticationCode"
+        "workerId",
+        "certificateChain",
+        "alias",
+        "authenticationCode"
 })
 public class ImportCertificateChain {
 
@@ -48,7 +47,7 @@ public class ImportCertificateChain {
 
     /**
      * Gets the value of the workerId property.
-     * 
+     *
      */
     public int getWorkerId() {
         return workerId;
@@ -56,7 +55,7 @@ public class ImportCertificateChain {
 
     /**
      * Sets the value of the workerId property.
-     * 
+     *
      */
     public void setWorkerId(int value) {
         this.workerId = value;
@@ -64,24 +63,24 @@ public class ImportCertificateChain {
 
     /**
      * Gets the value of the certificateChain property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the certificateChain property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getCertificateChain().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * byte[]
-     * 
+     *
      */
     public List<String> getCertificateChain() {
         return this.certificateChain;
@@ -93,11 +92,10 @@ public class ImportCertificateChain {
 
     /**
      * Gets the value of the alias property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getAlias() {
         return alias;
@@ -105,11 +103,10 @@ public class ImportCertificateChain {
 
     /**
      * Sets the value of the alias property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setAlias(String value) {
         this.alias = value;
@@ -117,11 +114,10 @@ public class ImportCertificateChain {
 
     /**
      * Gets the value of the authenticationCode property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getAuthenticationCode() {
         return authenticationCode;
@@ -129,11 +125,10 @@ public class ImportCertificateChain {
 
     /**
      * Sets the value of the authenticationCode property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setAuthenticationCode(String value) {
         this.authenticationCode = value;

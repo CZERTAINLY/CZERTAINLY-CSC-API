@@ -2,7 +2,6 @@ package com.czertainly.csc.utils.signing;
 
 import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.service.keys.OneTimeKey;
-import com.czertainly.csc.service.keys.SigningKey;
 import org.instancio.Instancio;
 import org.instancio.InstancioClassApi;
 

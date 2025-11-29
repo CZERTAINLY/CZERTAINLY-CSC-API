@@ -19,14 +19,18 @@ public record OneTimeToken(OneTimeKey key, int multisign) implements SigningToke
     public Boolean canSignData(List<String> data, int numberOfDocumentsAuthorizedBySad) {
         boolean canSignEnoughDocuments = multisign >= data.size();
         if (!canSignEnoughDocuments) {
-            logger.warn("OneTimeToken {} cannot sign requested {} documents, because it is configured to sign only {} documents at once.",
-                        key.keyAlias(), data.size(), multisign);
+            logger.warn(
+                    "OneTimeToken {} cannot sign requested {} documents, because it is configured to sign only {} documents at once.",
+                    key.keyAlias(), data.size(), multisign
+            );
             return false;
         }
 
         if (numberOfDocumentsAuthorizedBySad > multisign) {
-            logger.warn("OneTimeToken {} cannot sign requested {} documents, because it is configured to sign only {} documents at once but the Signature Activation Data allows to sign {} documents.",
-                        key.keyAlias(), data.size(), multisign, numberOfDocumentsAuthorizedBySad);
+            logger.warn(
+                    "OneTimeToken {} cannot sign requested {} documents, because it is configured to sign only {} documents at once but the Signature Activation Data allows to sign {} documents.",
+                    key.keyAlias(), data.size(), multisign, numberOfDocumentsAuthorizedBySad
+            );
             return false;
         }
 

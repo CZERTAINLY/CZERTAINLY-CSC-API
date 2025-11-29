@@ -1,14 +1,16 @@
-
 package com.czertainly.csc.clients.signserver.ws.dto;
 
-import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 
 /**
  * <p>Java class for getPKCS10CertificateRequestForAlias2Response complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="getPKCS10CertificateRequestForAlias2Response"&gt;
  *   &lt;complexContent&gt;
@@ -20,12 +22,12 @@ import jakarta.xml.bind.annotation.*;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "getPKCS10CertificateRequestForAlias2Response", namespace = "http://adminws.signserver.org/", propOrder = {
-    "_return"
+        "_return"
 })
 public class GetPKCS10CertificateRequestForAlias2Response {
 
@@ -34,11 +36,10 @@ public class GetPKCS10CertificateRequestForAlias2Response {
 
     /**
      * Gets the value of the return property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CertReqData }
-     *     
+     *
+     * @return possible object is
+     * {@link CertReqData }
+     *
      */
     public CertReqData getReturn() {
         return _return;
@@ -46,11 +47,10 @@ public class GetPKCS10CertificateRequestForAlias2Response {
 
     /**
      * Sets the value of the return property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CertReqData }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link CertReqData }
+     *
      */
     public void setReturn(CertReqData value) {
         this._return = value;

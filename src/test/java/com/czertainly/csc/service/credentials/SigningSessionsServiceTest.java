@@ -97,7 +97,7 @@ class SigningSessionsServiceTest extends MysqlTest {
     }
 
     @Test
-    @Transactional(propagation=Propagation.NEVER)
+    @Transactional(propagation = Propagation.NEVER)
     public void getSessionReturnsErrorGetSessionFails() throws IOException {
         // setup
         UUID nonExistentSessionId = UUID.randomUUID();
@@ -149,7 +149,7 @@ class SigningSessionsServiceTest extends MysqlTest {
     }
 
     @Test
-    @Transactional(propagation=Propagation.NEVER)
+    @Transactional(propagation = Propagation.NEVER)
     public void saveNewSessionWillReturnErrorIfSaveFails() throws IOException {
         // setup
         SigningSession newSession = aSigningSession.instance()
@@ -158,7 +158,7 @@ class SigningSessionsServiceTest extends MysqlTest {
                                                    .build();
 
         // given
-       proxy.toxics().timeout("timeout-toxics", ToxicDirection.UPSTREAM, 2);
+        proxy.toxics().timeout("timeout-toxics", ToxicDirection.UPSTREAM, 2);
 
         // when
         var result = signingSessionsService.saveNewSession(newSession);
@@ -173,11 +173,11 @@ class SigningSessionsServiceTest extends MysqlTest {
         UUID credentialId = createCredentialAndInsertIntoDB();
         UUID sessionId = createAndInsertSessionIntoDB(credentialId, ZonedDateTime.now().plus(Duration.ofHours(1)));
         SigningSession session = aSigningSession.instance()
-                                                   .withId(sessionId)
-                                                   .withCredentialId(credentialId)
-                                                   .withExpiresIn(ZonedDateTime.now().plus(Duration.ofHours(1)))
-                                                   .withStatus(CredentialSessionStatus.ACTIVE)
-                                                   .build();
+                                                .withId(sessionId)
+                                                .withCredentialId(credentialId)
+                                                .withExpiresIn(ZonedDateTime.now().plus(Duration.ofHours(1)))
+                                                .withStatus(CredentialSessionStatus.ACTIVE)
+                                                .build();
 
         // when
         var result = signingSessionsService.deleteSession(session);

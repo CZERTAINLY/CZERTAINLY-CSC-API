@@ -36,13 +36,13 @@ public sealed interface Result<V, E extends ErrorValue> permits Error, Success {
 
     Result<V, E> validate(Function<V, Boolean> validator, E error);
 
-    Result<V, E> validate(Function<V, Boolean> validator, Function<V,E> errorSupplier);
+    Result<V, E> validate(Function<V, Boolean> validator, Function<V, E> errorSupplier);
 
-    Result<V,E> runIf(Function<V,Boolean> condition, Runnable runnable);
+    Result<V, E> runIf(Function<V, Boolean> condition, Runnable runnable);
 
-    Result<V,E> runIf(Function<V,Boolean> condition, Consumer<V> runnable);
+    Result<V, E> runIf(Function<V, Boolean> condition, Consumer<V> runnable);
 
-    Result<V,E> run(Runnable runnable);
+    Result<V, E> run(Runnable runnable);
 
     V unwrap();
 

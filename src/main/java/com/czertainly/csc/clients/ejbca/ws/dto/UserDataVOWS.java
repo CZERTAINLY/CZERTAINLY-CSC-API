@@ -1,4 +1,3 @@
-
 package com.czertainly.csc.clients.ejbca.ws.dto;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -13,9 +12,9 @@ import java.util.List;
 
 /**
  * <p>Java class for userDataVOWS complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="userDataVOWS"&gt;
  *   &lt;complexContent&gt;
@@ -45,30 +44,30 @@ import java.util.List;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userDataVOWS", propOrder = {
-    "username",
-    "password",
-    "clearPwd",
-    "subjectDN",
-    "caName",
-    "subjectAltName",
-    "email",
-    "status",
-    "tokenType",
-    "sendNotification",
-    "keyRecoverable",
-    "endEntityProfileName",
-    "certificateProfileName",
-    "hardTokenIssuerName",
-    "startTime",
-    "endTime",
-    "certificateSerialNumber",
-    "extendedInformation",
-    "cardNumber"
+        "username",
+        "password",
+        "clearPwd",
+        "subjectDN",
+        "caName",
+        "subjectAltName",
+        "email",
+        "status",
+        "tokenType",
+        "sendNotification",
+        "keyRecoverable",
+        "endEntityProfileName",
+        "certificateProfileName",
+        "hardTokenIssuerName",
+        "startTime",
+        "endTime",
+        "certificateSerialNumber",
+        "extendedInformation",
+        "cardNumber"
 })
 public class UserDataVOWS {
 
@@ -95,11 +94,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the username property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getUsername() {
         return username;
@@ -107,11 +105,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the username property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setUsername(String value) {
         this.username = value;
@@ -119,11 +116,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the password property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getPassword() {
         return password;
@@ -131,11 +127,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the password property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setPassword(String value) {
         this.password = value;
@@ -143,7 +138,7 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the clearPwd property.
-     * 
+     *
      */
     public boolean isClearPwd() {
         return clearPwd;
@@ -151,7 +146,7 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the clearPwd property.
-     * 
+     *
      */
     public void setClearPwd(boolean value) {
         this.clearPwd = value;
@@ -159,11 +154,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the subjectDN property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getSubjectDN() {
         return subjectDN;
@@ -171,11 +165,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the subjectDN property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setSubjectDN(String value) {
         this.subjectDN = value;
@@ -183,11 +176,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the caName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getCaName() {
         return caName;
@@ -195,11 +187,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the caName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setCaName(String value) {
         this.caName = value;
@@ -207,11 +198,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the subjectAltName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getSubjectAltName() {
         return subjectAltName;
@@ -219,11 +209,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the subjectAltName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setSubjectAltName(String value) {
         this.subjectAltName = value;
@@ -231,11 +220,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the email property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getEmail() {
         return email;
@@ -243,11 +231,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the email property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setEmail(String value) {
         this.email = value;
@@ -255,7 +242,7 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the status property.
-     * 
+     *
      */
     public int getStatus() {
         return status;
@@ -263,7 +250,7 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the status property.
-     * 
+     *
      */
     public void setStatus(int value) {
         this.status = value;
@@ -271,11 +258,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the tokenType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getTokenType() {
         return tokenType;
@@ -283,11 +269,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the tokenType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setTokenType(String value) {
         this.tokenType = value;
@@ -295,7 +280,7 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the sendNotification property.
-     * 
+     *
      */
     public boolean isSendNotification() {
         return sendNotification;
@@ -303,7 +288,7 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the sendNotification property.
-     * 
+     *
      */
     public void setSendNotification(boolean value) {
         this.sendNotification = value;
@@ -311,7 +296,7 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the keyRecoverable property.
-     * 
+     *
      */
     public boolean isKeyRecoverable() {
         return keyRecoverable;
@@ -319,7 +304,7 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the keyRecoverable property.
-     * 
+     *
      */
     public void setKeyRecoverable(boolean value) {
         this.keyRecoverable = value;
@@ -327,11 +312,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the endEntityProfileName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getEndEntityProfileName() {
         return endEntityProfileName;
@@ -339,11 +323,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the endEntityProfileName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setEndEntityProfileName(String value) {
         this.endEntityProfileName = value;
@@ -351,11 +334,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the certificateProfileName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getCertificateProfileName() {
         return certificateProfileName;
@@ -363,11 +345,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the certificateProfileName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setCertificateProfileName(String value) {
         this.certificateProfileName = value;
@@ -375,11 +356,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the hardTokenIssuerName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getHardTokenIssuerName() {
         return hardTokenIssuerName;
@@ -387,11 +367,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the hardTokenIssuerName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setHardTokenIssuerName(String value) {
         this.hardTokenIssuerName = value;
@@ -399,11 +378,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the startTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getStartTime() {
         return startTime;
@@ -411,11 +389,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the startTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setStartTime(String value) {
         this.startTime = value;
@@ -423,11 +400,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the endTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getEndTime() {
         return endTime;
@@ -435,11 +411,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the endTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setEndTime(String value) {
         this.endTime = value;
@@ -447,11 +422,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the certificateSerialNumber property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @return possible object is
+     * {@link BigInteger }
+     *
      */
     public BigInteger getCertificateSerialNumber() {
         return certificateSerialNumber;
@@ -459,11 +433,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the certificateSerialNumber property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigInteger }
+     *
      */
     public void setCertificateSerialNumber(BigInteger value) {
         this.certificateSerialNumber = value;
@@ -471,25 +444,25 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the extendedInformation property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the extendedInformation property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getExtendedInformation().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link ExtendedInformationWS }
-     * 
-     * 
+     *
+     *
      */
     public List<ExtendedInformationWS> getExtendedInformation() {
         if (extendedInformation == null) {
@@ -500,11 +473,10 @@ public class UserDataVOWS {
 
     /**
      * Gets the value of the cardNumber property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
+     *
      */
     public String getCardNumber() {
         return cardNumber;
@@ -512,11 +484,10 @@ public class UserDataVOWS {
 
     /**
      * Sets the value of the cardNumber property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
+     *
      */
     public void setCardNumber(String value) {
         this.cardNumber = value;
