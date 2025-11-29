@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.czertainly</groupId>
     <artifactId>signserver.csc</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <name>SignServer-CSC-API</name>
     <description>CSC API for Signserver</description>
     <properties>
