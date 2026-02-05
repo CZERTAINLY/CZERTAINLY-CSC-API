@@ -5,6 +5,8 @@ import com.czertainly.csc.configuration.csc.CscConfiguration;
 import com.czertainly.csc.providers.DistinguishedNameProvider;
 import com.czertainly.csc.providers.SubjectAlternativeNameProvider;
 import com.czertainly.csc.providers.UsernameProvider;
+import com.czertainly.csc.providers.sanitization.DnAndSanSanitizer;
+import com.czertainly.csc.providers.sanitization.EjbcaDnAndSanAndSanSanitizer;
 import com.czertainly.csc.utils.configuration.CscConfigurationBuilder;
 import org.instancio.Instancio;
 import org.instancio.InstancioApi;
@@ -35,6 +37,7 @@ class SignatureQualifierProfileLoaderTest {
             .build();
 
     SignatureQualifierProfileLoaderTest() throws IOException {}
+    DnAndSanSanitizer sanitizer = new EjbcaDnAndSanAndSanSanitizer();
 
     @Test
     void loadSignatureQualifierProfilesCanLoadEmptyProfilesConfiguration() {
@@ -42,7 +45,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(List.of());
 
         // when
-        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
+        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration, sanitizer,
                                                                                      config.getName()
         );
 
@@ -58,7 +61,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
+        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration, sanitizer,
                                                                                      config.getName()
         );
 
@@ -74,7 +77,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
+        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration, sanitizer,
                                                                                      config.getName()
         );
 
@@ -103,7 +106,7 @@ class SignatureQualifierProfileLoaderTest {
         String configurationFile = "non-existing-file.yml";
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, configurationFile);
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, configurationFile);
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "does not exist", ex);
@@ -115,7 +118,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = File.createTempFile("siqnature-qualifier-profiles-ejbca", "yml", configurationDirectory.toFile());
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Configuration file is empty", ex);
@@ -131,7 +134,7 @@ class SignatureQualifierProfileLoaderTest {
         }
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Failed to parse configuration file.",
@@ -149,7 +152,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Missing value for 'name' property",
@@ -167,7 +170,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Missing value for 'caName' property",
@@ -183,7 +186,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -199,7 +202,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -215,7 +218,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -231,7 +234,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -247,7 +250,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -263,7 +266,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -279,7 +282,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -295,7 +298,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Missing value for 'usernamePattern'",
@@ -313,7 +316,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "Missing value for 'dn'", ex);
@@ -329,7 +332,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -347,7 +350,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class,
@@ -365,7 +368,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
+        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration, sanitizer,
                                                                                      config.getName()
         );
 
@@ -384,7 +387,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
+        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration, sanitizer,
                                                                                      config.getName()
         );
 
@@ -403,7 +406,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration,
+        SignatureQualifierProfileLoader loader = new SignatureQualifierProfileLoader(cscConfiguration, sanitizer,
                                                                                      config.getName()
         );
 
@@ -423,7 +426,7 @@ class SignatureQualifierProfileLoaderTest {
         File config = prepareConfigurationFile(profiles);
 
         // when
-        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, config.getName());
+        Executable ex = () -> new SignatureQualifierProfileLoader(cscConfiguration, sanitizer, config.getName());
 
         // then
         assertThrowsAndMessageContains(ApplicationConfigurationException.class, "myProfile", ex);

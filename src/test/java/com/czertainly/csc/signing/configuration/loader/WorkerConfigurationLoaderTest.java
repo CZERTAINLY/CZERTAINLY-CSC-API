@@ -285,7 +285,7 @@ class WorkerConfigurationLoaderTest {
                 capabilities.documentTypes().stream().map(Enum::name).collect(Collectors.toList())
         );
         // RAW signer should have null for document-specific capabilities
-        assertNull(capabilities.signatureQualifiers());
+        assertEquals(0, capabilities.signatureQualifiers().size());
         assertNull(capabilities.signatureFormat());
         assertNull(capabilities.conformanceLevel());
         assertNull(capabilities.signaturePackaging());
