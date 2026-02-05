@@ -43,16 +43,17 @@ public class OptionalPatternReplacer {
 
     public String replacePattern(Supplier<Map<String, String>> keyValueSource) {
 
+        Map<String, String> values = keyValueSource.get();
         List<String> substitutedComponents = new ArrayList<>();
 
         for (PatternComponent component : allComponents) {
-            var isValueAvailable = keyValueSource.get().containsKey(component.variable);
+            var isValueAvailable = values.containsKey(component.variable);
             var isComponentRequired = requiredComponents.contains(component.name());
             if (!isValueAvailable && isComponentRequired) {
                 throw new InvalidInputDataException(
                         replacerName + ": Missing value of '" + component.variable + "' for required component '" + component.name + "'.");
             } else if (isValueAvailable) {
-                substitutedComponents.add(component.name() + "=" + keyValueSource.get().get(component.variable));
+                substitutedComponents.add(component.name() + "=" + values.get(component.variable));
             }
 
         }

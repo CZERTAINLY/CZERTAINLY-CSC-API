@@ -6,7 +6,7 @@ import com.czertainly.csc.providers.DistinguishedNameProvider;
 import com.czertainly.csc.providers.SubjectAlternativeNameProvider;
 import com.czertainly.csc.providers.UsernameProvider;
 import com.czertainly.csc.providers.sanitization.DnAndSanSanitizer;
-import com.czertainly.csc.providers.sanitization.EjbcaDnAndSanAndSanSanitizer;
+import com.czertainly.csc.providers.sanitization.EjbcaDnAndSanSanitizer;
 import com.czertainly.csc.utils.configuration.CscConfigurationBuilder;
 import org.instancio.Instancio;
 import org.instancio.InstancioApi;
@@ -37,7 +37,7 @@ class SignatureQualifierProfileLoaderTest {
             .build();
 
     SignatureQualifierProfileLoaderTest() throws IOException {}
-    DnAndSanSanitizer sanitizer = new EjbcaDnAndSanAndSanSanitizer();
+    DnAndSanSanitizer sanitizer = new EjbcaDnAndSanSanitizer();
 
     @Test
     void loadSignatureQualifierProfilesCanLoadEmptyProfilesConfiguration() {

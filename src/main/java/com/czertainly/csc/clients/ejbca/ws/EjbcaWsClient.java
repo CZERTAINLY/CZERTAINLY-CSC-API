@@ -66,7 +66,7 @@ public class EjbcaWsClient extends WebServiceGatewaySupport {
     }
 
     public Result<CertificateResponse, TextError> requestCertificate(
-            String username, String password, String subjectDn, String subjectAlternativeName,  byte[] csr,
+            String username, String password, String subjectDn, String subjectAlternativeName, byte[] csr,
             ZonedDateTime certificateValidityStart, ZonedDateTime certificateValidityEnd,
             String caName, String certificateProfileName, String endEntityProfileName
     ) {

@@ -4,9 +4,9 @@ import com.czertainly.csc.clients.ejbca.EjbcaClient;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.model.csc.CertificateStatus;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.springframework.stereotype.Component;
 
-import java.security.cert.X509Certificate;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -25,7 +25,7 @@ public class CertificateValidityDecider {
         this.ejbcaClient = ejbcaClient;
     }
 
-    public Result<CertificateStatus, TextError> decideStatus(X509Certificate certificate) {
+    public Result<CertificateStatus, TextError> decideStatus(X509CertificateHolder certificate) {
 
         return decideCertificateExpirationStatus(certificate)
                 .flatMap(expirationStatus -> {
@@ -37,7 +37,7 @@ public class CertificateValidityDecider {
                 });
     }
 
-    private Result<CertificateStatus, TextError> decideCertificateExpirationStatus(X509Certificate certificate) {
+    private Result<CertificateStatus, TextError> decideCertificateExpirationStatus(X509CertificateHolder certificate) {
         try {
             ZonedDateTime notBefore = dateConverter.dateToZonedDateTime(certificate.getNotBefore(), utcZoneId);
             ZonedDateTime notAfter = dateConverter.dateToZonedDateTime(certificate.getNotAfter(), utcZoneId);
@@ -53,10 +53,10 @@ public class CertificateValidityDecider {
         }
     }
 
-    private Result<CertificateStatus, TextError> getRevocationStatus(X509Certificate certificate) {
+    private Result<CertificateStatus, TextError> getRevocationStatus(X509CertificateHolder certificate) {
         try {
             String serialNumberHex = certificate.getSerialNumber().toString(16);
-            String issuerDn = certificate.getIssuerX500Principal().getName();
+            String issuerDn = certificate.getIssuer().toString();
 
             return ejbcaClient.getCertificateRevocationStatus(serialNumberHex, issuerDn)
                               .map(revocationStatus -> switch (revocationStatus) {

@@ -1,18 +1,14 @@
 package com.czertainly.csc.clients.ejbca;
 
-import com.czertainly.csc.common.result.Error;
-import com.czertainly.csc.common.result.Result;
-import com.czertainly.csc.common.result.Success;
-import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.providers.sanitization.DnAndSanSanitizer;
-import com.czertainly.csc.providers.sanitization.EjbcaDnAndSanAndSanSanitizer;
+import com.czertainly.csc.providers.sanitization.EjbcaDnAndSanSanitizer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class EjbcaDnAndSanSanitizerTest {
 
-    DnAndSanSanitizer sanitizer = new EjbcaDnAndSanAndSanSanitizer();
+    DnAndSanSanitizer sanitizer = new EjbcaDnAndSanSanitizer();
 
     @Test
     void testEscapeBackslash() {

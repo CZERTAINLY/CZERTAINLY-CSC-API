@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CertificateParserTest {
 
-    private CertificateParser certificateParser = setupCertificateParser();
+    private final CertificateParser certificateParser = new CertificateParser();
 
     @Test
     void parseDerEncodedCertificateSuccess() throws Exception {
@@ -24,11 +24,11 @@ class CertificateParserTest {
         byte[] bytes = loadBytesFromResources("com/czertainly/csc/crypto/CertificateParserTest.der");
 
         // when
-        Result<X509Certificate, TextError> result = certificateParser.parseDerEncodedCertificate(bytes);
+        Result<X509CertificateHolder, TextError> result = certificateParser.parseDerEncodedCertificate(bytes);
 
         // then
-        X509Certificate parsedCertificate = result.unwrap();
-        assertEquals("CN=3Key, O=3Key, L=Prague, ST=Prague, C=CZ", parsedCertificate.getSubjectDN().getName());
+        X509CertificateHolder parsedCertificate = result.unwrap();
+        assertEquals("CN=3Key, O=3Key, L=Prague, ST=Prague, C=CZ", parsedCertificate.getSubject().toString());
     }
 
     @Test
@@ -37,7 +37,7 @@ class CertificateParserTest {
         byte[] bytes = new byte[0];
 
         // when
-        Result<X509Certificate, TextError> result = certificateParser.parseDerEncodedCertificate(bytes);
+        Result<X509CertificateHolder, TextError> result = certificateParser.parseDerEncodedCertificate(bytes);
 
         // then
         assertTrue(result.unwrapError().getErrorText().contains("Failed to parse DER"));
@@ -84,7 +84,7 @@ class CertificateParserTest {
     }
 
     @Test
-    void getEndCertificateFromPkcs7ChainFailure() throws Exception {
+    void getEndCertificateFromPkcs7ChainFailure() {
         // given
         byte[] bytes = new byte[0];
 
@@ -93,13 +93,5 @@ class CertificateParserTest {
 
         // then
         assertTrue(result.unwrapError().getErrorText().contains("CMSException"));
-    }
-
-    private CertificateParser setupCertificateParser() {
-        try {
-            return new CertificateParser();
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

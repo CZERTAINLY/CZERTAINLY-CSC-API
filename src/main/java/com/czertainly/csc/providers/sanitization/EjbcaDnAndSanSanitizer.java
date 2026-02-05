@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
  *   <li>= (equals)</li>
  * </ul>
  *
- * Through testing, it was determined that EJBCA also require escaping of the following characters in DNs:
+ * Through testing, it was determined that EJBCA also requires escaping of the following characters in DNs:
  * <ul>
- *   <li># (double quotes)</li>
+ *   <li># (hash)</li>
  *   <li>" (double quote)</li>
  *   <li>\ (backslash)</li>
  * </ul>
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  * @see <a href="https://docs.keyfactor.com/ejbca/latest/subject-distinguished-names">EJBCA DN Documentation</a>
  */
 @Component
-public class EjbcaDnAndSanAndSanSanitizer implements DnAndSanSanitizer {
+public class EjbcaDnAndSanSanitizer implements DnAndSanSanitizer {
 
     /**
      * Escapes special characters in a DN component value according to RFC 4514.

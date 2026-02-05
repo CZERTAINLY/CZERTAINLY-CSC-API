@@ -38,15 +38,15 @@ public class PatternSanProvider implements SubjectAlternativeNameProvider {
     public Result<String, TextError> getSan(Supplier<Map<String, String>> keyValueSource) {
         if (isEmpty) return Result.success(null);
         try {
-            // Wrap keyValueSource to apply sanitization if provided
-            Supplier<Map<String, String>> sanitizedSource = valueSanitizer != null
-                    ? () -> {
-                Map<String, String> original = keyValueSource.get();
+            // Eagerly resolve and sanitize values once to avoid repeated supplier evaluation
+            Map<String, String> values = keyValueSource.get();
+            if (valueSanitizer != null) {
                 Map<String, String> sanitized = new HashMap<>();
-                original.forEach((k, v) -> sanitized.put(k, valueSanitizer.escapeValue(v)));
-                return sanitized;
+                values.forEach((k, v) -> sanitized.put(k, valueSanitizer.escapeValue(v)));
+                values = sanitized;
             }
-                    : keyValueSource;
+            Map<String, String> resolved = values;
+            Supplier<Map<String, String>> sanitizedSource = () -> resolved;
 
             return Result.success(patternReplacer.replacePattern(sanitizedSource));
         } catch (Exception e) {
