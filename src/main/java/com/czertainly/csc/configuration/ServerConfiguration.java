@@ -29,6 +29,7 @@ import org.springframework.boot.ssl.SslStoreBundle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -60,6 +61,7 @@ public class ServerConfiguration {
     }
 
     @Bean
+    @Order(1)
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(sessionConf -> sessionConf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
