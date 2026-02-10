@@ -10,9 +10,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.security.auth.x500.X500Principal;
 import java.math.BigInteger;
-import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
