@@ -65,6 +65,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                 logger.warn("Certificate(s) found in TLS handshake but the first certificate does not appear to be an end-entity certificate. " +
                         "Subject of first certificate: [{}], remote address: {}. The request will be rejected.",
                         certs[0].getSubjectX500Principal().getName(), request.getRemoteAddr());
+                writeErrorResponse(response);
                 return;
             }
             logger.trace("Client certificate presented in TLS handshake, subject: [{}], remote address: {}",

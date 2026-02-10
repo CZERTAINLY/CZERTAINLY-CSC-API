@@ -396,6 +396,7 @@ class MtlsClientCertificateFilterTest {
 
         // THEN — filter should reject the request and not continue the chain
         verify(filterChain, never()).doFilter(any(), any());
+        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private static String toPem(X509Certificate cert) throws Exception {
