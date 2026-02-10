@@ -399,6 +399,26 @@ class MtlsClientCertificateFilterTest {
         assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
+    @Test
+    void shouldRejectBase64DerCaCertificateFromHeader() throws Exception {
+        // GIVEN — a CA certificate presented as raw Base64-encoded DER (no PEM headers)
+        KeyPair caKeyPair = CertificateUtils.generateKeyPair();
+        X509Certificate caCert = CertificateUtils.generateCaCertificate("CN=Sneaky CA,O=Test Org", caKeyPair);
+        String base64Der = Base64.getEncoder().encodeToString(caCert.getEncoded());
+
+        MtlsClientCertificateFilter filter = new MtlsClientCertificateFilter(objectMapper, false, "X-SSL-Client-Cert");
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        request.addHeader("X-SSL-Client-Cert", base64Der);
+
+        // WHEN
+        filter.doFilterInternal(request, response, filterChain);
+
+        // THEN — CA certificate should be rejected, not used for authentication
+        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(filterChain, never()).doFilter(any(), any());
+    }
+
     private static String toPem(X509Certificate cert) throws Exception {
         return "-----BEGIN CERTIFICATE-----\n"
                + Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(cert.getEncoded())

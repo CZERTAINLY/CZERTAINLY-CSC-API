@@ -128,6 +128,11 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                 // if PEM parsing found nothing, as a last resort, try parsing as raw Base64-encoded DER
                 X509Certificate derCert = parseBase64Der(decoded);
                 if (derCert != null) {
+                    if (!isEndEntity(derCert)) {
+                        logger.warn("Certificate parsed from header '{}' as raw Base64-encoded DER is not an end-entity certificate. "
+                                + "Subject: [{}]. The certificate will be rejected.", clientCertificateHeader, derCert.getSubjectX500Principal().getName());
+                        return null;
+                    }
                     validateExpiration(List.of(derCert));
                     logger.debug("Parsed certificate from header '{}' as raw Base64-encoded DER, subject: [{}]",
                             clientCertificateHeader, derCert.getSubjectX500Principal().getName());
