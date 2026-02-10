@@ -73,8 +73,10 @@ csc:
                 # authentication to work. The application will not start if not configured properly.
 
                 # Optional: Spring SSL Bundle name for a management-specific truststore.
-                # The certificate is always validated against the server's truststore configured in `spring.ssl`,
-                # but this allows for an additional truststore to be used for management API client certificate validation if needed.
+                # When mTLS is terminated directly at this server, the client certificate is validated during the TLS
+                # handshake against the truststore configured in `spring.ssl`. This option allows an additional
+                # truststore to be used for management API client certificate validation (including when a certificate
+                # is received via `clientCertificateHeader` after TLS is terminated at a reverse proxy).
                 # truststoreBundle: managementTrust
 
                 # Optional: Issuer DN allowlist
