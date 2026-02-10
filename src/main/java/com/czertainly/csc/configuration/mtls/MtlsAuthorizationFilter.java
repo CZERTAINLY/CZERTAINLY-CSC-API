@@ -157,7 +157,7 @@ public class MtlsAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        logger.info("Management mTLS authorization ACCEPTED (passed checks: {}). "
+        logger.debug("Management mTLS authorization ACCEPTED (passed checks: {}). "
                         + "Subject: [{}], Issuer: [{}], Fingerprint: [{}]",
                 String.join(", ", passedChecks), subjectDn, issuerDn, fingerprint);
 
