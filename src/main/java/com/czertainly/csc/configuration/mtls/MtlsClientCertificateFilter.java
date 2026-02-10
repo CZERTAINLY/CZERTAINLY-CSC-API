@@ -102,7 +102,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
 
         try {
             String trimmed = headerValue.trim();
-            logger.trace("Raw client certificate header value: '{}'", trimmed);
+            logger.trace("Raw client certificate header value length: {} chars", trimmed.length());
 
             // URL-decode if the value appears to be URL-encoded (e.g. contains % characters)
             String decoded = trimmed.contains("%") ? URLDecoder.decode(trimmed, StandardCharsets.UTF_8) : trimmed;
@@ -192,7 +192,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(derBytes));
         } catch (Exception e) {
-            logger.warn("Failed to parse certificate as Base64-encoded DER, value '{}'.", value, e);
+            logger.warn("Failed to parse certificate as Base64-encoded DER (length: {} chars).", value.length(), e);
             return null;
         }
     }
