@@ -1,5 +1,7 @@
 package com.czertainly.csc.crypto;
 
+import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
@@ -41,10 +43,18 @@ public final class FingerprintUtils {
     }
 
     public static String normalizeFingerprint(String fingerprint) {
-        // Strip colons, spaces; uppercase — allows flexible input formats
+        // Strip colons, spaces; allows flexible input formats
         String sanitizedFingerprint = fingerprint.replaceAll("[:\\s]", "");
-        byte[] bytes = PLAIN_HEX.parseHex(sanitizedFingerprint);
-
-        return formatFingerprint(bytes);
+        try {
+            byte[] bytes = PLAIN_HEX.parseHex(sanitizedFingerprint);
+            return formatFingerprint(bytes);
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationConfigurationException(
+                    "Invalid certificate fingerprint '" + fingerprint
+                            + "'. SHA-256 fingerprint must be 64 hexadecimal characters, "
+                            + "optionally separated by colons or spaces.",
+                    e
+            );
+        }
     }
 }
