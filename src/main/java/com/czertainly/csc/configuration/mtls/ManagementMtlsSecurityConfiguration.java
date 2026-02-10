@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 
 @Configuration
-@ConditionalOnExpression("'${csc.management.auth.type:certificate_oauth2}' == 'certificate' || '${csc.management.auth.type:certificate_oauth2}' == 'certificate_oauth2'")
+@ConditionalOnExpression("'${csc.management.auth.type:oauth2}' == 'certificate' || '${csc.management.auth.type:oauth2}' == 'certificate_oauth2'")
 @EnableConfigurationProperties({ManagementAuthConfiguration.class, ManagementMtlsProperties.class})
 public class ManagementMtlsSecurityConfiguration {
 
