@@ -67,7 +67,7 @@ csc:
             #                      falls back to OAuth2 JWT Bearer token if no certificate is presented
             # oauth2 - use OAuth2 JWT Bearer token only; rejects requests without a valid token
             # certificate - use mTLS client certificate authentication only; rejects requests without a certificate
-            type: certificate_oauth2
+            type: oauth2
             certificate:
                 # At least one of the following allowlists or truststoreBundle must be configured for certificate
                 # authentication to work. The application will not start if not configured properly.
