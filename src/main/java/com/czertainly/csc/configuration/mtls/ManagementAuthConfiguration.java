@@ -12,6 +12,7 @@ public record ManagementAuthConfiguration(
         ManagementMtlsProperties certificate
 ) {
     public ManagementAuthConfiguration {
+        type = type != null ? type : ManagementAuthType.OAUTH2;
         certificate = certificate != null ? certificate : new ManagementMtlsProperties(null, List.of(), List.of(), List.of(), null);
     }
 }
