@@ -185,7 +185,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
         throw new IllegalArgumentException(
                 "Certificate chain in header '%s' must be ordered with the end-entity certificate first or last. "
                         .formatted(clientCertificateHeader)
-                + "Neither first of last certificate appears to be an end-entity (non-CA) certificate.");
+                + "Neither the first nor the last certificate appears to be an end-entity (non-CA) certificate.");
     }
 
     /**
