@@ -60,8 +60,17 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
 
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(CERT_ATTRIBUTE);
 
-        // If no cert from TLS handshake, try to extract from the header
-        if (certs == null || certs.length == 0) {
+        if (certs != null && certs.length > 0) {
+            if (!isEndEntity(certs[0])) {
+                logger.warn("Certificate(s) found in TLS handshake but the first certificate does not appear to be an end-entity certificate. " +
+                        "Subject of first certificate: [{}], remote address: {}. The request will be rejected.",
+                        certs[0].getSubjectX500Principal().getName(), request.getRemoteAddr());
+                return;
+            }
+            logger.trace("Client certificate presented in TLS handshake, subject: [{}], remote address: {}",
+                    certs[0].getSubjectX500Principal().getName(), request.getRemoteAddr());
+        } else {
+            // No cert from TLS handshake, try to extract from the header
             X509Certificate[] headerCerts = extractCertificatesFromHeader(request);
             if (headerCerts != null) {
                 certs = headerCerts;
@@ -80,9 +89,6 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-        } else {
-            logger.trace("Client certificate presented in TLS handshake, subject: [{}], remote address: {}",
-                    certs[0].getSubjectX500Principal().getName(), request.getRemoteAddr());
         }
 
         filterChain.doFilter(request, response);

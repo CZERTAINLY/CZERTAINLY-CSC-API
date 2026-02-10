@@ -378,6 +378,26 @@ class MtlsClientCertificateFilterTest {
         assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
     }
 
+    // === TLS handshake end-entity validation ===
+
+    @Test
+    void shouldRejectRequestWhenTlsCertificateIsNotEndEntity() throws Exception {
+        // GIVEN — a CA certificate presented in TLS handshake (not an end-entity)
+        KeyPair caKeyPair = CertificateUtils.generateKeyPair();
+        X509Certificate caCert = CertificateUtils.generateCaCertificate("CN=Test CA,O=Test Org", caKeyPair);
+
+        MtlsClientCertificateFilter filter = new MtlsClientCertificateFilter(objectMapper, false, null);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        request.setAttribute(CERT_ATTRIBUTE, new X509Certificate[]{caCert});
+
+        // WHEN
+        filter.doFilterInternal(request, response, filterChain);
+
+        // THEN — filter should reject the request and not continue the chain
+        verify(filterChain, never()).doFilter(any(), any());
+    }
+
     private static String toPem(X509Certificate cert) throws Exception {
         return "-----BEGIN CERTIFICATE-----\n"
                + Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(cert.getEncoded())
