@@ -84,7 +84,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                     logger.debug("No client certificate presented, falling back to OAuth2 authentication. "
                             + "Remote address: {}", request.getRemoteAddr());
                 } else {
-                    logger.warn("Management API request rejected: no client certificate presented. "
+                    logger.info("Management API request rejected: no client certificate presented. "
                             + "Remote address: {}", request.getRemoteAddr());
                     writeErrorResponse(response);
                     return;
@@ -133,11 +133,11 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                             clientCertificateHeader, derCert.getSubjectX500Principal().getName());
                     return new X509Certificate[]{derCert};
                 }
-                logger.warn("No certificates found in header '{}'", clientCertificateHeader);
+                logger.debug("No certificates found in header '{}'", clientCertificateHeader);
                 return null;
             }
         } catch (Exception e) {
-            logger.warn("Failed to use client certificate from header '{}'",
+            logger.debug("Failed to use client certificate from header '{}'",
                     clientCertificateHeader, e);
             return null;
         }
@@ -199,7 +199,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(derBytes));
         } catch (Exception e) {
-            logger.warn("Failed to parse certificate as Base64-encoded DER (length: {} chars).", value.length(), e);
+            logger.debug("Failed to parse certificate as Base64-encoded DER (length: {} chars).", value.length(), e);
             return null;
         }
     }
