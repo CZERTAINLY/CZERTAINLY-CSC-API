@@ -23,7 +23,7 @@
         <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
         <version.postgresql>42.7.7</version.postgresql>
         <version.mysql>9.3.0</version.mysql>
-        <version.instacio>5.4.1</version.instacio>
+        <version.instacio>5.5.1</version.instacio>
         <version.testcontainers>1.21.1</version.testcontainers>
         <version.testcontainers.keycloak>3.7.0</version.testcontainers.keycloak>
 
