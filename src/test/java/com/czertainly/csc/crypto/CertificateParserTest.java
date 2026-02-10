@@ -28,7 +28,7 @@ class CertificateParserTest {
 
         // then
         X509CertificateHolder parsedCertificate = result.unwrap();
-        assertEquals("CN=3Key, O=3Key, L=Prague, ST=Prague, C=CZ", parsedCertificate.getSubject().toString());
+        assertEquals("C=CZ,ST=Prague,L=Prague,O=3Key,CN=3Key", parsedCertificate.getSubject().toString());
     }
 
     @Test
