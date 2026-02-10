@@ -53,7 +53,7 @@ public class DocumentAuthorizer implements SignatureAuthorizer {
             return Result.success(MessageDigest.getInstance(digestAlgorithmName));
         } catch (NoSuchAlgorithmException e) {
             logger.error("Unable to obtain instance of Message Digest '{}'", digestAlgorithmName, e);
-            return Result.error(TextError.of("Unable to obtain instance of Message Digest '{}'" + digestAlgorithmOID));
+            return Result.error(TextError.of("Unable to obtain instance of Message Digest '%s'", digestAlgorithmOID));
         }
     }
 
