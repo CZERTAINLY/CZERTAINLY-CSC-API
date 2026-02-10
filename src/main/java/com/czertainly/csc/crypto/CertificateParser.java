@@ -19,8 +19,6 @@ public class CertificateParser {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificateParser.class);
 
-    public CertificateParser() {}
-
     public Result<X509CertificateHolder, TextError> parseDerEncodedCertificate(byte[] derEncodedCertificate) {
         try {
             X509CertificateHolder certificateHolder = new X509CertificateHolder(derEncodedCertificate);
