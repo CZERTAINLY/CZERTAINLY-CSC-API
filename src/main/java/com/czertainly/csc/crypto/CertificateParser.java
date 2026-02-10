@@ -10,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,19 +19,13 @@ public class CertificateParser {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificateParser.class);
 
-    CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-
-    public CertificateParser() throws CertificateException {
-    }
-
-    public Result<X509Certificate, TextError> parseDerEncodedCertificate(byte[] derEncodedCertificate) {
+    public Result<X509CertificateHolder, TextError> parseDerEncodedCertificate(byte[] derEncodedCertificate) {
         try {
-            var certificate = (X509Certificate) certFactory.generateCertificate(
-                    new ByteArrayInputStream(derEncodedCertificate));
-            return Result.success(certificate);
-        } catch (CertificateException e) {
+            X509CertificateHolder certificateHolder = new X509CertificateHolder(derEncodedCertificate);
+            return Result.success(certificateHolder);
+        } catch (Exception e) {
             return Result.error(
-                    TextError.of("Failed to parse DER encoded certificate into X509Certificate. {}", e.getMessage()));
+                    TextError.of("Failed to parse DER encoded certificate into X509CertificateHolder. %s", e.getMessage()));
         }
     }
 
