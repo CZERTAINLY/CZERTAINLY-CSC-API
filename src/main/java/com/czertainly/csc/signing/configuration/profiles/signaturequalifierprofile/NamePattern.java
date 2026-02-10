@@ -4,7 +4,7 @@ import java.util.List;
 
 public class NamePattern {
     private String pattern;
-    private List<String> required;
+    private List<String> required = List.of();
 
     public NamePattern() {}
 

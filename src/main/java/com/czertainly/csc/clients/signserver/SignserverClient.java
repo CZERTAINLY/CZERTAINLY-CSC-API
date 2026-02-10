@@ -18,12 +18,12 @@ import com.czertainly.csc.model.signserver.CryptoTokenKeyStatus;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -202,8 +202,8 @@ public class SignserverClient {
                             if (getCertificateResult instanceof Error(var e)) {
                                 return Result.error(e);
                             }
-                            X509Certificate cert = getCertificateResult.unwrap();
-                            String dn = cert.getSubjectX500Principal().getName();
+                            X509CertificateHolder cert = getCertificateResult.unwrap();
+                            String dn = cert.getSubject().toString();
                             if (dn.contains("L=_SignServer_DUMMY_CERT_")) {
                                 builder.withStatus(new CryptoTokenKeyStatus(false));
                             } else {

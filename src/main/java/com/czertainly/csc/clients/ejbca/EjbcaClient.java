@@ -60,9 +60,9 @@ public class EjbcaClient {
                                                                                        certificateValidity
         );
 
-        return ejbcaWsClient.requestCertificate(endEntity.username(), endEntity.password(), endEntity.subjectDN(), csr,
-                                                validityStart, validityEnd, profile.getCertificateAuthority(),
-                                                profile.getCertificateProfileName(),
+        return ejbcaWsClient.requestCertificate(endEntity.username(), endEntity.password(), endEntity.subjectDN(),
+                                                endEntity.san(), csr, validityStart, validityEnd,
+                                                profile.getCertificateAuthority(), profile.getCertificateProfileName(),
                                                 profile.getEndEntityProfileName()
                             ).map(CertificateResponse::getData)
                             .map(base64Bytes -> ArrayUtils.removeAllOccurrences(base64Bytes, (byte) '\n'))

@@ -552,10 +552,8 @@ public class CredentialsService {
                                                              certificateStatus,
                                                              certificates,
                                                              endCertificate.getSerialNumber().toString(16),
-                                                             endCertificate.getIssuerX500Principal()
-                                                                           .getName(),
-                                                             endCertificate.getSubjectX500Principal()
-                                                                           .getName(),
+                                                             endCertificate.getIssuer().toString(),
+                                                             endCertificate.getSubject().toString(),
                                                              dateConverter.dateToZonedDateTime(
                                                                      endCertificate.getNotBefore(),
                                                                      utcZone
