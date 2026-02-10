@@ -1,5 +1,6 @@
 package com.czertainly.csc.signing.configuration.profiles.signaturequalifierprofile;
 
+import com.czertainly.csc.providers.sanitization.DnAndSanSanitizer;
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.common.result.Error;
 import com.czertainly.csc.common.result.Result;
@@ -33,12 +34,14 @@ public class SignatureQualifierProfileLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(SignatureQualifierProfileLoader.class);
     private final List<SignatureQualifierProfile> profiles;
-
+    private final DnAndSanSanitizer ejbcaDnAndSanSanitizer;
 
     public SignatureQualifierProfileLoader(
             CscConfiguration cscConfiguration,
+            DnAndSanSanitizer ejbcaDnAndSanSanitizer,
             @Value("signature-qualifier-profiles-ejbca.yml") String configurationFileName
     ) {
+        this.ejbcaDnAndSanSanitizer = ejbcaDnAndSanSanitizer;
         String configurationDirectoryPath = cscConfiguration.profilesConfigurationDirectory();
         logger.info("Loading signature qualifier profiles from '{}/{}'.", configurationDirectoryPath,
                     configurationFileName
@@ -182,11 +185,13 @@ public class SignatureQualifierProfileLoader {
                 new PatternUsernameProvider(usernamePattern),
                 new PatternDnProvider(
                         distinguishedNamePattern.getPattern(),
-                        distinguishedNamePattern.getRequired()
+                        distinguishedNamePattern.getRequired(),
+                        this.ejbcaDnAndSanSanitizer
                 ),
                 new PatternSanProvider(
                         subjectAlternativeNamePattern.getPattern(),
-                        subjectAlternativeNamePattern.getRequired()
+                        subjectAlternativeNamePattern.getRequired(),
+                        this.ejbcaDnAndSanSanitizer
                 ),
                 multisign
         );

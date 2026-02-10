@@ -15,10 +15,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -155,7 +152,7 @@ public class WorkerConfigurationLoader {
 
         try {
             return new WorkerCapabilities(
-                    null, null, null, null, supportedSignatureAlgorithms, false, List.of(DocumentType.RAW)
+                    Collections.emptyList(), null, null, null, supportedSignatureAlgorithms, false, List.of(DocumentType.RAW)
             );
         } catch (IllegalArgumentException e) {
             throw new ApplicationConfigurationException("Worker '" + workerName + "' has an invalid capability.", e);
