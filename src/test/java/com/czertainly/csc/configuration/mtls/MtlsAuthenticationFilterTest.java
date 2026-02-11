@@ -80,8 +80,9 @@ class MtlsAuthenticationFilterTest {
 
         // THEN
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(authentication).isNotNull();
-        assertThat(authentication).isInstanceOf(MtlsAuthenticationToken.class);
+        assertThat(authentication)
+                .isNotNull()
+                .isInstanceOf(MtlsAuthenticationToken.class);
         assertThat(authentication.isAuthenticated()).isTrue();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -111,8 +112,9 @@ class MtlsAuthenticationFilterTest {
         Object principal = authentication.getPrincipal();
         assertThat(principal).isInstanceOf(String.class);
         String subjectDn = (String) principal;
-        assertThat(subjectDn).contains("CN=Admin User");
-        assertThat(subjectDn).contains("O=Management Org");
+        assertThat(subjectDn)
+                .contains("CN=Admin User")
+                .contains("O=Management Org");
 
         // Verify the cert is accessible via the token
         MtlsAuthenticationToken token = (MtlsAuthenticationToken) authentication;

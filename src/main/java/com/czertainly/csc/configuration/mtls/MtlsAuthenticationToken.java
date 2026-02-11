@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Objects;
 
 
 /**
@@ -42,5 +43,18 @@ public class MtlsAuthenticationToken extends AbstractAuthenticationToken {
 
     public X509Certificate getCertificate() {
         return certificate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        MtlsAuthenticationToken that = (MtlsAuthenticationToken) o;
+        return Objects.equals(subjectDn, that.subjectDn) && Objects.equals(certificate, that.certificate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), subjectDn, certificate);
     }
 }

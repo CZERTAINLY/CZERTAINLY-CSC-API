@@ -157,10 +157,11 @@ public class MtlsAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        logger.debug("Management mTLS authorization ACCEPTED (passed checks: {}). "
-                        + "Subject: [{}], Issuer: [{}], Fingerprint: [{}]",
-                String.join(", ", passedChecks), subjectDn, issuerDn, fingerprint);
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Management mTLS authorization ACCEPTED (passed checks: {}). "
+                            + "Subject: [{}], Issuer: [{}], Fingerprint: [{}]",
+                    String.join(", ", passedChecks), subjectDn, issuerDn, fingerprint);
+        }
         filterChain.doFilter(request, response);
     }
 
@@ -189,7 +190,9 @@ public class MtlsAuthorizationFilter extends OncePerRequestFilter {
                 for (int i = 0; i < reviewer.getCertPathSize(); i++) {
                     for (Object notification : reviewer.getNotifications(i)) {
                         ErrorBundle bundle = (ErrorBundle) notification;
-                        logger.debug("PKIX chain validation notification at cert [{}]: {}", i, bundle.getText(Locale.ENGLISH));
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("PKIX chain validation notification at cert [{}]: {}", i, bundle.getText(Locale.ENGLISH));
+                        }
                     }
                 }
                 return true;
@@ -198,7 +201,9 @@ public class MtlsAuthorizationFilter extends OncePerRequestFilter {
             for (int i = 0; i < reviewer.getCertPathSize(); i++) {
                 for (Object error : reviewer.getErrors(i)) {
                     ErrorBundle bundle = (ErrorBundle) error;
-                    logger.warn("PKIX chain validation error at cert [{}]: {}", i, bundle.getText(Locale.ENGLISH));
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("PKIX chain validation error at cert [{}]: {}", i, bundle.getText(Locale.ENGLISH));
+                    }
                 }
             }
             return false;

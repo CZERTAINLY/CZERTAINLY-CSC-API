@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
@@ -73,7 +74,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
         } else {
             // No cert from TLS handshake, try to extract from the header
             X509Certificate[] headerCerts = extractCertificatesFromHeader(request);
-            if (headerCerts != null) {
+            if (headerCerts.length > 0) {
                 certs = headerCerts;
                 request.setAttribute(CERT_ATTRIBUTE, certs);
                 logger.trace("Certificate(s) extracted from header '{}', Subject: [{}], remote address: {}",
@@ -98,13 +99,13 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
     private X509Certificate[] extractCertificatesFromHeader(HttpServletRequest request) {
         if (clientCertificateHeader == null || clientCertificateHeader.isBlank()) {
             logger.debug("The name of the header to extract client certificate from is not configured. Skipping header extraction.");
-            return null;
+            return new X509Certificate[0];
         }
 
         String headerValue = request.getHeader(clientCertificateHeader);
         if (headerValue == null || headerValue.isBlank()) {
             logger.debug("Client certificate header '{}' is not present or empty in the request.", clientCertificateHeader);
-            return null;
+            return new X509Certificate[0];
         }
 
         try {
@@ -131,7 +132,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                     if (!isEndEntity(derCert)) {
                         logger.warn("Certificate parsed from header '{}' as raw Base64-encoded DER is not an end-entity certificate. "
                                 + "Subject: [{}]. The certificate will be rejected.", clientCertificateHeader, derCert.getSubjectX500Principal().getName());
-                        return null;
+                        return new X509Certificate[0];
                     }
                     validateExpiration(List.of(derCert));
                     logger.debug("Parsed certificate from header '{}' as raw Base64-encoded DER, subject: [{}]",
@@ -139,12 +140,12 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
                     return new X509Certificate[]{derCert};
                 }
                 logger.debug("No certificates found in header '{}'", clientCertificateHeader);
-                return null;
+                return new X509Certificate[0];
             }
         } catch (Exception e) {
             logger.debug("Failed to use client certificate from header '{}'",
                     clientCertificateHeader, e);
-            return null;
+            return new X509Certificate[0];
         }
     }
 
@@ -152,7 +153,7 @@ public class MtlsClientCertificateFilter extends OncePerRequestFilter {
      * Parses PEM-encoded certificates from the given string using BouncyCastle's {@link PEMParser}.
      * Returns an empty list if the input contains no PEM certificate blocks.
      */
-    private static ArrayList<X509Certificate> parsePemCertificates(String pem) throws Exception {
+    private static ArrayList<X509Certificate> parsePemCertificates(String pem) throws IOException, CertificateException {
         ArrayList<X509Certificate> certList = new ArrayList<>();
         try (PEMParser pemParser = new PEMParser(new StringReader(pem))) {
             Object obj;

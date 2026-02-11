@@ -22,8 +22,9 @@ class FingerprintUtilsTest {
         String fingerprint = FingerprintUtils.computeSha256Fingerprint(testCert);
 
         // THEN
-        assertThat(fingerprint).isNotNull();
-        assertThat(fingerprint).matches("([0-9A-F]{2}:){31}[0-9A-F]{2}");  // SHA-256 is 32 bytes = 64 hex chars with colons
+        assertThat(fingerprint)
+                .isNotNull()
+                .matches("([0-9A-F]{2}:){31}[0-9A-F]{2}");  // SHA-256 is 32 bytes = 64 hex chars with colons
     }
 
     @Test

@@ -185,7 +185,9 @@ public class ManagementMtlsSecurityConfiguration {
         if (mtlsProps.clientCertificateHeader() != null && !mtlsProps.clientCertificateHeader().isBlank()) {
             active.add("clientCertificateHeader=" + mtlsProps.clientCertificateHeader());
         }
-        logger.info("Management auth type: {}. Active mTLS authorization checks: {}",
-                authType, String.join(",\n ", active));
+        if (logger.isInfoEnabled()) {
+            logger.info("Management auth type: {}. Active mTLS authorization checks: {}",
+                    authType, String.join(",\n ", active));
+        }
     }
 }
