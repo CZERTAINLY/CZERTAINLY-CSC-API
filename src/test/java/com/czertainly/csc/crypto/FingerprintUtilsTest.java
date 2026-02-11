@@ -4,13 +4,10 @@ import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.utils.cert.CertificateUtils;
 import org.junit.jupiter.api.Test;
 
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class FingerprintUtilsTest {
 

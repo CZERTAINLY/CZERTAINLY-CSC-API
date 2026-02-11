@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.HexFormat;
-import java.util.List;
 
 public final class FingerprintUtils {
 
@@ -15,6 +14,8 @@ public final class FingerprintUtils {
     private static final HexFormat COLON_SEPARATED_HEX = HexFormat.ofDelimiter(":").withUpperCase();
     // plain hex for parsing input without delimiters
     private static final HexFormat PLAIN_HEX = HexFormat.of();
+
+    private FingerprintUtils() { }
 
     /**
      * Computes the SHA-256 fingerprint of an X.509 certificate.
