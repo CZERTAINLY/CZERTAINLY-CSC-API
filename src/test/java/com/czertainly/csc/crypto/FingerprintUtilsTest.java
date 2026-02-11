@@ -1,11 +1,13 @@
 package com.czertainly.csc.crypto;
 
+import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.utils.cert.CertificateUtils;
 import org.junit.jupiter.api.Test;
 
 import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FingerprintUtilsTest {
 
@@ -32,16 +34,21 @@ class FingerprintUtilsTest {
         String withSpaces = "A1 B2 C3 D4";
         String lowercase = "a1:b2:c3:d4";
 
-        // WHEN
-        String normalized1 = FingerprintUtils.normalizeFingerprint(colonSeparated);
-        String normalized2 = FingerprintUtils.normalizeFingerprint(noColons);
-        String normalized3 = FingerprintUtils.normalizeFingerprint(withSpaces);
-        String normalized4 = FingerprintUtils.normalizeFingerprint(lowercase);
+        // WHEN & THEN — all formats should produce the same normalized uppercase colon-separated format
+        assertThat(FingerprintUtils.normalizeFingerprint(colonSeparated, 4)).isEqualTo("A1:B2:C3:D4");
+        assertThat(FingerprintUtils.normalizeFingerprint(noColons, 4)).isEqualTo("A1:B2:C3:D4");
+        assertThat(FingerprintUtils.normalizeFingerprint(withSpaces, 4)).isEqualTo("A1:B2:C3:D4");
+        assertThat(FingerprintUtils.normalizeFingerprint(lowercase, 4)).isEqualTo("A1:B2:C3:D4");
+    }
 
-        // THEN - all should produce the same normalized uppercase colon-separated format
-        assertThat(normalized1).isEqualTo("A1:B2:C3:D4");
-        assertThat(normalized2).isEqualTo("A1:B2:C3:D4");
-        assertThat(normalized3).isEqualTo("A1:B2:C3:D4");
-        assertThat(normalized4).isEqualTo("A1:B2:C3:D4");
+    @Test
+    void shouldRejectFingerprintWithWrongLength() {
+        // GIVEN — valid hex but wrong length for expected 4 bytes
+        String tooShort = "A1B2";
+
+        // WHEN & THEN
+        assertThatThrownBy(() -> FingerprintUtils.normalizeFingerprint(tooShort, 4))
+                .isInstanceOf(ApplicationConfigurationException.class)
+                .hasMessageContaining("Expected 4 bytes but got 2 bytes");
     }
 }

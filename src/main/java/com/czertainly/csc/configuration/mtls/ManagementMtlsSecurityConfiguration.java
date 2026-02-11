@@ -2,6 +2,7 @@ package com.czertainly.csc.configuration.mtls;
 
 import com.czertainly.csc.api.auth.authn.CscJwtAuthenticationConverter;
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
+import com.czertainly.csc.crypto.FingerprintUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.slf4j.Logger;
@@ -19,7 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -56,7 +56,7 @@ public class ManagementMtlsSecurityConfiguration {
         Set<TrustAnchor> trustAnchors = loadTrustAnchors();
         List<X500Name> allowedIssuers = parseX500Names(mtlsProps.allowedIssuers());
         List<X500Name> allowedSubjects = parseX500Names(mtlsProps.allowedSubjects());
-        List<String> allowedFingerprints = mtlsProps.allowedFingerprints();
+        List<String> allowedFingerprints = validateAndNormalizeFingerprints(mtlsProps.allowedFingerprints());
         boolean fallbackToOAuth2 = authType == ManagementAuthType.CERTIFICATE_OAUTH2;
 
         http
@@ -139,6 +139,15 @@ public class ManagementMtlsSecurityConfiguration {
                                         .formatted(dn, e.getMessage()), e);
                     }
                 })
+                .toList();
+    }
+
+    private List<String> validateAndNormalizeFingerprints(List<String> fingerprints) {
+        if (fingerprints.isEmpty()) {
+            return List.of();
+        }
+        return fingerprints.stream()
+                .map(fp -> FingerprintUtils.normalizeFingerprint(fp, 256/8))
                 .toList();
     }
 

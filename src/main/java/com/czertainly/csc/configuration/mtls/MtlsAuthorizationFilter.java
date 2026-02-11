@@ -66,7 +66,7 @@ public class MtlsAuthorizationFilter extends OncePerRequestFilter {
         this.trustAnchors = trustAnchors;
         this.allowedIssuers = allowedIssuers;
         this.allowedSubjects = allowedSubjects;
-        this.allowedFingerprints = FingerprintUtils.normalizeFingerprints(allowedFingerprints);
+        this.allowedFingerprints = allowedFingerprints;
     }
 
     @Override
