@@ -118,7 +118,7 @@ public class ManagementMtlsSecurityConfiguration {
                     anchors.size(), mtlsProps.truststoreBundle());
             return anchors;
 
-        } catch (KeyStoreException e) {
+        } catch (Exception e) {
             throw new ApplicationConfigurationException(
                     "Failed to load management mTLS truststore bundle '%s': %s"
                             .formatted(mtlsProps.truststoreBundle(), e.getMessage()), e);
