@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.10</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.czertainly</groupId>
@@ -16,16 +16,16 @@
     <properties>
         <java.version>21</java.version>
 
-        <version.bc>1.81</version.bc>
+        <version.bc>1.83</version.bc>
         <version.jjwt>0.12.6</version.jjwt>
-        <version.commons-text>1.13.1</version.commons-text>
+        <version.commons-text>1.15.0</version.commons-text>
         <version.springdoc>2.8.9</version.springdoc>
         <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
-        <version.postgresql>42.7.6</version.postgresql>
+        <version.postgresql>42.7.7</version.postgresql>
         <version.mysql>9.3.0</version.mysql>
-        <version.instacio>5.4.1</version.instacio>
-        <version.testcontainers>1.21.1</version.testcontainers>
-        <version.testcontainers.keycloak>3.7.0</version.testcontainers.keycloak>
+        <version.instacio>5.5.1</version.instacio>
+        <version.testcontainers>1.21.4</version.testcontainers>
+        <version.testcontainers.keycloak>3.9.1</version.testcontainers.keycloak>
 
         <version.springdoc-openapi-maven-plugin>1.5</version.springdoc-openapi-maven-plugin>
 
