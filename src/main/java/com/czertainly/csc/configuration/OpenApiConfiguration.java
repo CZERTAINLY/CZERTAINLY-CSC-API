@@ -99,6 +99,14 @@ public class OpenApiConfiguration {
                                 .description("""
                                                      Bearer authentication with `manageCredentials` scope.
                                                      """)
+                )
+                .schemaRequirement(
+                        "MutualTLS",
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.MUTUALTLS)
+                                .description("""
+                                                     Mutual TLS authentication with client certificate.
+                                                     """)
                 );
     }
 

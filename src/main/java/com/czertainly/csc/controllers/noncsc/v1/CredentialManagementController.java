@@ -58,6 +58,7 @@ import java.util.UUID;
         })
 @SecurityRequirements(value = {
         @SecurityRequirement(name = "BearerAuthCredentialManagement"),
+        @SecurityRequirement(name = "MutualTLS"),
 })
 public class CredentialManagementController {
 
