@@ -130,7 +130,15 @@ public class ManagementMtlsSecurityConfiguration {
             return List.of();
         }
         return dnStrings.stream()
-                .map(X500Name::new)
+                .map(dn -> {
+                    try {
+                        return new X500Name(dn);
+                    } catch (IllegalArgumentException e) {
+                        throw new ApplicationConfigurationException(
+                                "Invalid DN string '%s' in mTLS configuration: %s. Expected format like 'CN=Name,O=Org,C=US'"
+                                        .formatted(dn, e.getMessage()), e);
+                    }
+                })
                 .toList();
     }
 
