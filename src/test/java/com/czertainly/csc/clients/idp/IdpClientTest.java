@@ -17,6 +17,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +37,7 @@ public class IdpClientTest {
 
     @BeforeAll
     public static void setup() {
-        keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.0")
+        keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.3")
                 .withAdminUsername("admin")
                 .withAdminPassword("pass");
         keycloak.start();
@@ -44,11 +45,8 @@ public class IdpClientTest {
 
     @Test
     void downloadUserInfoReturnsUserInfo() {
-        // given
-        String token = obtainAccessToken();
-
         // when
-        var getUserInfoResult = idpClient.downloadUserInfo(token);
+        var getUserInfoResult = doWithAccessToken(token -> idpClient.downloadUserInfo(token));
 
         // then
         UserInfo userInfo = assertSuccessAndGet(getUserInfoResult);
@@ -104,7 +102,7 @@ public class IdpClientTest {
         assertFalse(canDownloadUserInfo);
     }
 
-    private String obtainAccessToken() {
+    private <T> T doWithAccessToken(Function<String, T> action) {
         KeycloakBuilder builder = KeycloakBuilder.builder()
                                                  .serverUrl(keycloak.getAuthServerUrl())
                                                  .realm(KeycloakContainer.MASTER_REALM)
@@ -113,7 +111,8 @@ public class IdpClientTest {
                                                  .password(keycloak.getAdminPassword())
                                                  .scope("openid");
         try (Keycloak keycloakAdminClient = builder.build()) {
-            return keycloakAdminClient.tokenManager().getAccessToken().getToken();
+            String token = keycloakAdminClient.tokenManager().getAccessToken().getToken();
+            return action.apply(token);
         }
     }
 
