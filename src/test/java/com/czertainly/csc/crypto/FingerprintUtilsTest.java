@@ -4,10 +4,13 @@ import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.utils.cert.CertificateUtils;
 import org.junit.jupiter.api.Test;
 
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FingerprintUtilsTest {
 
@@ -51,5 +54,17 @@ class FingerprintUtilsTest {
         assertThatThrownBy(() -> FingerprintUtils.normalizeFingerprint(tooShort, 4))
                 .isInstanceOf(ApplicationConfigurationException.class)
                 .hasMessageContaining("Expected 4 bytes but got 2 bytes");
+    }
+
+    @Test
+    void shouldRejectFingerprintWithInvalidHexCharacters() {
+        // GIVEN — contains non-hex characters
+        String invalidHex = "ZZZZ1234";
+
+        // WHEN & THEN
+        assertThatThrownBy(() -> FingerprintUtils.normalizeFingerprint(invalidHex, 4))
+                .isInstanceOf(ApplicationConfigurationException.class)
+                .hasMessageContaining("Fingerprint must be 8 hexadecimal characters")
+                .hasCauseInstanceOf(IllegalArgumentException.class);
     }
 }
