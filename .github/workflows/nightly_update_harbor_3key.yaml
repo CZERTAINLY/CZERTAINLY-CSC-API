@@ -16,7 +16,7 @@ jobs:
       security-events: write
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -30,7 +30,7 @@ jobs:
           TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ steps.latest.outputs.tag }}
 
