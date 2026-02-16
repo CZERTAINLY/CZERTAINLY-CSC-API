@@ -8,8 +8,8 @@ import com.czertainly.csc.api.signdoc.DocumentDigestsDto;
 import com.czertainly.csc.api.signdoc.DocumentDto;
 import com.czertainly.csc.api.signdoc.SignDocRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
-import com.czertainly.csc.crypto.AlgorithmPair;
 import com.czertainly.csc.crypto.AlgorithmUnifier;
+import com.czertainly.csc.crypto.SignatureAlgorithm;
 import com.czertainly.csc.model.DocumentContentToSign;
 import com.czertainly.csc.model.DocumentDigestsToSign;
 import com.czertainly.csc.model.SignDocParameters;
@@ -149,14 +149,13 @@ public class SignDocValidatingRequestMapper {
             throw new InvalidInputDataException("Missing (or invalid type) string parameter signAlgo");
         }
 
-        AlgorithmPair algorithmPair = algorithmUnifier
+        SignatureAlgorithm signatureAlgorithm = algorithmUnifier
                 .unify(dto.getSignAlgo().get(), sad.getHashAlgorithmOID().orElse(null))
-                .consumeError(e -> {throw new InvalidInputDataException(e.toString());})
+                .consumeError(e -> {
+                    throw new InvalidInputDataException(e.toString());
+                })
                 .unwrap();
-        final String keyAlgo = algorithmPair.keyAlgo();
-        final String digestAlgo = algorithmPair.digestAlgo();
 
-        final String signAlgoParams = dto.getSignAlgoParams().orElse(null);
 
         SignaturePackaging signaturePackaging;
         if (dto.getSignaturePackaging().isEmpty()) {
@@ -173,10 +172,8 @@ public class SignDocValidatingRequestMapper {
             }
         }
 
-        // TODO: Implement signedAttributes
-        return new DocumentContentToSign(document, signatureFormat, conformanceLevel, keyAlgo, digestAlgo,
-                                         signAlgoParams,
-                                         new HashMap<>(), signaturePackaging
+        return new DocumentContentToSign(document, signatureFormat, conformanceLevel, signatureAlgorithm,
+                new HashMap<>(), signaturePackaging
         );
     }
 
@@ -209,14 +206,12 @@ public class SignDocValidatingRequestMapper {
             throw new IllegalArgumentException("Missing (or invalid type) string parameter signAlgo");
         }
 
-        AlgorithmPair algorithmPair = algorithmUnifier
+        SignatureAlgorithm signatureAlgorithm = algorithmUnifier
                 .unify(dto.getSignAlgo().get(), dto.getHashAlgorithmOID().orElse(null))
-                .consumeError(e -> {throw new InvalidInputDataException(e.toString());})
+                .consumeError(e -> {
+                    throw new InvalidInputDataException(e.toString());
+                })
                 .unwrap();
-        final String keyAlgo = algorithmPair.keyAlgo();
-        final String digestAlgo = algorithmPair.digestAlgo();
-
-        final String signAlgoParams = dto.getSignAlgoParams().orElse(null);
 
         SignaturePackaging signaturePackaging;
         if (dto.getSignaturePackaging().isEmpty()) {
@@ -233,9 +228,8 @@ public class SignDocValidatingRequestMapper {
             }
         }
 
-        // TODO: Implement signedAttributes
-        return new DocumentDigestsToSign(hashes, signatureFormat, conformanceLevel, keyAlgo, digestAlgo, signAlgoParams,
-                                         new HashMap<>(), signaturePackaging
+        return new DocumentDigestsToSign(hashes, signatureFormat, conformanceLevel, signatureAlgorithm, new HashMap<>(),
+                signaturePackaging
         );
     }
 }

@@ -1,293 +1,312 @@
 package com.czertainly.csc.crypto;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AlgorithmHelperTest {
 
-    private AlgorithmHelper algorithmHelper = new AlgorithmHelper();
+    private final AlgorithmHelper algorithmHelper = new AlgorithmHelper();
+
+    private static final ASN1ObjectIdentifier UNKNOWN_OID = new ASN1ObjectIdentifier("1.2.3.4.5.6.7");
+
+    // --- getFamily tests ---
 
     @Test
-    void isSignatureAlgorithmReturnsTrueIfOidIsValidSignatureAlgorithm() {
-        // given
-        String oid = "1.2.840.10045.4.3.2";  // ECDSA with SHA256
+    void getFamilyReturnsKeyForRsa() {
+        // GIVEN
+        var oid = PKCSObjectIdentifiers.rsaEncryption;
 
-        // when
-        boolean isValid = algorithmHelper.isSignatureAlgorithm(oid);
+        // WHEN
+        var result = algorithmHelper.getFamily(oid);
 
-        // then
-        assertTrue(isValid);
+        // THEN
+        assertEquals(AlgorithmFamily.RSAES_PKCS1, result);
     }
 
     @Test
-    void isSignatureAlgorithmReturnsFalseIfOidIsNotValidSignatureAlgorithm() {
-        // given
-        String oid = "foo";
+    void getFamilyReturnsRsaForSha256WithRsa() {
+        // GIVEN
+        var oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;
 
-        // when
-        boolean isValid = algorithmHelper.isSignatureAlgorithm(oid);
+        // WHEN
+        var result = algorithmHelper.getFamily(oid);
 
-        // then
-        assertFalse(isValid);
+        // THEN
+        assertEquals(AlgorithmFamily.RSASSA_PKCS1, result);
     }
 
     @Test
-    void isSignatureAlgorithmThrowsNPEIfOidIsNull() {
-        // given
-        String oid = null;
+    void getFamilyReturnsEcdsaForSha256WithEcdsa() {
+        // GIVEN
+        var oid = X9ObjectIdentifiers.ecdsa_with_SHA256;
 
-        // when
-        Executable cb = () -> algorithmHelper.isSignatureAlgorithm(oid);
+        // WHEN
+        var result = algorithmHelper.getFamily(oid);
 
-        // then
-        assertThrows(NullPointerException.class, cb);
+        // THEN
+        assertEquals(AlgorithmFamily.ECDSA, result);
     }
 
     @Test
-    void isKeyAlgorithmReturnsTrueIfOidIsValidKeyAlgorithm() {
-        // given
-        String oid = "1.2.840.113549.1.1.1";  // RSA
+    void getFamilyReturnsPssForRsassaPss() {
+        // GIVEN
+        var oid = PKCSObjectIdentifiers.id_RSASSA_PSS;
 
-        // when
-        boolean isValid = algorithmHelper.isKeyAlgorithm(oid);
+        // WHEN
+        var result = algorithmHelper.getFamily(oid);
 
-        // then
-        assertTrue(isValid);
+        // THEN
+        assertEquals(AlgorithmFamily.RSASSA_PSS, result);
     }
 
     @Test
-    void isKeyAlgorithmReturnsFalseIfOidIsNotValidKeyAlgorithm() {
-        // given
-        String oid = "foo";
+    void getFamilyReturnsPureForEd25519() {
+        // GIVEN
+        var oid = EdECObjectIdentifiers.id_Ed25519;
 
-        // when
-        boolean isValid = algorithmHelper.isKeyAlgorithm(oid);
+        // WHEN
+        var result = algorithmHelper.getFamily(oid);
 
-        assertFalse(isValid);
+        // THEN
+        assertEquals(AlgorithmFamily.EdDSA, result);
     }
 
     @Test
-    void isKeyAlgorithmThrowsNPEIfOidIsNull() {
-        // given
-        String oid = null;
+    void getFamilyReturnsPureForEd448() {
+        // GIVEN
+        var oid = EdECObjectIdentifiers.id_Ed448;
 
-        // when
-        Executable cb = () -> algorithmHelper.isKeyAlgorithm(oid);
+        // WHEN
+        var result = algorithmHelper.getFamily(oid);
 
-        // then
-        assertThrows(NullPointerException.class, cb);
+        // THEN
+        assertEquals(AlgorithmFamily.EdDSA, result);
     }
 
     @Test
-    void isDigestAlgorithmReturnsTrueIfOidIsValidDigestAlgorithm() {
-        // given
-        String oid = "2.16.840.1.101.3.4.2.1"; // SHA-256
+    void getFamilyReturnsNullForUnknownOid() {
+        // WHEN
+        var result = algorithmHelper.getFamily(UNKNOWN_OID);
 
-        // when
-        boolean isValid = algorithmHelper.isDigestAlgorithm(oid);
-
-        // then
-        assertTrue(isValid);
-    }
-
-    @Test
-    void isDigestAlgorithmReturnsFalseIfOidIsNotValidDigestAlgorithm() {
-        // given
-        String oid = "foo";
-
-        // when
-        boolean isValid = algorithmHelper.isDigestAlgorithm(oid);
-
-        // then
-        assertFalse(isValid);
-    }
-
-    @Test
-    void isDigestAlgorithmThrowsNPEIfOidIsNull() {
-        // given
-        String oid = null;
-
-        // when
-        Executable cb = () -> algorithmHelper.isDigestAlgorithm(oid);
-
-        // then
-        assertThrows(NullPointerException.class, cb);
-    }
-
-    @Test
-    void getSignatureAlgorithmNameReturnsValidName() {
-        // given
-        String oid = "1.2.840.10045.4.3.2";  // ECDSA with SHA256
-
-        // when
-        String result = algorithmHelper.getSignatureAlgorithmName(oid);
-
-        // then
-        assertEquals("SHA256WITHECDSA", result);
-    }
-
-    @Test
-    void getSignatureAlgorithmNameReturnsNullForInvalidName() {
-        // given
-        String oid = "foo";
-
-        // when
-        String result = algorithmHelper.getSignatureAlgorithmName(oid);
-
-        // then
+        // THEN
         assertNull(result);
     }
 
-    @Test
-    void getSignatureAlgorithmNameThrowsNPEIfOidIsNull() {
-        // given
-        String oid = null;
-
-        // when
-        Executable cb = () -> algorithmHelper.getSignatureAlgorithmName(oid);
-
-        // then
-        assertThrows(NullPointerException.class, cb);
-    }
+    // --- isKeyAlgorithm tests ---
 
     @Test
-    void getDigestAlgorithmNameReturnsValidName() {
-        // given
-        String oid = "1.2.840.10045.4.3.2";
+    void isKeyAlgorithmReturnsTrueForValidKeyAlgorithm() {
+        // GIVEN
+        var oid = PKCSObjectIdentifiers.rsaEncryption;
 
-        // when
-        String result = algorithmHelper.getDigestAlgorithmName(oid);
+        // WHEN
+        var result = algorithmHelper.isKeyAlgorithm(oid);
 
-        // then
-        assertEquals("SHA256WITHECDSA", result);
-    }
-
-    @Test
-    void getDigestAlgorithmNameReturnsNullForInvalidName() {
-        // given
-        String oid = "foo";
-
-        // when
-        String result = algorithmHelper.getDigestAlgorithmName(oid);
-
-        // then
-        assertNull(result);
-    }
-
-    @Test
-    void getDigestAlgorithmNameThrowsNPEIfOidIsNull() {
-        // given
-        String oid = null;
-
-        // when
-        Executable cb = () -> algorithmHelper.getDigestAlgorithmName(oid);
-
-        // then
-        assertThrows(NullPointerException.class, cb);
-    }
-
-    @Test
-    void getAlgorithmNameReturnsValidName() {
-        // given
-        String oid = "1.2.840.10045.4.3.2";
-
-        // when
-        String result = algorithmHelper.getAlgorithmName(oid);
-
-        // then
-        assertEquals("SHA256WITHECDSA", result);
-    }
-
-    @Test
-    void getAlgorithmNameReturnsNullForInvalidName() {
-        // given
-        String oid = "foo";
-
-        // when
-        String result = algorithmHelper.getAlgorithmName(oid);
-
-        // then
-        assertNull(result);
-    }
-
-    @Test
-    void getAlgorithmNameThrowsNPEIfOidIsNull() {
-        // given
-        String oid = null;
-
-        // when
-        Executable cb = () -> algorithmHelper.getAlgorithmName(oid);
-
-        // then
-        assertThrows(NullPointerException.class, cb);
-    }
-
-    @Test
-    void getKeyAlgorithmIdentifierReturnsValidIdentifier() {
-        // given
-        String name = "SHA256WITHECDSA";
-
-        // when
-        ASN1ObjectIdentifier result = algorithmHelper.getKeyAlgorithmIdentifier(name);
-
-        // then
-        assertEquals("1.2.840.10045.4.3.2", result.getId());
-    }
-
-    @Test
-    void getKeyAlgorithmIdentifierReturnsNullForInvalidIdentifier() {
-        // given
-        String name = "foo";
-
-        // when
-        ASN1ObjectIdentifier result = algorithmHelper.getKeyAlgorithmIdentifier(name);
-
-        // then
-        assertNull(result);
-    }
-
-    @Test
-    void getKeyAlgorithmIdentifierReturnNullForNullIdentifier() {
-        // given
-        String name = null;
-
-        // when
-        ASN1ObjectIdentifier result = algorithmHelper.getKeyAlgorithmIdentifier(name);
-
-        // then
-        assertNull(result);
-    }
-
-    @Test
-    void isDigestAlgorithmCompatibleWithSignatureAlgorithmReturnsTrueForValidAlgorithms() {
-        // given
-        var digestAlgorithm = "2.16.840.1.101.3.4.2.1"; // SHA-256
-        var signatureAlgorithm = "1.2.840.10045.4.3.2"; // ECDSA with SHA256
-
-        // when
-        boolean result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestAlgorithm,
-                                                                                           signatureAlgorithm
-        );
-
-        // then
+        // THEN
         assertTrue(result);
     }
 
     @Test
-    void isDigestAlgorithmCompatibleWithSignatureAlgorithmReturnsFalseForInvalidAlgorithms() {
-        // given
-        var digestAlgorithm = "1.2.840.113549.2.5"; // MD5
-        var signatureAlgorithm = "1.2.840.10045.4.3.2"; // ECDSA with SHA256
+    void isKeyAlgorithmReturnsFalseForUnknownOid() {
+        // WHEN
+        var result = algorithmHelper.isKeyAlgorithm(UNKNOWN_OID);
 
-        // when
-        boolean result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestAlgorithm,
-                                                                                           signatureAlgorithm
-        );
+        // THEN
+        assertFalse(result);
+    }
 
-        // then
+    @Test
+    void isKeyAlgorithmReturnsFalseForNull() {
+        // WHEN
+        var result = algorithmHelper.isKeyAlgorithm(null);
+
+        // THEN
+        assertFalse(result);
+    }
+
+    // --- isDigestAlgorithm tests ---
+
+    @Test
+    void isDigestAlgorithmReturnsTrueForValidDigestAlgorithm() {
+        // GIVEN
+        var oid = NISTObjectIdentifiers.id_sha256;
+
+        // WHEN
+        var result = algorithmHelper.isDigestAlgorithm(oid);
+
+        // THEN
+        assertTrue(result);
+    }
+
+    @Test
+    void isDigestAlgorithmReturnsFalseForNonDigestAlgorithm() {
+        // GIVEN
+        var oid = PKCSObjectIdentifiers.rsaEncryption;
+
+        // WHEN
+        var result = algorithmHelper.isDigestAlgorithm(oid);
+
+        // THEN
+        assertFalse(result);
+    }
+
+    @Test
+    void isDigestAlgorithmThrowsNPEForNull() {
+        // WHEN / THEN
+        assertThrows(NullPointerException.class, () -> algorithmHelper.isDigestAlgorithm(null));
+    }
+
+    // --- getSignatureAlgorithmName tests ---
+
+    @Test
+    void getSignatureAlgorithmNameReturnsNameForKnownOid() {
+        // GIVEN
+        var oid = X9ObjectIdentifiers.ecdsa_with_SHA256;
+
+        // WHEN
+        var result = algorithmHelper.getSignatureAlgorithmName(oid);
+
+        // THEN
+        assertEquals("SHA256WITHECDSA", result);
+    }
+
+    @Test
+    void getSignatureAlgorithmNameReturnsOidStringForUnknownOid() {
+        // WHEN
+        var result = algorithmHelper.getSignatureAlgorithmName(UNKNOWN_OID);
+
+        // THEN
+        assertEquals("1.2.3.4.5.6.7", result);
+    }
+
+    @Test
+    void getSignatureAlgorithmNameThrowsNPEForNull() {
+        // WHEN / THEN
+        assertThrows(NullPointerException.class, () -> algorithmHelper.getSignatureAlgorithmName(null));
+    }
+
+    // --- getDigestAlgorithmName tests ---
+
+    @Test
+    void getDigestAlgorithmNameReturnsNameForKnownOid() {
+        // GIVEN
+        var oid = X9ObjectIdentifiers.ecdsa_with_SHA256;
+
+        // WHEN
+        var result = algorithmHelper.getDigestAlgorithmName(oid);
+
+        // THEN
+        assertEquals("SHA256WITHECDSA", result);
+    }
+
+    @Test
+    void getDigestAlgorithmNameReturnsOidStringForUnknownOid() {
+        // WHEN
+        var result = algorithmHelper.getDigestAlgorithmName(UNKNOWN_OID);
+
+        // THEN
+        assertEquals("1.2.3.4.5.6.7", result);
+    }
+
+    @Test
+    void getDigestAlgorithmNameThrowsNPEForNull() {
+        // WHEN / THEN
+        assertThrows(NullPointerException.class,
+                () -> algorithmHelper.getDigestAlgorithmName((ASN1ObjectIdentifier) null));
+    }
+
+    // --- getAlgorithmName tests ---
+
+    @Test
+    void getAlgorithmNameReturnsNameForKnownOid() {
+        // GIVEN
+        var oid = X9ObjectIdentifiers.ecdsa_with_SHA256;
+
+        // WHEN
+        var result = algorithmHelper.getAlgorithmName(oid);
+
+        // THEN
+        assertEquals("SHA256WITHECDSA", result);
+    }
+
+    @Test
+    void getAlgorithmNameReturnsOidStringForUnknownOid() {
+        // WHEN
+        var result = algorithmHelper.getAlgorithmName(UNKNOWN_OID);
+
+        // THEN
+        assertEquals("1.2.3.4.5.6.7", result);
+    }
+
+    @Test
+    void getAlgorithmNameThrowsNPEForNull() {
+        // WHEN / THEN
+        assertThrows(NullPointerException.class, () -> algorithmHelper.getAlgorithmName(null));
+    }
+
+    // --- getKeyAlgorithmIdentifier tests ---
+
+    @Test
+    void getKeyAlgorithmIdentifierReturnsOidForKnownName() {
+        // GIVEN
+        var algorithmName = "SHA256WITHECDSA";
+
+        // WHEN
+        var result = algorithmHelper.getKeyAlgorithmIdentifier(algorithmName);
+
+        // THEN
+        assertEquals(X9ObjectIdentifiers.ecdsa_with_SHA256, result);
+    }
+
+    @Test
+    void getKeyAlgorithmIdentifierReturnsNullForUnknownName() {
+        // WHEN
+        var result = algorithmHelper.getKeyAlgorithmIdentifier("foo");
+
+        // THEN
+        assertNull(result);
+    }
+
+    @Test
+    void getKeyAlgorithmIdentifierReturnsNullForNull() {
+        // WHEN
+        var result = algorithmHelper.getKeyAlgorithmIdentifier(null);
+
+        // THEN
+        assertNull(result);
+    }
+
+    // --- isDigestAlgorithmCompatibleWithSignatureAlgorithm tests ---
+
+    @Test
+    void isDigestCompatibleWithSignatureReturnsTrueForMatchingAlgorithms() {
+        // GIVEN
+        var digestOid = NISTObjectIdentifiers.id_sha256;
+        var signatureOid = X9ObjectIdentifiers.ecdsa_with_SHA256;
+
+        // WHEN
+        var result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestOid, signatureOid);
+
+        // THEN
+        assertTrue(result);
+    }
+
+    @Test
+    void isDigestCompatibleWithSignatureReturnsFalseForMismatchedAlgorithms() {
+        // GIVEN
+        var digestOid = PKCSObjectIdentifiers.md5;
+        var signatureOid = X9ObjectIdentifiers.ecdsa_with_SHA256;
+
+        // WHEN
+        var result = algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(digestOid, signatureOid);
+
+        // THEN
         assertFalse(result);
     }
 }

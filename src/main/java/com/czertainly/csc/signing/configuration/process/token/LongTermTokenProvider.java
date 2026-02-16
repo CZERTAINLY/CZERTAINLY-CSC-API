@@ -9,6 +9,8 @@ import com.czertainly.csc.signing.configuration.WorkerWithCapabilities;
 import com.czertainly.csc.signing.configuration.process.configuration.LongTermTokenConfiguration;
 import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
 
+import java.util.Objects;
+
 public class LongTermTokenProvider<C extends SignatureProcessConfiguration> implements TokenProvider<LongTermTokenConfiguration, C, LongTermToken> {
 
     private final CredentialsService credentialsService;
@@ -28,6 +30,12 @@ public class LongTermTokenProvider<C extends SignatureProcessConfiguration> impl
         ).mapError(err -> err.extend("Failed to load credential '%s'", tokenConfiguration.credentialId()));
         if (getCredentialresult instanceof Error(var err)) return Result.error(err);
         CredentialMetadata credential = getCredentialresult.unwrap();
+
+        if (!Objects.equals(worker.worker().cryptoToken().name(), credential.cryptoTokenName())) {
+            return Result.error(TextError.of("The requested credential '%s' is stored in crypto token '%s', but the selected worker '%s' is using crypto token '%s'.",
+                                      credential.id(), credential.cryptoTokenName(),
+                                      worker.worker().workerName(), worker.worker().cryptoToken().name()));
+        }
 
         if (credential.signatureQualifier().isPresent() && configuration.signatureQualifier() != null) {
             String signatureQualifier = credential.signatureQualifier().orElseThrow();

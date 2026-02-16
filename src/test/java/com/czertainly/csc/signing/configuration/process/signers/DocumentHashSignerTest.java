@@ -2,6 +2,8 @@ package com.czertainly.csc.signing.configuration.process.signers;
 
 import com.czertainly.csc.clients.signserver.SignserverClient;
 import com.czertainly.csc.common.result.Result;
+import com.czertainly.csc.crypto.AlgorithmHelper;
+import com.czertainly.csc.crypto.KeyAndHashSigAlgo;
 import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.Signatures;
 import com.czertainly.csc.model.SignaturesContainer;
@@ -13,6 +15,8 @@ import com.czertainly.csc.signing.configuration.process.token.SigningToken;
 import com.czertainly.csc.utils.configuration.WorkerCapabilitiesBuilder;
 import com.czertainly.csc.utils.signing.DocumentHashSignatureProcessConfigurationBuilder;
 import com.czertainly.csc.utils.signing.process.TestSigningToken;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +41,8 @@ class DocumentHashSignerTest {
     @InjectMocks
     DocumentHashSigner<DocumentHashSignatureProcessConfiguration> documentHashSigner;
 
+    private final AlgorithmHelper algorithmHelper = new AlgorithmHelper();
+
     @Test
     void signCanSignSingleHash() {
         when(signserverClient.signSingleDocumentHash(any(), any(), any(), any()))
@@ -53,6 +59,7 @@ class DocumentHashSignerTest {
         DocumentHashSignatureProcessConfiguration configuration = DocumentHashSignatureProcessConfigurationBuilder
                 .instance()
                 .withReturnValidationInfo(false)
+                .withSignatureAlgorithm(KeyAndHashSigAlgo.of(PKCSObjectIdentifiers.rsaEncryption, NISTObjectIdentifiers.id_sha256, algorithmHelper))
                 .build();
         WorkerWithCapabilities worker = WorkerCapabilitiesBuilder.any();
         SigningToken signingToken = TestSigningToken.of("a-key-alias", true);
@@ -82,6 +89,7 @@ class DocumentHashSignerTest {
         DocumentHashSignatureProcessConfiguration configuration = DocumentHashSignatureProcessConfigurationBuilder
                 .instance()
                 .withReturnValidationInfo(true)
+                .withSignatureAlgorithm(KeyAndHashSigAlgo.of(PKCSObjectIdentifiers.rsaEncryption, NISTObjectIdentifiers.id_sha256, algorithmHelper))
                 .build();
         WorkerWithCapabilities worker = WorkerCapabilitiesBuilder.any();
         SigningToken signingToken = TestSigningToken.of("a-key-alias", true);
@@ -115,6 +123,7 @@ class DocumentHashSignerTest {
         DocumentHashSignatureProcessConfiguration configuration = DocumentHashSignatureProcessConfigurationBuilder
                 .instance()
                 .withReturnValidationInfo(false)
+                .withSignatureAlgorithm(KeyAndHashSigAlgo.of(PKCSObjectIdentifiers.rsaEncryption, NISTObjectIdentifiers.id_sha256, algorithmHelper))
                 .build();
         WorkerWithCapabilities worker = WorkerCapabilitiesBuilder.any();
         SigningToken signingToken = TestSigningToken.of("a-key-alias", true);
@@ -149,6 +158,7 @@ class DocumentHashSignerTest {
         DocumentHashSignatureProcessConfiguration configuration = DocumentHashSignatureProcessConfigurationBuilder
                 .instance()
                 .withReturnValidationInfo(true)
+                .withSignatureAlgorithm(KeyAndHashSigAlgo.of(PKCSObjectIdentifiers.rsaEncryption, NISTObjectIdentifiers.id_sha256, algorithmHelper))
                 .build();
         WorkerWithCapabilities worker = WorkerCapabilitiesBuilder.any();
         SigningToken signingToken = TestSigningToken.of("a-key-alias", true);
@@ -182,6 +192,7 @@ class DocumentHashSignerTest {
         DocumentHashSignatureProcessConfiguration configuration = DocumentHashSignatureProcessConfigurationBuilder
                 .instance()
                 .withReturnValidationInfo(true)
+                .withSignatureAlgorithm(KeyAndHashSigAlgo.of(PKCSObjectIdentifiers.rsaEncryption, NISTObjectIdentifiers.id_sha256, algorithmHelper))
                 .build();
         WorkerWithCapabilities worker = WorkerCapabilitiesBuilder.any();
         SigningToken signingToken = TestSigningToken.of("a-key-alias", true);

@@ -1,118 +1,179 @@
 package com.czertainly.csc.crypto;
 
 import com.czertainly.csc.common.result.Result;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertErrorAndGet;
+import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class AlgorithmUnifierTest {
 
-    @Mock
-    private AlgorithmHelper algorithmHelper;
+    @Spy
+    private AlgorithmHelper algorithmHelper = new AlgorithmHelper();
 
     @InjectMocks
     private AlgorithmUnifier algorithmUnifier;
 
+    // --- KEY_AND_HASH family ---
+
     @Test
     void unifyWithSignatureAlgorithm() {
-        // given
-        String signAlgo = "SHA256WITHECDSA";
-        String hashAlgorithmOID = null;
-        when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenReturn(true);
-        when(algorithmHelper.getSignatureAlgorithmName(signAlgo)).thenReturn(signAlgo);
+        // GIVEN
+        String signAlgoOid = X9ObjectIdentifiers.ecdsa_with_SHA256.getId();
 
-        // when
-        Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgo, hashAlgorithmOID);
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgoOid, null);
 
-        // then
-        assertNotNull(result.unwrap());
-        assertEquals("SHA256", result.unwrap().digestAlgo());
-        assertEquals("ECDSA", result.unwrap().keyAlgo());
-    }
-
-    @Test
-    void unifyWithKeyAlgorithm() {
-        // given
-        String hashAlgorithmOID = "2.16.840.1.101.3.4.2.1"; // SHA-256
-        String keyAlgo = "AES";
-        when(algorithmHelper.isKeyAlgorithm(keyAlgo)).thenReturn(true);
-        when(algorithmHelper.getDigestAlgorithmName(hashAlgorithmOID)).thenReturn("SHA-256");
-        when(algorithmHelper.getAlgorithmName(keyAlgo)).thenReturn("AES");
-
-        // when
-        Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(keyAlgo, hashAlgorithmOID);
-
-        // then
-        assertNotNull(result.unwrap());
-        assertEquals("SHA-256", result.unwrap().digestAlgo());
-        assertEquals("AES", result.unwrap().keyAlgo());
-    }
-
-    @Test
-    void unifyWithMissingDigestAlgorithm() {
-        // given
-        String hashAlgorithmOID = null;
-        String keyAlgo = "AES";
-        when(algorithmHelper.isKeyAlgorithm(keyAlgo)).thenReturn(true);
-        when(algorithmHelper.getDigestAlgorithmName(hashAlgorithmOID)).thenReturn(null);
-
-        // when
-        Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(keyAlgo, hashAlgorithmOID);
-
-        // then
-        assertNotNull(result.unwrapError());
-        assertInstanceOf(AlgorithmUnificationError.DigestAlgorithmMissing.class, result.unwrapError());
+        // THEN
+        SignatureAlgorithm algo = assertSuccessAndGet(result);
+        assertEquals("SHA256", algo.digestAlgorithm());
+        assertEquals("ECDSA", algo.encryptionAlgorithm());
     }
 
     @Test
     void unifyWithIncompatibleAlgorithms() {
-        // given
-        String signAlgo = "SHA256WITHECDSA";
-        String hashAlgorithmOID = "1.2.840.113549.2.5";
-        when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenReturn(true);
-        when(algorithmHelper.isDigestAlgorithmCompatibleWithSignatureAlgorithm(hashAlgorithmOID, signAlgo)).thenReturn(
-                false);
+        // GIVEN
+        String signAlgoOid = X9ObjectIdentifiers.ecdsa_with_SHA256.getId();
+        String hashAlgoOid = PKCSObjectIdentifiers.md5.getId();
 
-        // when
-        Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgo, hashAlgorithmOID);
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgoOid, hashAlgoOid);
 
-        // then
-        assertNotNull(result.unwrapError());
-        assertInstanceOf(AlgorithmUnificationError.IncompatibleAlgorithms.class, result.unwrapError());
+        // THEN
+        var error = assertErrorAndGet(result);
+        assertInstanceOf(AlgorithmUnificationError.IncompatibleAlgorithms.class, error);
+    }
+
+    // --- KEY family ---
+
+    @Test
+    void unifyWithKeyAlgorithm() {
+        // GIVEN
+        String keyAlgoOid = PKCSObjectIdentifiers.rsaEncryption.getId();
+        String hashAlgoOid = NISTObjectIdentifiers.id_sha256.getId();
+
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(keyAlgoOid, hashAlgoOid);
+
+        // THEN
+        SignatureAlgorithm algo = assertSuccessAndGet(result);
+        assertEquals("SHA256", algo.digestAlgorithm());
+        assertEquals("RSA", algo.encryptionAlgorithm());
     }
 
     @Test
-    void unifyWithUnknownSignature() {
-        // given
-        String signAlgo = "UNKNOWN_ALGO";
-        when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenReturn(false);
+    void unifyWithMissingDigestAlgorithm() {
+        // GIVEN
+        String keyAlgoOid = PKCSObjectIdentifiers.rsaEncryption.getId();
 
-        // when
-        Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgo, null);
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(keyAlgoOid, null);
 
-        // then
-        assertNotNull(result.unwrapError());
-        assertInstanceOf(AlgorithmUnificationError.SignatureAlgorithmMissing.class, result.unwrapError());
+        // THEN
+        var error = assertErrorAndGet(result);
+        assertInstanceOf(AlgorithmUnificationError.DigestAlgorithmMissing.class, error);
+    }
+
+    // --- PSS family ---
+
+    @Test
+    void unifyWithPssAndDigestReturnsSuccess() {
+        // GIVEN
+        String pssOid = PKCSObjectIdentifiers.id_RSASSA_PSS.getId();
+        String hashAlgoOid = NISTObjectIdentifiers.id_sha256.getId();
+
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(pssOid, hashAlgoOid);
+
+        // THEN
+        SignatureAlgorithm algo = assertSuccessAndGet(result);
+        assertInstanceOf(PssSignatureAlgo.class, algo);
+        assertEquals("RSASSA-PSS", algo.encryptionAlgorithm());
+        assertEquals("SHA256", algo.digestAlgorithm());
+        assertEquals("SHA256withRSAandMGF1", algo.toJavaName());
+    }
+
+    @Test
+    void unifyWithPssWithoutDigestReturnsDigestMissing() {
+        // GIVEN
+        String pssOid = PKCSObjectIdentifiers.id_RSASSA_PSS.getId();
+
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(pssOid, null);
+
+        // THEN
+        var error = assertErrorAndGet(result);
+        assertInstanceOf(AlgorithmUnificationError.DigestAlgorithmMissing.class, error);
+    }
+
+    // --- PURE family ---
+
+    @Test
+    void unifyWithEd25519WithoutDigestReturnsSuccess() {
+        // GIVEN
+        String ed25519Oid = EdECObjectIdentifiers.id_Ed25519.getId();
+
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(ed25519Oid, null);
+
+        // THEN
+        SignatureAlgorithm algo = assertSuccessAndGet(result);
+        assertInstanceOf(PureSignatureAlgo.class, algo);
+        assertEquals("ED25519", algo.encryptionAlgorithm());
+        assertNull(algo.digestAlgorithm());
+        assertEquals("ED25519", algo.toJavaName());
+    }
+
+    @Test
+    void unifyWithEd25519WithDigestReturnsDigestNotAllowed() {
+        // GIVEN
+        String ed25519Oid = EdECObjectIdentifiers.id_Ed25519.getId();
+        String hashAlgoOid = NISTObjectIdentifiers.id_sha256.getId();
+
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(ed25519Oid, hashAlgoOid);
+
+        // THEN
+        var error = assertErrorAndGet(result);
+        assertInstanceOf(AlgorithmUnificationError.DigestAlgorithmNotAllowed.class, error);
+    }
+
+    // --- Unknown / error cases ---
+
+    @Test
+    void unifyWithUnknownSignatureReturnsUnsupportedAlgorithm() {
+        // GIVEN
+        String signAlgoOid = "1.2.3.4.5.6.7";
+
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgoOid, null);
+
+        // THEN
+        var error = assertErrorAndGet(result);
+        assertInstanceOf(AlgorithmUnificationError.UnsupportedAlgorithm.class, error);
     }
 
     @Test
     void unifyWithIllegalArgumentException() {
-        // given
-        String signAlgo = "SHA256WITHECDSA";
-        when(algorithmHelper.isSignatureAlgorithm(signAlgo)).thenThrow(
-                new IllegalArgumentException("Invalid argument"));
+        // GIVEN
+        String invalidOid = "NOT_AN_OID";
 
-        // when
-        Result<AlgorithmPair, AlgorithmUnificationError> result = algorithmUnifier.unify(signAlgo, null);
+        // WHEN
+        Result<SignatureAlgorithm, AlgorithmUnificationError> result = algorithmUnifier.unify(invalidOid, null);
 
-        // then
-        assertNotNull(result.unwrapError());
-        assertInstanceOf(AlgorithmUnificationError.OtherError.class, result.unwrapError());
+        // THEN
+        var error = assertErrorAndGet(result);
+        assertInstanceOf(AlgorithmUnificationError.OtherError.class, error);
     }
 }

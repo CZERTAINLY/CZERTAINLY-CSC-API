@@ -13,13 +13,8 @@ public record DocumentDigestsToSign(
         List<String> hashes,
         SignatureFormat signatureFormat,
         ConformanceLevel conformanceLevel,
-        String keyAlgorithm,
-        String digestAlgorithm,
-        String signAlgoParams,
+        SignatureAlgorithm signatureAlgorithm,
         Map<String, String> signedAttributes,
         SignaturePackaging signaturePackaging
 ) {
-    public SignatureAlgorithm signatureAlgorithm() {
-        return SignatureAlgorithm.of(keyAlgorithm, digestAlgorithm);
-    }
 }

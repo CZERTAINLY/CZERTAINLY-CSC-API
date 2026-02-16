@@ -1,18 +1,19 @@
 package com.czertainly.csc.utils.assertions;
 
 import com.czertainly.csc.common.result.Error;
+import com.czertainly.csc.common.result.ExtendableErrorValue;
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
 
 public class ResultAssertions {
 
-    public static void assertSuccess(Result<?, TextError> result) {
+    public static void assertSuccess(Result<?, ? extends ExtendableErrorValue<?>> result) {
         if (result instanceof Error(var e)) {
             throw new AssertionError(String.format("Expected success but got error with message: %s", e));
         }
     }
 
-    public static <T> T assertSuccessAndGet(Result<T, TextError> result) {
+    public static <T> T assertSuccessAndGet(Result<T, ? extends ExtendableErrorValue<?>> result) {
         assertSuccess(result);
         return result.unwrap();
     }
@@ -35,6 +36,13 @@ public class ResultAssertions {
     public static void assertError(Result<?, TextError> result) {
         if (result instanceof Error) {
             return;
+        }
+        throw new AssertionError("Expected Error but got Success.");
+    }
+
+    public static <E extends ExtendableErrorValue<?>> E assertErrorAndGet(Result<?, E> result) {
+        if (result instanceof Error(var e)) {
+            return e;
         }
         throw new AssertionError("Expected Error but got Success.");
     }

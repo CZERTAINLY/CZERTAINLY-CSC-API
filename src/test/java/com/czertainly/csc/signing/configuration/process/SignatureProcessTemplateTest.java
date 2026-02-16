@@ -2,7 +2,8 @@ package com.czertainly.csc.signing.configuration.process;
 
 import com.czertainly.csc.common.result.Result;
 import com.czertainly.csc.common.result.TextError;
-import com.czertainly.csc.crypto.SignatureAlgorithm;
+import com.czertainly.csc.crypto.AlgorithmHelper;
+import com.czertainly.csc.crypto.KeyAndHashSigAlgo;
 import com.czertainly.csc.model.DocumentSignature;
 import com.czertainly.csc.model.SignaturesContainer;
 import com.czertainly.csc.model.SignaturesWithValidationInfo;
@@ -15,6 +16,7 @@ import com.czertainly.csc.utils.configuration.WorkerCapabilitiesBuilder;
 import com.czertainly.csc.utils.signing.process.TestSignatureProcessConfiguration;
 import com.czertainly.csc.utils.signing.process.TestSigningToken;
 import com.czertainly.csc.utils.signing.process.TestTokenConfiguration;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -29,8 +31,9 @@ import static com.czertainly.csc.utils.assertions.ResultAssertions.assertErrorCo
 import static com.czertainly.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
+
 
 @ExtendWith(MockitoExtension.class)
 class SignatureProcessTemplateTest {
@@ -92,9 +95,11 @@ class SignatureProcessTemplateTest {
         processConfiguration = TestSignatureProcessConfiguration.builder()
                                                                 .withSignatureQualifier("qualified")
                                                                 .withSignatureFormat(SignatureFormat.PAdES)
-                                                                .withSignatureAlgorithm(
-                                                                        SignatureAlgorithm.fromJavaName(
-                                                                                "SHA256WithRSA"))
+                                                                .withSignatureAlgorithm(KeyAndHashSigAlgo.of(
+                                                                        ASN1ObjectIdentifier.tryFromID("1.2.840.113549.1.1.1"), // RSA
+                                                                        ASN1ObjectIdentifier.tryFromID("2.16.840.1.101.3.4.2.1"), // SHA256
+                                                                        new AlgorithmHelper()
+                                                                ))
                                                                 .withSignaturePackaging(SignaturePackaging.DETACHED)
                                                                 .withConformanceLevel(ConformanceLevel.AdES_B_B)
                                                                 .withReturnValidationInfo(true)

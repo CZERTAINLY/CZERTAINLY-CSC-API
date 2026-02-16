@@ -11,13 +11,9 @@ public record SignHashParameters(
         UUID credentialID,
         String userID,
         List<String> hashes,
-        String keyAlgo,
-        String digestAlgo,
+        SignatureAlgorithm signatureAlgorithm,
         SignatureActivationData sad,
         OperationMode operationMode,
         String clientData
 ) {
-    public SignatureAlgorithm signatureAlgorithm() {
-        return SignatureAlgorithm.of(keyAlgo, digestAlgo);
-    }
 }
