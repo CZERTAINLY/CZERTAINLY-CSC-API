@@ -387,9 +387,8 @@ class SignDocValidatingRequestMapperTest {
         assertEquals(documentContent, parsedDoc.content());
         assertEquals(SignatureFormat.JAdEs, parsedDoc.signatureFormat());
         assertEquals(ConformanceLevel.AdES_B_T, parsedDoc.conformanceLevel());
-        assertEquals("RSA", parsedDoc.keyAlgorithm());
-        assertEquals("SHA256", parsedDoc.digestAlgorithm());
-        assertEquals("signAlgoParams", parsedDoc.signAlgoParams());
+        assertEquals("RSA", parsedDoc.signatureAlgorithm().encryptionAlgorithm());
+        assertEquals("SHA256", parsedDoc.signatureAlgorithm().digestAlgorithm());
         assertEquals(SignaturePackaging.ATTACHED, parsedDoc.signaturePackaging());
     }
 
@@ -602,11 +601,10 @@ class SignDocValidatingRequestMapperTest {
         assertEquals(1, result.documentDigestsToSign().size());
         var parsedDigestsToSign = result.documentDigestsToSign().getFirst();
         assertEquals(hashes, parsedDigestsToSign.hashes());
-        assertEquals("SHA256", parsedDigestsToSign.digestAlgorithm());
+        assertEquals("SHA256", parsedDigestsToSign.signatureAlgorithm().digestAlgorithm());
         assertEquals(SignatureFormat.JAdEs, parsedDigestsToSign.signatureFormat());
         assertEquals(ConformanceLevel.AdES_B_T, parsedDigestsToSign.conformanceLevel());
-        assertEquals("RSA", parsedDigestsToSign.keyAlgorithm());
-        assertEquals("signAlgoParams", parsedDigestsToSign.signAlgoParams());
+        assertEquals("RSA", parsedDigestsToSign.signatureAlgorithm().encryptionAlgorithm());
         assertEquals(SignaturePackaging.ATTACHED, parsedDigestsToSign.signaturePackaging());
     }
 

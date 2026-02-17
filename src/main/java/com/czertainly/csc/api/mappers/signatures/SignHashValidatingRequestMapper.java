@@ -5,8 +5,8 @@ import com.czertainly.csc.api.auth.SADParser;
 import com.czertainly.csc.api.auth.SignatureActivationData;
 import com.czertainly.csc.api.signhash.SignHashRequestDto;
 import com.czertainly.csc.common.exceptions.InvalidInputDataException;
-import com.czertainly.csc.crypto.AlgorithmPair;
 import com.czertainly.csc.crypto.AlgorithmUnifier;
+import com.czertainly.csc.crypto.SignatureAlgorithm;
 import com.czertainly.csc.model.SignHashParameters;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +26,6 @@ public class SignHashValidatingRequestMapper {
 
     public SignHashParameters map(SignHashRequestDto dto, SignatureActivationData sad) {
         final List<String> hashes;
-        final String keyAlgo;
-        final String digestAlgo;
         final OperationMode operationMode;
         final String clientData;
 
@@ -71,14 +69,11 @@ public class SignHashValidatingRequestMapper {
 
         String signAlgo = dto.getSignAlgo();
         String hashAlgorithmOID = dto.getHashAlgorithmOID();
-        AlgorithmPair algorithmPair = algorithmUnifier.unify(signAlgo, hashAlgorithmOID)
+        SignatureAlgorithm signatureAlgorithm = algorithmUnifier.unify(signAlgo, hashAlgorithmOID)
                                                       .consumeError(error -> {
                                                           throw InvalidInputDataException.of(error.getErrorText());
                                                       })
                                                       .unwrap();
-
-        keyAlgo = algorithmPair.keyAlgo();
-        digestAlgo = algorithmPair.digestAlgo();
 
         String operationModeString = dto.getOperationMode().orElse("S");
         if (operationModeString.equals("S")) {
@@ -91,7 +86,7 @@ public class SignHashValidatingRequestMapper {
 
         clientData = dto.getClientData().orElse("");
 
-        return new SignHashParameters(credentialIdUUID, userID, hashes, keyAlgo, digestAlgo, sad, operationMode,
+        return new SignHashParameters(credentialIdUUID, userID, hashes, signatureAlgorithm, sad, operationMode,
                                       clientData
         );
     }

@@ -26,6 +26,18 @@ public sealed class AlgorithmUnificationError extends TextError {
         }
     }
 
+    public static final class UnsupportedAlgorithm extends AlgorithmUnificationError {
+        public UnsupportedAlgorithm() {
+            super("The signAlgo parameter is not a supported algorithm OID.");
+        }
+    }
+
+    public static final class DigestAlgorithmNotAllowed extends AlgorithmUnificationError {
+        public DigestAlgorithmNotAllowed() {
+            super("The hashAlgorithmOID parameter must not be provided for this sigAlgo.");
+        }
+    }
+
     public static final class OtherError extends AlgorithmUnificationError {
         public OtherError(String error) {
             super(error);

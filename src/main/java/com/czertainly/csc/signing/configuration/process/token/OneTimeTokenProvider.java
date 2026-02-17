@@ -43,7 +43,7 @@ public class OneTimeTokenProvider<C extends SignatureProcessConfiguration> imple
     ) {
         return keySelector.selectKey(
                                   worker.worker().workerId(),
-                                  signatureConfiguration.signatureAlgorithm().keyAlgorithm()
+                                  signatureConfiguration.signatureAlgorithm().encryptionAlgorithm()
                           )
                           .flatMap(key ->
                                            signatureQualifierBasedCredentialFactory.createCredential(

@@ -77,6 +77,6 @@ public class SignatureProcessConfiguration {
     }
 
     public String encryptionAlgorithm() {
-        return signatureAlgorithm().keyAlgorithm();
+        return signatureAlgorithm().encryptionAlgorithm();
     }
 }

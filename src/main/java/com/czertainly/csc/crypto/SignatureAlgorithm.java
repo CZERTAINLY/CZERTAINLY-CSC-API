@@ -1,18 +1,10 @@
 package com.czertainly.csc.crypto;
 
-public record SignatureAlgorithm(String keyAlgorithm, String digestAlgorithm) {
+public interface SignatureAlgorithm {
 
-    public static SignatureAlgorithm of(String keyAlgorithm, String digestAlgorithm) {
-        return new SignatureAlgorithm(keyAlgorithm, digestAlgorithm);
-    }
+    String encryptionAlgorithm();
 
-    public static SignatureAlgorithm fromJavaName(String javaName) {
-        String[] parts = javaName.split("With");
-        return new SignatureAlgorithm(parts[1], parts[0]);
-    }
+    String digestAlgorithm();
 
-    public String toJavaName() {
-        return digestAlgorithm + "With" + keyAlgorithm;
-    }
-
+    String toJavaName();
 }

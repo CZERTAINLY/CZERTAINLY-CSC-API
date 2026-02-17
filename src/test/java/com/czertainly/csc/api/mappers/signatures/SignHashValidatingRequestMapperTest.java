@@ -65,8 +65,8 @@ class SignHashValidatingRequestMapperTest {
         assertNotNull(result);
         assertEquals(credentialID, result.credentialID());
         assertEquals(hashes, result.hashes());
-        assertEquals("RSA", result.keyAlgo());
-        assertEquals("SHA256", result.digestAlgo());
+        assertEquals("RSA", result.signatureAlgorithm().encryptionAlgorithm());
+        assertEquals("SHA256", result.signatureAlgorithm().digestAlgorithm());
         assertEquals(OperationMode.SYNCHRONOUS, result.operationMode());
         assertEquals(clientData, result.clientData());
     }
@@ -280,8 +280,8 @@ class SignHashValidatingRequestMapperTest {
         var result = mapper.map(dto, sad);
 
         // then
-        assertEquals("RSA", result.keyAlgo());
-        assertEquals("SHA256", result.digestAlgo());
+        assertEquals("RSA", result.signatureAlgorithm().encryptionAlgorithm());
+        assertEquals("SHA256", result.signatureAlgorithm().digestAlgorithm());
     }
 
     @Test
@@ -297,8 +297,8 @@ class SignHashValidatingRequestMapperTest {
         var result = mapper.map(dto, sad);
 
         // then
-        assertEquals("RSA", result.keyAlgo());
-        assertEquals("SHA256", result.digestAlgo());
+        assertEquals("RSA", result.signatureAlgorithm().encryptionAlgorithm());
+        assertEquals("SHA256", result.signatureAlgorithm().digestAlgorithm());
     }
 
     @Test
@@ -329,8 +329,8 @@ class SignHashValidatingRequestMapperTest {
         var result = mapper.map(dto, sad);
 
         // then
-        assertEquals("ECDSA", result.keyAlgo());
-        assertEquals("SHA256", result.digestAlgo());
+        assertEquals("ECDSA", result.signatureAlgorithm().encryptionAlgorithm());
+        assertEquals("SHA256", result.signatureAlgorithm().digestAlgorithm());
     }
 
     @Test
@@ -457,8 +457,8 @@ class SignHashValidatingRequestMapperTest {
         assertNotNull(result);
         assertEquals(credentialID, result.credentialID());
         assertEquals(hashes, result.hashes());
-        assertEquals("RSA", result.keyAlgo());
-        assertEquals("SHA256", result.digestAlgo());
+        assertEquals("RSA", result.signatureAlgorithm().encryptionAlgorithm());
+        assertEquals("SHA256", result.signatureAlgorithm().digestAlgorithm());
         assertEquals(OperationMode.SYNCHRONOUS, result.operationMode());
         assertEquals(clientData, result.clientData());
         assertNotNull(result.sad());

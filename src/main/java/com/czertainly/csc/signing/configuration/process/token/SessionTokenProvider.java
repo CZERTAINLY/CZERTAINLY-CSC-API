@@ -65,7 +65,7 @@ public class SessionTokenProvider<C extends SignatureProcessConfiguration> imple
 
             var selectKeyResult = sessionKeySelector.selectKey(
                     worker.worker().workerId(),
-                    configuration.signatureAlgorithm().keyAlgorithm()
+                    configuration.signatureAlgorithm().encryptionAlgorithm()
             );
             if (selectKeyResult instanceof Error(var err)) return Result.error(err);
             SessionKey sessionKey = selectKeyResult.unwrap();

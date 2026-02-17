@@ -1,18 +1,31 @@
 package com.czertainly.csc.utils.signing.process;
 
 import com.czertainly.csc.api.auth.SignatureActivationData;
+import com.czertainly.csc.crypto.AlgorithmHelper;
+import com.czertainly.csc.crypto.KeyAndHashSigAlgo;
 import com.czertainly.csc.crypto.SignatureAlgorithm;
 import com.czertainly.csc.signing.configuration.ConformanceLevel;
 import com.czertainly.csc.signing.configuration.DocumentType;
 import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.signing.configuration.process.configuration.SignatureProcessConfiguration;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.instancio.Instancio;
+
+import static org.instancio.Select.field;
 
 public class TestSignatureProcessConfiguration extends SignatureProcessConfiguration {
 
+    private static final SignatureAlgorithm DEFAULT_SIGNATURE_ALGORITHM = KeyAndHashSigAlgo.of(
+            new ASN1ObjectIdentifier("1.2.840.113549.1.1.11"),  // RSA
+            new ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.1"), // SHA-256
+            new AlgorithmHelper()
+    );
+
     public static TestSignatureProcessConfiguration any() {
-        return Instancio.create(TestSignatureProcessConfiguration.class);
+        return Instancio.of(TestSignatureProcessConfiguration.class)
+                        .set(field(SignatureProcessConfiguration.class, "signatureAlgorithm"), DEFAULT_SIGNATURE_ALGORITHM)
+                        .create();
     }
 
     public TestSignatureProcessConfiguration(String userID,
