@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.DateTimeException;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 @Component
@@ -42,7 +41,7 @@ public class CertificateValidityDecider {
         try {
             ZonedDateTime notBefore = dateConverter.dateToZonedDateTime(certificate.getNotBefore(), utcZoneId);
             ZonedDateTime notAfter = dateConverter.dateToZonedDateTime(certificate.getNotAfter(), utcZoneId);
-            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+            ZonedDateTime now = ZonedDateTime.now(utcZoneId);
             if (now.isBefore(notBefore)) {
                 return Result.success(CertificateStatus.NOT_YET_VALID);
             } else if (now.isAfter(notAfter)) {

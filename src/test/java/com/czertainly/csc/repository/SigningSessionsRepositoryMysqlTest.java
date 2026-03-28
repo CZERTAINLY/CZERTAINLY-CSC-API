@@ -69,6 +69,30 @@ class SigningSessionsRepositoryMysqlTest extends MysqlTest {
     }
 
     @Test
+    public void canPersistUtcTimestampThatFallsInCetDstGap() {
+        // Regression test: the MySQL container runs with default-time-zone=Europe/Berlin (CET/CEST).
+        // UTC timestamps landing in the CET spring-forward gap (02:00-03:00 on last Sunday of March)
+        // were rejected by MySQL with "Incorrect datetime value" (error 1292) before the
+        // connectionTimeZone=UTC JDBC parameter was added.
+
+        // setup
+        UUID credentialId = createCredentialAndInsertIntoDB();
+
+        // given: a UTC time whose local representation falls in the CET/CEST spring-forward gap.
+        // On 2026-03-29, CET clocks jump from 02:00 to 03:00 CEST.
+        // "2026-03-29 02:30 UTC" is valid in UTC, but "02:30" does not exist in CET.
+        ZonedDateTime expiresInDstGap = ZonedDateTime.of(2026, 3, 29, 2, 30, 0, 0, ZoneOffset.UTC);
+        UUID sessionId = createAndInsertSessionIntoDB(credentialId, expiresInDstGap);
+
+        // when
+        var retrieved = signingSessionsRepository.findById(sessionId);
+
+        // then: the instant is preserved correctly despite the CET server timezone
+        ZonedDateTime expected = ZonedDateTime.of(2026, 3, 29, 2, 30, 0, 0, ZoneOffset.UTC);
+        assertEquals(expected, retrieved.orElseThrow().getExpiresIn());
+    }
+
+    @Test
     public void sessionMustReferenceExistingCredential() {
         // setup
         UUID realCredentialID = createCredentialAndInsertIntoDB();
