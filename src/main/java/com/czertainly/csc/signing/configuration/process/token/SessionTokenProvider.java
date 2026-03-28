@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -124,7 +125,7 @@ public class SessionTokenProvider<C extends SignatureProcessConfiguration> imple
                                           ))
                                           .flatMap(profile -> {
                                               try {
-                                                  ZonedDateTime now = ZonedDateTime.now();
+                                                  ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
                                                   var expiresAt = now.plus(profile.getCertificateValidityOffset())
                                                                      .plus(profile.getCertificateValidity());
                                                   return Result.success(expiresAt);

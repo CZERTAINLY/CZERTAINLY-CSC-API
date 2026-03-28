@@ -264,7 +264,7 @@ spring:
     datasource:
         # JDBC URL of the database
         # for PostgreSQL use: jdbc:postgresql://localhost:5432/cscdb
-        # for MySQL use: jdbc:mysql://localhost:3306/cscdb
+        # for MySQL use: jdbc:mysql://localhost:3306/cscdb?connectionTimeZone=UTC
         url: jdbc:postgresql://localhost:5432/cscdb
         # Username to connect to the database
         username: 'cscuser'
@@ -274,6 +274,11 @@ spring:
         # for PostgreSQL use: org.postgresql.Driver
         # for MySQL use: com.mysql.cj.jdbc.Driver
         driver-class-name: 'org.postgresql.Driver'
+    jpa:
+        properties:
+            hibernate:
+                jdbc:
+                    time_zone: UTC
     flyway:
         table: "csc_schema_history"
         schemas: "csc"

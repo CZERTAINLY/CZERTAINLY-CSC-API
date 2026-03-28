@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Objects;
@@ -51,7 +52,7 @@ public class EjbcaClient {
     public Result<byte[], TextError> signCertificateRequest(EndEntity endEntity, Profile profile,
                                                             byte[] csr
     ) {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         Duration offset = profile.getCertificateValidityOffset();
         Duration certificateValidity = profile.getCertificateValidity();
 

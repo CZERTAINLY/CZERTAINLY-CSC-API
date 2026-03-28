@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -152,7 +153,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                                                                                                  false
                                                 )
                                                 .map(entity -> {
-                                                    entity.setAcquiredAt(ZonedDateTime.now());
+                                                    entity.setAcquiredAt(ZonedDateTime.now(ZoneOffset.UTC));
                                                     entity.setInUse(true);
                                                     E savedEntity = keysRepository.save(entity);
                                                     return this.mapEntityToSigningKey(savedEntity, cryptoToken);
@@ -179,7 +180,7 @@ public abstract class AbstractSigningKeysService<E extends KeyEntity, K extends 
                                                        saveKey(cryptoToken, generatedKeyAlias, keyAlgorithm)
                                                                .flatMap(entity -> {
                                                                    try {
-                                                                       entity.setAcquiredAt(ZonedDateTime.now());
+                                                                       entity.setAcquiredAt(ZonedDateTime.now(ZoneOffset.UTC));
                                                                        entity.setInUse(true);
                                                                        E savedEntity = keysRepository.save(entity);
 
