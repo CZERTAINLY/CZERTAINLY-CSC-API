@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 @Component
@@ -21,7 +22,7 @@ public class OneTimeKeyCleanupService {
     }
 
     public void cleanUsedUpKeys() {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime before = now.minus(usedUpKeysKeepTime);
         oneTimeKeysService.getKeysAcquiredBefore(before)
                           .consume(expiredKeys -> {

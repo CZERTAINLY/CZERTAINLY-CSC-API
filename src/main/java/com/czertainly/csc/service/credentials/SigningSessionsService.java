@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DateTimeException;
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -87,7 +88,7 @@ public class SigningSessionsService {
 
     public Result<List<SigningSession>, TextError> getExpiredSessions(Duration expiredSessionsKeepDuration) {
         try {
-            ZonedDateTime now = ZonedDateTime.now();
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
             ZonedDateTime olderThen = now.minus(expiredSessionsKeepDuration);
             logger.debug("Looking for sessions that expired before '{}'", olderThen);
 
@@ -120,7 +121,7 @@ public class SigningSessionsService {
     }
 
     private static CredentialSessionStatus resolveSessionStatus(SigningSessionEntity session) {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         CredentialSessionStatus status = session.getExpiresIn().isAfter(now) ?
                 CredentialSessionStatus.ACTIVE :
                 CredentialSessionStatus.EXPIRED;
