@@ -46,7 +46,8 @@ public class MysqlTest {
     @Container
     static MySQLContainer<?> databaseContainer = new MySQLContainer<>("mysql:8.4")
             .withNetwork(network)
-            .withNetworkAliases("mysql");
+            .withNetworkAliases("mysql")
+            .withCommand("--default-time-zone=Europe/Berlin");
 
     protected static Proxy proxy;
 
@@ -71,7 +72,7 @@ public class MysqlTest {
     static void configureProperties(DynamicPropertyRegistry registry) throws IOException {
         var toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         proxy = toxiproxyClient.createProxy("mysql", "0.0.0.0:8666", "mysql:3306");
-        var jdbcUrl = "jdbc:mysql://%s:%d/%s".formatted(toxiproxy.getHost(), toxiproxy.getMappedPort(8666),
+        var jdbcUrl = "jdbc:mysql://%s:%d/%s?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true".formatted(toxiproxy.getHost(), toxiproxy.getMappedPort(8666),
                                                         databaseContainer.getDatabaseName()
         );
         registry.add("spring.datasource.url", () -> jdbcUrl);
