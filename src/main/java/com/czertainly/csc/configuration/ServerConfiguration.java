@@ -66,6 +66,10 @@ public class ServerConfiguration {
         http
                 .sessionManagement(sessionConf -> sessionConf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health/**").permitAll()
+                        .anyRequest().authenticated()
+                )
                 .oauth2ResourceServer(
                         oauth2 -> {
                             oauth2.jwt(withDefaults());
