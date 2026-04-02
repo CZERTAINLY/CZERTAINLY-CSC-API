@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.10</version>
+        <version>3.5.13</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.czertainly</groupId>
@@ -17,15 +17,19 @@
         <java.version>21</java.version>
 
         <version.bc>1.83</version.bc>
-        <version.jjwt>0.12.6</version.jjwt>
+        <version.jjwt>0.13.0</version.jjwt>
         <version.commons-text>1.15.0</version.commons-text>
         <version.springdoc>2.8.15</version.springdoc>
         <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
-        <version.postgresql>42.7.9</version.postgresql>
+        <version.postgresql>42.7.10</version.postgresql>
         <version.mysql>9.6.0</version.mysql>
         <version.instacio>5.5.1</version.instacio>
         <version.testcontainers>1.21.4</version.testcontainers>
-        <version.testcontainers.keycloak>3.9.1</version.testcontainers.keycloak>
+        <version.testcontainers.junit-jupiter>1.21.4</version.testcontainers.junit-jupiter>
+        <version.testcontainers.postgresql>1.21.4</version.testcontainers.postgresql>
+        <version.testcontainers.mysql>1.21.4</version.testcontainers.mysql>
+        <version.testcontainers.toxiproxy>1.21.4</version.testcontainers.toxiproxy>
+        <version.testcontainers.keycloak>4.1.1</version.testcontainers.keycloak>
 
         <version.springdoc-openapi-maven-plugin>1.5</version.springdoc-openapi-maven-plugin>
 
@@ -180,25 +184,25 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${version.testcontainers}</version>
+            <version>${version.testcontainers.junit-jupiter}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${version.testcontainers}</version>
+            <version>${version.testcontainers.postgresql}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mysql</artifactId>
-            <version>${version.testcontainers}</version>
+            <version>${version.testcontainers.mysql}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>toxiproxy</artifactId>
-            <version>${version.testcontainers}</version>
+            <version>${version.testcontainers.toxiproxy}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
