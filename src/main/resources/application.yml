@@ -196,6 +196,7 @@ management:
                 include: health
     endpoint:
         health:
+            access: unrestricted
             probes:
                 enabled: true
             show-details: never
