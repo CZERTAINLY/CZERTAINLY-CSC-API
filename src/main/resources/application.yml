@@ -187,6 +187,25 @@ caProvider:
             # Name of the keystore bundle containing the admin certificate and private key
             keystoreBundle: ejbcaAdmin
 
+management:
+    server:
+        port: 9090
+    endpoints:
+        web:
+            exposure:
+                include: health
+    endpoint:
+        health:
+            access: unrestricted
+            probes:
+                enabled: true
+            show-details: never
+    health:
+        livenessState:
+            enabled: true
+        readinessState:
+            enabled: true
+
 # TLS/mTLS configuration, disabled by default
 server:
     # Configuration of the keystore with server certificate and private key
