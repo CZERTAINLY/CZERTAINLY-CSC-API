@@ -18,6 +18,7 @@ import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.utils.jwt.TestIdp;
 import com.czertainly.csc.utils.jwt.TestJWTs;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.instancio.Instancio;
 import org.instancio.InstancioApi;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +43,7 @@ class SignDocValidatingRequestMapperTest {
     AlgorithmHelper algorithmHelper = new AlgorithmHelper();
     AlgorithmUnifier algorithmUnifier = new AlgorithmUnifier(algorithmHelper);
     TokenValidator tokenValidator = TestIdp.defaultTokenValidator;
-    Jackson2ObjectMapperBuilder objectMapperBuilder = new Jackson2ObjectMapperBuilder();
+    ObjectMapper objectMapperBuilder = new ObjectMapper();
     StructuredClientDataMapper structuredClientDataMapper = new StructuredClientDataMapper(objectMapperBuilder);
 
     SADParser sadParser = new SADParser(tokenValidator);

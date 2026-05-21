@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.czertainly</groupId>
@@ -16,11 +16,12 @@
     <properties>
         <java.version>21</java.version>
 
-        <version.bc>1.83</version.bc>
+        <version.bc>1.84</version.bc>
         <version.jjwt>0.13.0</version.jjwt>
         <version.commons-text>1.15.0</version.commons-text>
-        <version.springdoc>2.8.15</version.springdoc>
-        <version.springdoc-openapi-ui>1.8.0</version.springdoc-openapi-ui>
+        <version.springdoc>3.0.3</version.springdoc>
+        <version.spring-retry>2.0.12</version.spring-retry>
+        <tomcat.version>11.0.22</tomcat.version>
         <version.postgresql>42.7.11</version.postgresql>
         <version.mysql>9.6.0</version.mysql>
         <version.instacio>5.5.1</version.instacio>
@@ -82,6 +83,7 @@
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
+            <version>${version.spring-retry}</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -137,10 +139,14 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${version.springdoc}</version>
         </dependency>
+
+        <!-- jaxb-runtime 4.0.6 uses FinalArrayList from istack-commons-runtime but no longer shades it
+             and doesn't declare it as a compile/runtime dependency — required by spring-boot-starter-web-services -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${version.springdoc-openapi-ui}</version>
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-runtime</artifactId>
+            <version>4.1.2</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!--Persistence-->
@@ -160,6 +166,10 @@
             <groupId>org.springframework.boot</groupId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-flyway</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
@@ -172,7 +182,19 @@
             <artifactId>flyway-mysql</artifactId>
         </dependency>
 
+        <!-- Explicit Jackson 2 dependency: Spring Boot 4 uses Jackson 3, but this project uses Jackson 2
+             annotations and APIs. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <!--Tests-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.instancio</groupId>
             <artifactId>instancio-junit</artifactId>
