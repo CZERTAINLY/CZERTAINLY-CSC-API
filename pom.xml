@@ -145,6 +145,15 @@
             <version>${version.springdoc-openapi-ui}</version>
         </dependency>
 
+        <!-- jaxb-runtime 4.0.6 uses FinalArrayList from istack-commons-runtime but no longer shades it
+             and doesn't declare it as a compile/runtime dependency — required by spring-boot-starter-web-services -->
+        <dependency>
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-runtime</artifactId>
+            <version>4.1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!--Persistence-->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -172,6 +181,13 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
+        <!-- Explicit Jackson 2 dependency: Spring Boot 4 uses Jackson 3, but this project uses Jackson 2
+             annotations and APIs. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!--Tests-->

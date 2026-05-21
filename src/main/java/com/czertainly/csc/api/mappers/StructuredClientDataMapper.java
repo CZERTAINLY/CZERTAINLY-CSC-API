@@ -5,7 +5,6 @@ import com.czertainly.csc.common.exceptions.InvalidInputDataException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -17,8 +16,8 @@ public class StructuredClientDataMapper {
     private static final Logger logger = LoggerFactory.getLogger(StructuredClientDataMapper.class);
     private final ObjectMapper objectMapper;
 
-    public StructuredClientDataMapper(Jackson2ObjectMapperBuilder objectMapperBuilder) {
-        this.objectMapper = objectMapperBuilder.build();
+    public StructuredClientDataMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     public StructuredClientData map(String clientData) {
