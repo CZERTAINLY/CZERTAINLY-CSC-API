@@ -2,10 +2,12 @@ package com.czertainly.csc.service.scheduled;
 
 import com.czertainly.csc.configuration.csc.CscConfiguration;
 import com.czertainly.csc.service.credentials.SigningSessionCleanupService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("session-keys-cleaner")
 public class SigningSessionsCleanupTrigger {
 
     private final SigningSessionCleanupService signingSessionsService;
