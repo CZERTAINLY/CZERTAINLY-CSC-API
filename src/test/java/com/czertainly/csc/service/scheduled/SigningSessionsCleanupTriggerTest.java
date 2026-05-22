@@ -30,7 +30,7 @@ class SigningSessionsCleanupTriggerTest {
 
         // then
         verify(cleanupService).cleanSessionsWithExpiredKeyLifetime();
-        verify(cleanupService, never()).cleanExpiredSessions();
+        verify(cleanupService).cleanExpiredSessions();
     }
 
     @Test

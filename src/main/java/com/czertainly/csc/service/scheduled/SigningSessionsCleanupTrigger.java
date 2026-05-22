@@ -23,8 +23,7 @@ public class SigningSessionsCleanupTrigger {
     public void cleanExpiredSessions() {
         if (keyLifetimeCleanupEnabled) {
             signingSessionsService.cleanSessionsWithExpiredKeyLifetime();
-        } else {
-            signingSessionsService.cleanExpiredSessions();
         }
+        signingSessionsService.cleanExpiredSessions();
     }
 }
