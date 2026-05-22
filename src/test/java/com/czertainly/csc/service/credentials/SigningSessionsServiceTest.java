@@ -217,6 +217,46 @@ class SigningSessionsServiceTest extends MysqlTest {
     }
 
     @Test
+    public void deleteSessionByIdWillDeleteSession() {
+        // setup
+        UUID credentialId = createCredentialAndInsertIntoDB();
+        UUID sessionId = createAndInsertSessionIntoDB(credentialId, ZonedDateTime.now().plus(Duration.ofHours(1)));
+
+        // when
+        var result = signingSessionsService.deleteSessionById(sessionId);
+
+        // then
+        assertSuccess(result);
+        assertFalse(signingSessionsRepository.existsById(sessionId));
+    }
+
+    @Test
+    public void deleteSessionByIdThatDoesNotExistInDBWillReturnSuccess() {
+        // given
+        UUID nonExistentSessionId = UUID.randomUUID();
+
+        // when
+        var result = signingSessionsService.deleteSessionById(nonExistentSessionId);
+
+        // then
+        assertSuccess(result);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    public void deleteSessionByIdReturnsErrorIfDeleteFails() throws IOException {
+        // given
+        UUID sessionId = UUID.randomUUID();
+        proxy.toxics().timeout("timeout-toxics", ToxicDirection.UPSTREAM, 1);
+
+        // when
+        var result = signingSessionsService.deleteSessionById(sessionId);
+
+        // then
+        assertErrorContains(result, sessionId.toString());
+    }
+
+    @Test
     public void getExpiredSessionsWillReturnExpiredSessions() {
         // setup
         UUID credentialId = createCredentialAndInsertIntoDB();

@@ -2,7 +2,7 @@ package com.czertainly.csc.configuration.mtls;
 
 import com.czertainly.csc.api.common.ErrorDto;
 import com.czertainly.csc.crypto.FingerprintUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

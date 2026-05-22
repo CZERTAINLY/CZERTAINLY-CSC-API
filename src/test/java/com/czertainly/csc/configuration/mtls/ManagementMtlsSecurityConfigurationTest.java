@@ -1,7 +1,7 @@
 package com.czertainly.csc.configuration.mtls;
 
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.ssl.SslBundles;
 

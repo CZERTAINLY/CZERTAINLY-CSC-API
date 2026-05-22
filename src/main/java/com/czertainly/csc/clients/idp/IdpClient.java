@@ -6,9 +6,9 @@ import com.czertainly.csc.common.result.TextError;
 import com.czertainly.csc.common.result.TextErrorWithRetryIndication;
 import com.czertainly.csc.configuration.idp.IdpConfiguration;
 import com.czertainly.csc.model.UserInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -75,16 +75,14 @@ public class IdpClient {
 
             JsonNode json = new ObjectMapper().readTree(response.getBody());
             Map<String, String> attributes = new HashMap<>();
-            var fields = json.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> field = fields.next();
-                attributes.put(field.getKey(), field.getValue().asText());
+            for (Map.Entry<String, JsonNode> field : json.properties()) {
+                attributes.put(field.getKey(), field.getValue().asStringOpt().orElse("<empty>"));
             }
             return Result.success(new UserInfo(attributes));
         } catch (ResourceAccessException e) {
             logger.error("Failed to download user info from IDP.", e);
             return Result.error(TextErrorWithRetryIndication.doRetry("Failed to obtain user info from the IDP."));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             logger.error("Failed to parse response from IDP into a JSON object.", e);
             return Result.error(
                     TextErrorWithRetryIndication.doNotRetry("Failed to parse response from IDP into a JSON object."));

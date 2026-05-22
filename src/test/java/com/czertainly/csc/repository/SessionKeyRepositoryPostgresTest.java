@@ -1,20 +1,32 @@
 package com.czertainly.csc.repository;
 
+import com.czertainly.csc.repository.entities.SessionCredentialMetadataEntity;
 import com.czertainly.csc.repository.entities.SessionKeyEntity;
+import com.czertainly.csc.repository.entities.SigningSessionEntity;
 import com.czertainly.csc.utils.db.PostgresTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class SessionKeyRepositoryPostgresTest extends PostgresTest {
 
     @Autowired
     private SessionKeyRepository sessionKeyRepository;
+
+    @Autowired
+    private SessionCredentialsRepository credentialsRepository;
+
+    @Autowired
+    private SigningSessionsRepository signingSessionsRepository;
 
     @Test
     void findFirstByCryptoTokenIdAndKeyAlgorithmAndInUse() {
@@ -104,6 +116,119 @@ class SessionKeyRepositoryPostgresTest extends PostgresTest {
         assertEquals("Key3", keys.getLast().getKeyAlias());
     }
 
+
+    @Test
+    void findExpiredKeyCleanupViewsReturnsEmptyListWhenNoKeysInDb() {
+        // given
+        ZonedDateTime cutoff = ZonedDateTime.now();
+
+        // when
+        List<ExpiredKeyCleanupView> result = sessionKeyRepository.findExpiredKeyCleanupViews(cutoff);
+
+        // then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findExpiredKeyCleanupViewsDoesNotReturnKeyNotInUse() {
+        // given
+        UUID keyId = insertKeyEntity("key", 1, "RSA", false, ZonedDateTime.now().minusHours(1));
+        UUID credentialId = insertCredential(keyId);
+        insertSession(credentialId);
+        ZonedDateTime cutoff = ZonedDateTime.now();
+
+        // when
+        List<ExpiredKeyCleanupView> result = sessionKeyRepository.findExpiredKeyCleanupViews(cutoff);
+
+        // then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findExpiredKeyCleanupViewsDoesNotReturnKeyAcquiredAfterCutoff() {
+        // given
+        ZonedDateTime cutoff = ZonedDateTime.now().minusHours(2);
+        UUID keyId = insertKeyEntity("key", 1, "RSA", true, ZonedDateTime.now().minusHours(1));
+        UUID credentialId = insertCredential(keyId);
+        insertSession(credentialId);
+
+        // when
+        List<ExpiredKeyCleanupView> result = sessionKeyRepository.findExpiredKeyCleanupViews(cutoff);
+
+        // then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findExpiredKeyCleanupViewsReturnsKeyAcquiredExactlyAtCutoff() {
+        // given
+        ZonedDateTime acquiredAt = ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, java.time.ZoneOffset.UTC);
+        UUID keyId = insertKeyEntity("key", 1, "RSA", true, acquiredAt);
+        UUID credentialId = insertCredential(keyId);
+        insertSession(credentialId);
+
+        // when — cutoff is exactly equal to acquiredAt, key lifetime has elapsed
+        List<ExpiredKeyCleanupView> result = sessionKeyRepository.findExpiredKeyCleanupViews(acquiredAt);
+
+        // then
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    void findExpiredKeyCleanupViewsReturnsViewWithAllIdsWhenKeyHasSession() {
+        // given
+        UUID keyId = insertKeyEntity("key", 1, "RSA", true, ZonedDateTime.now().minusHours(2));
+        UUID credentialId = insertCredential(keyId);
+        UUID sessionId = insertSession(credentialId);
+        ZonedDateTime cutoff = ZonedDateTime.now();
+
+        // when
+        List<ExpiredKeyCleanupView> result = sessionKeyRepository.findExpiredKeyCleanupViews(cutoff);
+
+        // then
+        assertEquals(1, result.size());
+        assertEquals(keyId, result.getFirst().keyId());
+        assertEquals(credentialId, result.getFirst().credentialId());
+        assertEquals(sessionId, result.getFirst().sessionId());
+    }
+
+    @Test
+    void findExpiredKeyCleanupViewsReturnsNullSessionIdWhenCredentialHasNoLinkedSession() {
+        // given
+        UUID keyId = insertKeyEntity("key", 1, "RSA", true, ZonedDateTime.now().minusHours(2));
+        UUID credentialId = insertCredential(keyId);
+        ZonedDateTime cutoff = ZonedDateTime.now();
+
+        // when — no signing_session row referencing this credential
+        List<ExpiredKeyCleanupView> result = sessionKeyRepository.findExpiredKeyCleanupViews(cutoff);
+
+        // then
+        assertEquals(1, result.size());
+        assertEquals(keyId, result.getFirst().keyId());
+        assertEquals(credentialId, result.getFirst().credentialId());
+        assertNull(result.getFirst().sessionId());
+    }
+
+    private UUID insertCredential(UUID keyId) {
+        UUID credentialId = UUID.randomUUID();
+        credentialsRepository.save(new SessionCredentialMetadataEntity(
+                credentialId, "user", "keyAlias", keyId,
+                "endEntity", "signatureQualifier", 1, "cryptoToken"
+        ));
+        testEntityManager.flush();
+        testEntityManager.clear();
+        return credentialId;
+    }
+
+    private UUID insertSession(UUID credentialId) {
+        UUID sessionId = UUID.randomUUID();
+        signingSessionsRepository.save(new SigningSessionEntity(
+                sessionId, credentialId, ZonedDateTime.now().plusHours(1)
+        ));
+        testEntityManager.flush();
+        testEntityManager.clear();
+        return sessionId;
+    }
 
     UUID insertKeyEntity(String keyAlias, int cryptoTokenId, String keyAlgorithm, Boolean inUse,
                          ZonedDateTime acquiredAt
