@@ -182,13 +182,6 @@
             <artifactId>flyway-mysql</artifactId>
         </dependency>
 
-        <!-- Explicit Jackson 2 dependency: Spring Boot 4 uses Jackson 3, but this project uses Jackson 2
-             annotations and APIs. -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
         <!--Tests-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

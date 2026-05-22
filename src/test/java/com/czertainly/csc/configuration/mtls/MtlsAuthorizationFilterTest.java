@@ -3,7 +3,7 @@ package com.czertainly.csc.configuration.mtls;
 import com.czertainly.csc.utils.cert.CertificateUtils;
 import com.czertainly.csc.api.common.ErrorDto;
 import com.czertainly.csc.crypto.FingerprintUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
 import org.bouncycastle.asn1.x500.X500Name;

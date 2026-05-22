@@ -3,7 +3,7 @@ package com.czertainly.csc.configuration.mtls;
 import com.czertainly.csc.api.auth.authn.CscJwtAuthenticationConverter;
 import com.czertainly.csc.common.exceptions.ApplicationConfigurationException;
 import com.czertainly.csc.crypto.FingerprintUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

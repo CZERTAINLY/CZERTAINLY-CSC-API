@@ -2,6 +2,7 @@ package com.czertainly.csc.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.Optional;
 
@@ -70,6 +71,7 @@ public class BaseSignatureRequestDto {
     )
     private final String responseUri;
 
+    @JsonDeserialize(using = FlexibleStringDeserializer.class)
     @Schema(
             description = """
                     Arbitrary data from the client. It is used to handle a application-specific data that may be useful for

@@ -18,7 +18,7 @@ import com.czertainly.csc.signing.configuration.SignatureFormat;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
 import com.czertainly.csc.utils.jwt.TestIdp;
 import com.czertainly.csc.utils.jwt.TestJWTs;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.instancio.Instancio;
 import org.instancio.InstancioApi;
 import org.junit.jupiter.api.Test;

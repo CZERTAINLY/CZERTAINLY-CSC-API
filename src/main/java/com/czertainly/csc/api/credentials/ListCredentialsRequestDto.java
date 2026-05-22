@@ -1,6 +1,8 @@
 package com.czertainly.csc.api.credentials;
 
+import com.czertainly.csc.api.FlexibleStringDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 public record ListCredentialsRequestDto(
 

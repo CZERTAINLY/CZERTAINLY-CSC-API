@@ -16,14 +16,13 @@ import com.czertainly.csc.model.signserver.CryptoToken;
 import com.czertainly.csc.model.signserver.CryptoTokenKey;
 import com.czertainly.csc.model.signserver.CryptoTokenKeyStatus;
 import com.czertainly.csc.signing.configuration.SignaturePackaging;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -328,7 +327,7 @@ public class SignserverClient {
         final byte[] requestBytes;
         try {
             requestBytes = objectMapper.writeValueAsBytes(batchRequest);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Serialization of batch signature request has failed.", e);
         }
 
@@ -377,7 +376,7 @@ public class SignserverClient {
         try {
             byte[] decoded = decoder.decode(encodedSignatureData);
             return Result.success(objectMapper.readValue(decoded, clazz));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             logger.error("Decoding of the signature data to object has failed.", e);
             return Result.error(TextError.of("The decoding of the signature data has failed."));
         }
