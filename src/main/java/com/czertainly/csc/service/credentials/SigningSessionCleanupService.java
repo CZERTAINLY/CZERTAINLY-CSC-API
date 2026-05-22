@@ -80,7 +80,7 @@ public class SigningSessionCleanupService {
             sessionKeyRepository.findExpiredKeyCleanupViews(cutoff)
                     .forEach(this::deleteExpiredKeyResources);
         } catch (Exception e) {
-            logger.error("Failed to retrieve session keys for lifetime cleanup. {}", e.getMessage());
+            logger.error("Failed to retrieve session keys for lifetime cleanup.", e);
         }
     }
 
@@ -109,7 +109,7 @@ public class SigningSessionCleanupService {
 
     private void deleteExpiredKeyResources(ExpiredKeyCleanupView view) {
         if (view.sessionId() != null) {
-            transactionTemplate.execute(status ->
+            Result<?, ?> result = transactionTemplate.execute(status ->
                     signingSessionsService.deleteSessionById(view.sessionId())
                             .flatMap(v -> sessionCredentialsService.deleteCredential(view.credentialId()))
                             .flatMap(v -> sessionKeysService.deleteKey(view.keyId()))
@@ -121,6 +121,9 @@ public class SigningSessionCleanupService {
                                 );
                             })
             );
+            if (result instanceof Error(TextError e)) {
+                logger.error(e.getErrorText());
+            }
         } else {
             deleteOrphanedCredentialAndKey(view.credentialId(), view.keyId());
         }
@@ -128,11 +131,11 @@ public class SigningSessionCleanupService {
 
     private void deleteOrphanedCredentialAndKey(UUID credentialId, UUID keyId) {
         logger.warn("No session found for key '{}', deleting orphaned resources directly.", keyId);
-        transactionTemplate.execute(status -> {
-            Result<Void, TextError> result = credentialId != null
+        Result<?, ?> result = transactionTemplate.execute(status -> {
+            Result<Void, TextError> r = credentialId != null
                     ? sessionCredentialsService.deleteCredential(credentialId)
                     : Result.emptySuccess();
-            return result
+            return r
                     .flatMap(v -> sessionKeysService.deleteKey(keyId))
                     .mapError(e -> {
                         status.setRollbackOnly();
@@ -142,5 +145,8 @@ public class SigningSessionCleanupService {
                         );
                     });
         });
+        if (result instanceof Error(TextError e)) {
+            logger.error(e.getErrorText());
+        }
     }
 }

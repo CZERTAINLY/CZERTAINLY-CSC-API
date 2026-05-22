@@ -175,6 +175,44 @@ class SigningSessionCleanupServiceTest extends MysqlTest {
     }
 
     @Test
+    void rollsBackCredentialDeletionWhenKeyDeletionFailsForOrphanedCredentialAndKey() {
+        // given — orphaned credential+key (no session), key deletion fails in SignServer
+        when(signserverClient.removeKeyOkIfNotExists(eq(1), eq("test-key"))).thenReturn(
+                Result.error(TextError.of("Signserver failure"))
+        );
+        UUID keyId = insertKey(SessionKeyEntityBuilder.aSessionKey()
+                .withInUse(true)
+                .withAcquiredAt(ZonedDateTime.now().minusHours(2))
+                .build());
+        UUID credentialId = insertCredential(keyId);
+
+        // when
+        assertDoesNotThrow(() -> cleanupService.cleanSessionsWithExpiredKeyLifetime());
+
+        // then — credential deletion is rolled back because key deletion failed
+        assertTrue(sessionCredentialsRepository.existsById(credentialId));
+        assertTrue(sessionKeyRepository.existsById(keyId));
+    }
+
+    @Test
+    void doesNotThrowWhenKeyDeletionFailsForOrphanedKeyWithNoCredential() {
+        // given — orphaned key with no credential and no session, key deletion fails in SignServer
+        when(signserverClient.removeKeyOkIfNotExists(eq(1), eq("test-key"))).thenReturn(
+                Result.error(TextError.of("Signserver failure"))
+        );
+        UUID keyId = insertKey(SessionKeyEntityBuilder.aSessionKey()
+                .withInUse(true)
+                .withAcquiredAt(ZonedDateTime.now().minusHours(2))
+                .build());
+
+        // when
+        assertDoesNotThrow(() -> cleanupService.cleanSessionsWithExpiredKeyLifetime());
+
+        // then — key is not deleted from DB
+        assertTrue(sessionKeyRepository.existsById(keyId));
+    }
+
+    @Test
     void deletesAllExpiredKeysWhenMultipleExist() {
         // given — two keys both past the 1h lifetime
         UUID keyId1 = insertKey(SessionKeyEntityBuilder.aSessionKey()
