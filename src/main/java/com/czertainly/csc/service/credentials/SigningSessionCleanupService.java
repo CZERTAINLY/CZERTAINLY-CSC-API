@@ -99,7 +99,7 @@ public class SigningSessionCleanupService {
                                 .mapError(e -> {
                                     status.setRollbackOnly();
                                     return e.extend(
-                                            "An error occurred while deleting session '%s' and it's related resources. %s",
+                                            "An error occurred while deleting session '%s' and its related resources. %s",
                                             session.id(), e.getErrorText()
                                     );
                                 })
