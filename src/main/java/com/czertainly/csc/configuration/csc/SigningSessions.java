@@ -7,5 +7,7 @@ import java.time.Duration;
 
 public record SigningSessions(
         @NotNull Duration expiredSessionsKeepTime,
+        Duration assignedKeyLifetime,
+        @NotBlank String generateCronExpression,
         @NotBlank String cleanupCronExpression
 ) {}

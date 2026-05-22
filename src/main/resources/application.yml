@@ -27,6 +27,9 @@ csc:
         # Keep the expired credential sessions for the specified time in ISO 8601 duration format
         # See https://en.wikipedia.org/wiki/ISO_8601#Durations for more information
         expiredSessionsKeepTime: PT1H
+        # Delete the session key this long after it was assigned, regardless of the session expiry
+        # See https://en.wikipedia.org/wiki/ISO_8601#Durations for more information
+        assignedKeyLifetime: PT1H
         # Run cleanup of expired sessions according to the specified cron expression
         # The cron expression is in the UN*X definition format: second, minute, hour, day of month, month, and day of week
         cleanupCronExpression: "0 0 * * * *"

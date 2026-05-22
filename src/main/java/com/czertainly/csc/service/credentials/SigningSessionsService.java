@@ -66,6 +66,17 @@ public class SigningSessionsService {
         }
     }
 
+    public Result<Void, TextError> deleteSessionById(UUID sessionId) {
+        try {
+            signingSessionsRepository.deleteById(sessionId);
+            logger.debug("Deleted signing session '{}'.", sessionId);
+            return Result.emptySuccess();
+        } catch (Exception e) {
+            logger.error("An error occurred while deleting the signing session '{}'.", sessionId, e);
+            return Result.error(TextError.of("An error occurred while deleting the signing session '%s'.", sessionId));
+        }
+    }
+
     public Result<Void, TextError> deleteSession(SigningSession session) {
         logger.trace("Deleting signing session '{}'.", session);
         if (session.status() == CredentialSessionStatus.ACTIVE) {
