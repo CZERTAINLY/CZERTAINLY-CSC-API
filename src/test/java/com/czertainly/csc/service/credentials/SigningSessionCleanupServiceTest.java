@@ -35,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -177,7 +176,7 @@ class SigningSessionCleanupServiceTest extends MysqlTest {
     @Test
     void rollsBackCredentialDeletionWhenKeyDeletionFailsForOrphanedCredentialAndKey() {
         // given — orphaned credential+key (no session), key deletion fails in SignServer
-        when(signserverClient.removeKeyOkIfNotExists(eq(1), eq("test-key"))).thenReturn(
+        when(signserverClient.removeKeyOkIfNotExists(1, "test-key")).thenReturn(
                 Result.error(TextError.of("Signserver failure"))
         );
         UUID keyId = insertKey(SessionKeyEntityBuilder.aSessionKey()
@@ -197,7 +196,7 @@ class SigningSessionCleanupServiceTest extends MysqlTest {
     @Test
     void doesNotThrowWhenKeyDeletionFailsForOrphanedKeyWithNoCredential() {
         // given — orphaned key with no credential and no session, key deletion fails in SignServer
-        when(signserverClient.removeKeyOkIfNotExists(eq(1), eq("test-key"))).thenReturn(
+        when(signserverClient.removeKeyOkIfNotExists(1, "test-key")).thenReturn(
                 Result.error(TextError.of("Signserver failure"))
         );
         UUID keyId = insertKey(SessionKeyEntityBuilder.aSessionKey()
@@ -246,7 +245,7 @@ class SigningSessionCleanupServiceTest extends MysqlTest {
     @Test
     void rollsBackAllChangesWhenKeyDeletionFailsDuringCleanSessionsWithExpiredKeyLifetime() {
         // given — key1 deletion will fail on Signserver, key2 will succeed
-        when(signserverClient.removeKeyOkIfNotExists(eq(1), eq("key1"))).thenReturn(
+        when(signserverClient.removeKeyOkIfNotExists(1, "key1")).thenReturn(
                 Result.error(TextError.of("Signserver failure"))
         );
 
@@ -363,7 +362,7 @@ class SigningSessionCleanupServiceTest extends MysqlTest {
     @Test
     void rollsBackAllChangesWhenKeyDeletionFailsDuringCleanExpiredSessions() {
         // given — key1 deletion will fail on Signserver, key2 will succeed
-        when(signserverClient.removeKeyOkIfNotExists(eq(1), eq("key1"))).thenReturn(
+        when(signserverClient.removeKeyOkIfNotExists(1, "key1")).thenReturn(
                 Result.error(TextError.of("Signserver failure"))
         );
 

@@ -17,6 +17,6 @@ public class FlexibleStringDeserializer extends StdDeserializer<String> {
         if (p.currentToken() == JsonToken.START_OBJECT || p.currentToken() == JsonToken.START_ARRAY) {
             return ctx.readTree(p).toString();
         }
-        return p.getText();
+        return p.getString();
     }
 }

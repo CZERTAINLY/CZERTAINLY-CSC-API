@@ -76,7 +76,7 @@ public class IdpClient {
             JsonNode json = new ObjectMapper().readTree(response.getBody());
             Map<String, String> attributes = new HashMap<>();
             for (Map.Entry<String, JsonNode> field : json.properties()) {
-                attributes.put(field.getKey(), field.getValue().asText());
+                attributes.put(field.getKey(), field.getValue().asStringOpt().orElse("<empty>"));
             }
             return Result.success(new UserInfo(attributes));
         } catch (ResourceAccessException e) {
