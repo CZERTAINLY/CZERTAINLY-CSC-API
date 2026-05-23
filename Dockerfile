@@ -1,5 +1,5 @@
 # Build stage
-FROM maven:3.9.14-eclipse-temurin-21 AS build
+FROM maven:3.9.16-eclipse-temurin-21 AS build
 
 COPY src /home/app/src
 COPY pom.xml /home/app
@@ -8,7 +8,7 @@ COPY docker /home/app/docker
 RUN mvn -f /home/app/pom.xml clean package -DskipTests
 
 # Optimize stage
-FROM eclipse-temurin:21.0.10_7-jdk-alpine AS optimize
+FROM eclipse-temurin:21.0.11_10-jdk-alpine AS optimize
 
 COPY --from=build /home/app/target/*.jar /app/app.jar
 
