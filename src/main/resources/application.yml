@@ -264,11 +264,14 @@ spring:
                 #        type: "PKCS12"
                 #        location: /opt/cscapi/management-truststore.p12
                 #        password: password
-                idpClient:
-                    keystore:
-                        type: "PKCS12"
-                        location: /opt/cscapi/idp/client-keystore.p12
-                        password: password
+                # Uncomment only when idp.client.authType: CERTIFICATE. If declared,
+                # the keystore is loaded at startup regardless of authType and the
+                # application will fail to start if the file is absent.
+                # idpClient:
+                #     keystore:
+                #         type: "PKCS12"
+                #         location: /opt/cscapi/idp/client-keystore.p12
+                #         password: password
                 ejbcaAdmin:
                     keystore:
                         type: "PKCS12"
