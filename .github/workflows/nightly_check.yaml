@@ -1,0 +1,46 @@
+name: Nightly Docker image vulnerability check
+
+# Resolves the latest semver tag and builds the image from that ref, then runs
+# Trivy against it. Nothing is pushed; this is a daily probe for new CVEs in
+# the released image's base layers and dependencies.
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  resolve_tag:
+    name: Resolve latest tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.latest.outputs.tag }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: latest
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  check:
+    needs: resolve_tag
+    uses: OmniTrustILM/.github/.github/workflows/containers-test.yml@main
+    secrets: inherit
+    with:
+      image: ilm-signing/csc-api
+      cache-scope: csc-api-nightly
+      ref: ${{ needs.resolve_tag.outputs.tag }}

@@ -1,0 +1,15 @@
+package com.otilm.csc.signing.configuration;
+
+
+import java.util.List;
+
+public record WorkerCapabilities(
+        List<String> signatureQualifiers,
+        SignatureFormat signatureFormat,
+        ConformanceLevel conformanceLevel,
+        SignaturePackaging signaturePackaging,
+        List<String> supportedSignatureAlgorithms,
+        boolean returnsValidationInfo,
+        List<DocumentType> documentTypes
+) {
+}

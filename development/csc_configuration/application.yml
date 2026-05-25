@@ -159,7 +159,7 @@ spring:
 # Logging configuration
 logging:
     level:
-        com.czertainly.csc: TRACE
+        com.otilm.csc: TRACE
         org.springframework.security: TRACE
 
 springdoc:

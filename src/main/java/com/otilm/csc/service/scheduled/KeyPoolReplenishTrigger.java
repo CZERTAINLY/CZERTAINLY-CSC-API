@@ -1,0 +1,76 @@
+package com.otilm.csc.service.scheduled;
+
+import com.otilm.csc.common.exceptions.ApplicationException;
+import com.otilm.csc.configuration.keypools.KeyUsageDesignation;
+import com.otilm.csc.model.signserver.CryptoToken;
+import com.otilm.csc.service.keys.*;
+import com.otilm.csc.signing.configuration.WorkerRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+@Component
+@Profile("keys-generator")
+public class KeyPoolReplenishTrigger {
+
+    private final KeyPoolReplenisher<SessionKey> sessionKeyPoolReplenisher;
+    private final KeyPoolReplenisher<OneTimeKey> oneTimeKeyPoolReplenisher;
+    private final KeyPoolReplenisher<LongTermKey> longTermKeyPoolReplenisher;
+
+    public KeyPoolReplenishTrigger(WorkerRepository repository, SessionKeysService sessionKeysService,
+                                   OneTimeKeysService oneTimeKeysService, LongTermKeysService longTermKeysService,
+                                   @Qualifier("keyGenerationExecutor") ExecutorService keyGenerationExecutor
+    ) {
+
+        List<CryptoToken> cryptoTokensForSessionSignatures = getCryptoTokensWithDesignatedUsage(
+                repository, KeyUsageDesignation.SESSION_SIGNATURE
+        );
+        sessionKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForSessionSignatures, sessionKeysService,
+                                                             keyGenerationExecutor
+        );
+
+        List<CryptoToken> cryptoTokensForOneTimeSignatures = getCryptoTokensWithDesignatedUsage(
+                repository, KeyUsageDesignation.ONE_TIME_SIGNATURE
+        );
+        oneTimeKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForOneTimeSignatures, oneTimeKeysService,
+                                                             keyGenerationExecutor
+        );
+
+        List<CryptoToken> cryptoTokensForLongTermSignatures = getCryptoTokensWithDesignatedUsage(
+                repository, KeyUsageDesignation.LONG_TERM_SIGNATURE
+        );
+        longTermKeyPoolReplenisher = new KeyPoolReplenisher<>(cryptoTokensForLongTermSignatures, longTermKeysService,
+                                                             keyGenerationExecutor
+        );
+    }
+
+    @Scheduled(cron = "${csc.signingSessions.generateCronExpression:30 */1 * * * *}")
+    public void replenishSessionPools() {
+        sessionKeyPoolReplenisher.replenishPools();
+    }
+
+    @Scheduled(cron = "${csc.oneTimeKeys.generateCronExpression:0 */1 * * * *}")
+    public void replenishOneTimePools() {
+        oneTimeKeyPoolReplenisher.replenishPools();
+    }
+
+    @Scheduled(cron = "${csc.longTermKeys.generateCronExpression:45 */1 * * * *}")
+    public void replenishLongTermKeyPools() {
+        longTermKeyPoolReplenisher.replenishPools();
+    }
+
+    private static List<CryptoToken> getCryptoTokensWithDesignatedUsage(
+            WorkerRepository repository, KeyUsageDesignation keyUsage
+    ) {
+        return repository.getCryptoTokensWithPools(keyUsage)
+                         .consumeError(err -> {
+                             throw new ApplicationException(
+                                     "Failed to get list of all available crypto tokens for session signatures.");
+                         })
+                         .unwrap();
+    }
+}

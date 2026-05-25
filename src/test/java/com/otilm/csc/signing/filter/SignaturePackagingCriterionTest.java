@@ -1,0 +1,47 @@
+package com.otilm.csc.signing.filter;
+
+import com.otilm.csc.signing.configuration.SignaturePackaging;
+import com.otilm.csc.signing.configuration.WorkerCapabilities;
+import com.otilm.csc.utils.configuration.WorkerCapabilitiesBuilder;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SignaturePackagingCriterionTest {
+
+    @Test
+    void matchesReturnsTrueOnMatchingSignaturePackaging() {
+        // given
+        WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
+                                                                         .withSignaturePackaging(
+                                                                                 SignaturePackaging.DETACHED)
+                                                                         .build();
+        SignaturePackagingCriterion signaturePackagingCriterion = new SignaturePackagingCriterion(
+                SignaturePackaging.DETACHED);
+
+        // when
+        boolean isMatch = signaturePackagingCriterion.matches(workerCapabilities);
+
+        // then
+        assertTrue(isMatch);
+    }
+
+    @Test
+    void matchesReturnsFalseOnNonMatchingSignaturePackaging() {
+        // given
+        WorkerCapabilities workerCapabilities = WorkerCapabilitiesBuilder.create()
+                                                                         .withSignaturePackaging(
+                                                                                 SignaturePackaging.DETACHED)
+                                                                         .build();
+        SignaturePackagingCriterion signaturePackagingCriterion = new SignaturePackagingCriterion(
+                SignaturePackaging.ENVELOPING);
+
+        // when
+        boolean isMatch = signaturePackagingCriterion.matches(workerCapabilities);
+
+        // then
+        assertFalse(isMatch);
+    }
+
+}
