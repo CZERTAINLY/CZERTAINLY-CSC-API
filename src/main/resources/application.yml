@@ -320,7 +320,7 @@ spring:
 logging:
     level:
         # Logging level for the CSC API, allowed values: TRACE, DEBUG, INFO, WARN, ERROR
-        com.czertainly.csc: INFO
+        com.otilm.csc: INFO
 
 # Springdoc configuration, DO NOT CHANGE if you are not familiar with Springdoc
 springdoc:

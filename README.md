@@ -1,6 +1,6 @@
-# CZERTAINLY CSC API
+# ILM CSC API
 
-This repository contains implementation of the CZERTAINLY CSC API. For more information about the CSC API, refer to the [Cloud Signature Consortium](https://cloudsignatureconsortium.org) website, or the [CZERTAINLY documentation](https://docs.czertainly.com/docs/signing/csc-component/overview).
+This repository contains implementation of the ILM CSC API. For more information about the CSC API, refer to the [Cloud Signature Consortium](https://cloudsignatureconsortium.org) website, or the [ILM documentation](https://docs.otilm.com/docs/signing/csc-component/overview).
 
 ## Prerequisites
 

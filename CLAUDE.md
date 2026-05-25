@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CZERTAINLY CSC API - a Spring Boot 3.5 REST API implementing the [Cloud Signature Consortium (CSC)](https://cloudsignatureconsortium.org) standard for remote digital signature operations. It integrates with **SignServer** for signature creation, **EJBCA** for certificate authority operations, and an **Identity Provider** (Keycloak) for OAuth2/OIDC authentication.
+ILM CSC API - a Spring Boot 4 REST API implementing the [Cloud Signature Consortium (CSC)](https://cloudsignatureconsortium.org) standard for remote digital signature operations. It integrates with **SignServer** for signature creation, **EJBCA** for certificate authority operations, and an **Identity Provider** (Keycloak) for OAuth2/OIDC authentication.
 
 ## Build & Test Commands
 
@@ -100,7 +100,7 @@ Background jobs (cron-configurable via `csc.*` properties):
 ## Package Structure
 
 ```
-com.czertainly.csc
+com.otilm.csc
 ├── api/auth/          # Authentication (JWT converter, mTLS filters, token validation)
 ├── clients/           # External service clients (signserver/, ejbca/, idp/)
 ├── common/            # Shared utilities (Result monad, etc.)

@@ -78,7 +78,7 @@ services:
     container_name: csc-keycloak
     image: quay.io/keycloak/keycloak:26.6.2
     restart: always
-    command: start-dev --log-level="INFO,com.czertainly.csc:trace" --debug --verbose
+    command: start-dev --log-level="INFO,com.otilm.csc:trace" --debug --verbose
     depends_on:
       - postgresql.csc.dev
     environment:
@@ -138,7 +138,7 @@ services:
 #    container_name: csca-api
 #    image: dev.csc.cscapi:latest
 #    restart: always
-#    command: start-dev --log-level="INFO,com.czertainly.csc:trace" --debug --verbose
+#    command: start-dev --log-level="INFO,com.otilm.csc:trace" --debug --verbose
 #    depends_on:
 #      - postgresql.csc.dev
 #      - mysql.csc.dev

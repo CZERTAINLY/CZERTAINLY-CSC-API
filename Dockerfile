@@ -42,7 +42,7 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 # copy optimized JRE
 COPY --from=optimize /javaruntime $JAVA_HOME
 
-LABEL org.opencontainers.image.authors="CZERTAINLY <support@czertainly.com>"
+LABEL org.opencontainers.image.authors="OmniTrust <ilm@omnitrust.com>"
 
 # add non root user cscapi
 RUN apk upgrade --no-cache \

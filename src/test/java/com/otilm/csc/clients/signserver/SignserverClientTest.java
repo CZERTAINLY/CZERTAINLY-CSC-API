@@ -1,0 +1,136 @@
+package com.otilm.csc.clients.signserver;
+
+import com.otilm.csc.clients.signserver.rest.SignserverRestClient;
+import com.otilm.csc.clients.signserver.ws.SignserverWsClient;
+import com.otilm.csc.common.result.Result;
+import com.otilm.csc.crypto.CertificateParser;
+import com.otilm.csc.model.DocumentSignature;
+import com.otilm.csc.model.SignaturesContainer;
+import com.otilm.csc.signing.configuration.SignaturePackaging;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.util.List;
+
+import static com.otilm.csc.utils.ResourceLoader.loadBytesFromResources;
+import static com.otilm.csc.utils.assertions.ResultAssertions.assertSuccessAndGet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+
+@ExtendWith(MockitoExtension.class)
+class SignserverClientTest {
+
+    @Mock
+    SignserverWsClient signserverWSClient;
+    @Mock
+    SignserverRestClient signserverRestClient;
+    @Spy
+    KeySpecificationParser keySpecificationParser = new KeySpecificationParser();
+    @Spy
+    ObjectMapper objectMapper = JsonMapper.builder()
+                                          .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+                                          .build();
+    @Spy
+    CertificateParser certificateParser = new CertificateParser();
+    @InjectMocks
+    SignserverClient signserverClient;
+
+
+    SignserverClientTest() throws CertificateException {}
+
+    String signerName = "TestSigner";
+    byte[] singleHash = "dummyData1".getBytes();
+    List<String> multipleHashes = List.of("dummyData1", "dummyData2");
+    String keyAlias = "signingKey01";
+    String digestAlgorithm = "SHA-256";
+    String encryptionAlgorithm = "RSA";
+
+
+    @Test
+    void signSingleDocumentHash() throws IOException {
+        // given
+        byte[] singleSignedHash = loadSignature("signatureSingleHash");
+        when(signserverRestClient.process(eq(signerName), eq(singleHash), any(), any())).thenReturn(
+                Result.success(singleSignedHash));
+
+        // when
+        var signingresult = signserverClient.signSingleDocumentHash(signerName, singleHash, keyAlias, digestAlgorithm);
+
+        // then
+        SignaturesContainer<DocumentSignature> signature = assertSuccessAndGet(signingresult);
+        assertEquals(SignaturePackaging.DETACHED, signature.signatures().getFirst().packaging());
+    }
+
+    @Test
+    void signSingleDocumentHashWithValidationInfo() throws IOException {
+        // given
+        byte[] singleSignedHashWithValidationData = loadSignature("signatureSingleHashWithValidationData");
+        when(signserverRestClient.process(eq(signerName), eq(singleHash), any(), any())).thenReturn(
+                Result.success(singleSignedHashWithValidationData));
+
+        // when
+        var signingresult = signserverClient.signSingleDocumentHashWithValidationData(signerName, singleHash, keyAlias,
+                                                                                      digestAlgorithm
+        );
+
+        // then
+        SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
+        assertEquals(1, container.signatures().size());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getFirst().packaging());
+    }
+
+    @Test
+    void signMultipleDocumentHashes() throws IOException {
+        // given
+        byte[] multipleSignedHashes = loadSignature("signatureMultipleHashes");
+        when(signserverRestClient.process(eq(signerName), any(), any(), any())).thenReturn(
+                Result.success(multipleSignedHashes));
+
+        // when
+        var signingresult = signserverClient.signMultipleDocumentHashes(signerName, multipleHashes, keyAlias,
+                                                                        encryptionAlgorithm, digestAlgorithm
+        );
+
+        // then
+        SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
+        assertEquals(2, container.signatures().size());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getFirst().packaging());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getLast().packaging());
+    }
+
+    @Test
+    void signMultipleDocumentHashesWithValidationInfo() throws IOException {
+        // given
+        byte[] multipleSignedHashesWithValidationData = loadSignature("signatureMultipleHashesWithValidationData");
+        when(signserverRestClient.process(eq(signerName), any(), any(), any())).thenReturn(
+                Result.success(multipleSignedHashesWithValidationData));
+
+        // when
+        var signingresult = signserverClient.signMultipleDocumentHashesWithValidationData(signerName, multipleHashes,
+                                                                                          keyAlias, encryptionAlgorithm,
+                                                                                          digestAlgorithm
+        );
+
+        // then
+        SignaturesContainer<DocumentSignature> container = assertSuccessAndGet(signingresult);
+        assertEquals(2, container.signatures().size());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getFirst().packaging());
+        assertEquals(SignaturePackaging.DETACHED, container.signatures().getLast().packaging());
+    }
+
+    private byte[] loadSignature(String name) throws IOException {
+        return loadBytesFromResources("com/otilm/csc/clients/signserver/" + name);
+    }
+}

@@ -8,10 +8,10 @@
         <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.czertainly</groupId>
+    <groupId>com.otilm</groupId>
     <artifactId>csc-api</artifactId>
     <version>1.6.0</version>
-    <name>SignServer-CSC-API</name>
+    <name>csc-api</name>
     <description>CSC API for Signserver</description>
     <properties>
         <java.version>21</java.version>
