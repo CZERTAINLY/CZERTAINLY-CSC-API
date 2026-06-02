@@ -121,7 +121,7 @@ public class ProxySettings {
     }
 
     static ProxySettings parse(String protocol, String proxyUrl, String noProxy) {
-        if (proxyUrl == null) {
+        if (proxyUrl == null || proxyUrl.isBlank()) {
             return null;
         }
         try {
