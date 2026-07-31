@@ -15,6 +15,8 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy;
+import org.apache.hc.client5.http.ssl.HttpsSupport;
 import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.io.SocketConfig;
@@ -246,13 +248,42 @@ public class ServerConfiguration {
         }
     }
 
-    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor,
-                                            HttpClientProperties properties
+    /**
+     * Hostname verification for outbound connections, stated explicitly rather than inherited from the
+     * HttpClient default. httpclient5 5.6 changed the single-argument {@link DefaultClientTlsStrategy}
+     * constructor to select {@link HostnameVerificationPolicy#BUILTIN}, which applies JSSE endpoint
+     * identification and rejects certificates carrying no {@code subjectAltName}. Connections to
+     * EJBCA, SignServer and the IDP keep the earlier {@link HostnameVerificationPolicy#CLIENT}
+     * semantics, which deployments using internal CN-only certificates depend on.
+     */
+    static TlsSocketStrategy outboundTlsSocketStrategy(SSLContext sslContext) {
+        return new DefaultClientTlsStrategy(sslContext,
+                                            HostnameVerificationPolicy.CLIENT,
+                                            HttpsSupport.getDefaultHostnameVerifier()
+        );
+    }
+
+    /**
+     * Socket options for outbound connections, stated explicitly rather than inherited from the
+     * defaults. httpcore5 5.4 changed them from {@code soKeepAlive=false} with {@code tcpKeepIdle},
+     * {@code tcpKeepInterval} and {@code tcpKeepCount} all at {@code -1}, to {@code soKeepAlive=true}
+     * with {@code 5}, {@code 5} and {@code 3}.
+     */
+    static SocketConfig outboundSocketConfig(HttpClientProperties properties) {
+        return SocketConfig.custom()
+                           .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
+                           .setSoKeepAlive(false)
+                           .setTcpKeepIdle(-1)
+                           .setTcpKeepInterval(-1)
+                           .setTcpKeepCount(-1)
+                           .build();
+    }
+
+    static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor,
+                                    HttpClientProperties properties
     ) {
-        TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
-        SocketConfig socketConfig = SocketConfig.custom()
-                                                .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
-                                                .build();
+        TlsSocketStrategy tlsSocketStrategy = outboundTlsSocketStrategy(sslContext);
+        SocketConfig socketConfig = outboundSocketConfig(properties);
         final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                                                                                .setDefaultSocketConfig(socketConfig)
                                                                                .setTlsSocketStrategy(tlsSocketStrategy)

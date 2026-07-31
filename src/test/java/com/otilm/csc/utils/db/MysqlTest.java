@@ -15,11 +15,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.toxiproxy.ToxiproxyContainer;
 
 import java.io.IOException;
 
@@ -44,7 +44,7 @@ public class MysqlTest {
             .withNetwork(network);
 
     @Container
-    static MySQLContainer<?> databaseContainer = new MySQLContainer<>("mysql:8.4")
+    static MySQLContainer databaseContainer = new MySQLContainer("mysql:8.4")
             .withNetwork(network)
             .withNetworkAliases("mysql")
             .withCommand("--default-time-zone=Europe/Berlin");

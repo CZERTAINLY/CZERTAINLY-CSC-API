@@ -39,3 +39,6 @@ signature-qualifier-profiles-ejbca-*.yml
 .DS_Store
 /.idea/
 /src/main/resources/profiles-*/
+
+### Superpowers (local only) ###
+docs/superpowers/

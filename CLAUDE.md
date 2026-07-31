@@ -11,7 +11,6 @@ ILM CSC API - a Spring Boot 4 REST API implementing the [Cloud Signature Consort
 ```bash
 mvn clean package              # Full build with tests and JaCoCo coverage report
 mvn test                       # Run unit tests only
-mvn verify                     # Run tests + integration tests (generates OpenAPI spec)
 mvn test -Dtest=ClassName      # Run a single test class
 mvn test -Dtest=ClassName#methodName  # Run a single test method
 ```
@@ -19,6 +18,13 @@ mvn test -Dtest=ClassName#methodName  # Run a single test method
 Tests require **Docker** running (TestContainers spins up PostgreSQL, MySQL, Keycloak, Toxiproxy).
 
 Test output is redirected to files (maven-surefire `redirectTestOutputToFile=true`).
+
+**`package` is the gate, not `verify`.** `mvn verify` does not run on a developer
+machine: the `spring-boot:start` goal bound to `pre-integration-test` boots the real
+application, which needs a deployed `/opt/cscapi` tree (`workers.yml`, `profiles/`,
+keystores) plus reachable EJBCA and SignServer endpoints. `sample-config/` does not
+supply these. CI (`check_pr.yml`) runs `mvn -B -U package` for the same reason. The
+OpenAPI spec under `openapi/` is only produced by `verify` and is not tracked in git.
 
 ## Development Environment
 
@@ -114,3 +120,85 @@ com.otilm.csc
 ├── service/           # Business logic services
 └── signing/           # Signing orchestration (facade, pipelines, token providers)
 ```
+
+## Dependency Management
+
+Renovate (`renovate.json`, `config:recommended`) opens update PRs. Two rules keep the
+`pom.xml` sane:
+
+- **Do not pin what the Spring Boot BOM manages, unless you mean to move ahead of it.** `flyway`,
+  `snakeyaml`, `commons-lang3`, `httpclient5`, `httpcore5`, `logback`, `jackson` and `tomcat` carry
+  no `<version>` and move with the parent. A forward-pin silently becomes a *downgrade* once the BOM
+  catches up — `<tomcat.version>` was pinned to 11.0.22 ahead of the BOM and was removed when Spring
+  Boot 4.1.0 began managing that exact version.
+- **Deliberate forward overrides of BOM-managed versions.** Spring Boot 4.1.0 manages
+  `postgresql` 42.7.11, `mysql` 9.7.0 and `testcontainers` 2.0.5; the `version.postgresql`,
+  `version.mysql` and `version.testcontainers*` properties override the first two to pick up fixes
+  the BOM has not reached yet. Drop an override once the BOM meets or passes it, or it turns into
+  the `tomcat.version` problem above.
+- **Not BOM-managed at all**, so the `version.*` property is the only source: BouncyCastle, jjwt,
+  commons-text, springdoc, spring-retry, Instancio, testcontainers-keycloak, and the JaCoCo plugin.
+
+Notes on specific dependencies:
+
+- **`com.sun.istack:istack-commons-runtime`** is declared explicitly on purpose. `jaxb-runtime`
+  (pulled by `spring-boot-starter-web-services` via `spring-ws-core`) uses `FinalArrayList`
+  from it but no longer shades it, and the artifact does not reach the *runtime* classpath
+  transitively — it resolves at `test` scope only. Without the explicit declaration, SOAP
+  marshalling fails at runtime with `NoClassDefFoundError`. Verify with
+  `mvn dependency:build-classpath -DincludeScope=runtime` before removing it.
+- **TestContainers 2.x renamed every module coordinate** to a `testcontainers-*` prefix
+  (`org.testcontainers:postgresql` → `org.testcontainers:testcontainers-postgresql`, and the
+  same for `mysql`, `toxiproxy`, `junit-jupiter`). Renovate cannot rename coordinates, so its
+  PRs bump only the core `testcontainers` artifact — applying one as-is leaves the modules on
+  1.x and breaks resolution. 2.x also stopped shading commons-lang3, so
+  `org.testcontainers.shaded.*` imports no longer resolve.
+- **`com.mysql:mysql-connector-j` uses calendar versioning** from `26.7.0` onward (it follows
+  `9.7.0`). A jump from 9.x to 26.x is expected, not a hijacked coordinate.
+- **`com.github.dasniko:testcontainers-keycloak`** hard-couples to a TestContainers major
+  version (4.3.x requires 2.0.x), so the two move together.
+- **Outbound HTTP defaults are pinned explicitly**, not inherited. In `ServerConfiguration`,
+  `getHttpClient` states `HostnameVerificationPolicy.CLIENT` with
+  `HttpsSupport.getDefaultHostnameVerifier()`, and `setSoKeepAlive(false)`. httpclient5 5.6 changed
+  the single-argument `DefaultClientTlsStrategy` constructor to select
+  `HostnameVerificationPolicy.BUILTIN` (JSSE endpoint identification, which rejects certificates
+  with no `subjectAltName`), and httpcore5 5.4 changed the `SocketConfig` default for `soKeepAlive`
+  to `true`. Both are stated explicitly so a BOM bump cannot silently change how the service
+  authenticates EJBCA, SignServer, and IDP endpoints. Deployments using internal CN-only
+  certificates depend on this.
+
+Keycloak's `admin-cli` client enables lightweight access tokens by default, and the userinfo
+endpoint rejects them. `IdpClientTest` turns that flag off during setup so it receives a full
+access token, as a real IDP client would.
+
+## Test Coverage & Sonar
+
+Line coverage is **44.54%** (2726/6121) and instruction coverage 43.17%. This is pre-existing
+test debt, concentrated in the signing pipelines, external service clients, and services.
+SonarCloud gates on **new-code** coverage, so the ≥80% standard applies to new and changed
+code; a change that adds no production lines satisfies it trivially. Raising the overall
+figure is separate, deliberate work — do not bundle it into an unrelated change, because it
+destroys the "tests unchanged and still green" signal that regression-free refactors rely on.
+
+## Quality Gate Before Pushing
+
+Run locally before opening a PR (GitHub Actions then run the authoritative SonarCloud and
+CodeQL checks):
+
+- `mvn clean package` — 569 tests, 0 failures. A changed test count means something was
+  silently skipped.
+- `./scripts/sonar-local.sh` — ephemeral SonarQube smoke check reporting the quality gate,
+  duplication, and issues on changed files. Duplication must stay under 3%. An ephemeral
+  server has no new-code baseline, so SonarCloud on the PR is authoritative.
+- `copilot --allow-all-tools -p "..."` — an independent review pass on the diff.
+
+Container vulnerability scanning is **not** run locally. The shared reusable workflows in
+`OmniTrustILM/.github` (`containers-test.yml`, `containers-build-and-push.yml`) enforce the
+org-default Trivy policy. They read a repo-local Trivy config only when
+`allow-trivy-config-override: true` is passed, and no csc-api workflow passes it.
+
+## Commits & PRs
+
+Write a plain description of what changed — **no** co-author or attribution trailers, and
+**no** validation or quality-status lines (test counts, "BUILD SUCCESS", coverage numbers).
+Do not push or open a PR without maintainer approval.
