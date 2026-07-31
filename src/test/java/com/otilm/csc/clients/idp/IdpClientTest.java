@@ -10,12 +10,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.ClientsResource;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -37,10 +41,30 @@ public class IdpClientTest {
 
     @BeforeAll
     public static void setup() {
-        keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.3")
+        keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.7.0")
                 .withAdminUsername("admin")
                 .withAdminPassword("pass");
         keycloak.start();
+        issueFullAccessTokensForAdminCli();
+    }
+
+    /**
+     * Keycloak enables lightweight access tokens on the {@code admin-cli} client by default, and the
+     * userinfo endpoint rejects them with {@code "Lightweight access token not allowed for userinfo
+     * endpoint"}. These tests mint their access token through {@code admin-cli}, so the flag is
+     * turned off to obtain a full access token — the kind a real IDP client issues.
+     */
+    private static void issueFullAccessTokensForAdminCli() {
+        try (Keycloak adminClient = keycloak.getKeycloakAdminClient()) {
+            ClientsResource clients = adminClient.realm(KeycloakContainer.MASTER_REALM).clients();
+            ClientRepresentation adminCli = clients.findByClientId(KeycloakContainer.ADMIN_CLI_CLIENT).getFirst();
+            Map<String, String> attributes = adminCli.getAttributes() == null
+                    ? new HashMap<>()
+                    : new HashMap<>(adminCli.getAttributes());
+            attributes.put("client.use.lightweight.access.token.enabled", "false");
+            adminCli.setAttributes(attributes);
+            clients.get(adminCli.getId()).update(adminCli);
+        }
     }
 
     @Test

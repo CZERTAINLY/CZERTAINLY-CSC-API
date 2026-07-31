@@ -15,6 +15,8 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy;
+import org.apache.hc.client5.http.ssl.HttpsSupport;
 import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.io.SocketConfig;
@@ -249,9 +251,23 @@ public class ServerConfiguration {
     private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor,
                                             HttpClientProperties properties
     ) {
-        TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
+        // Hostname verification and the TCP keep-alive options are stated explicitly rather than left
+        // to the HttpClient defaults, which changed in httpclient5 5.6 / httpcore5 5.4: the
+        // single-argument DefaultClientTlsStrategy constructor now selects
+        // HostnameVerificationPolicy.BUILTIN (JSSE endpoint identification, which rejects
+        // certificates carrying no subjectAltName), and SocketConfig changed its defaults from
+        // soKeepAlive=false with tcpKeepIdle/Interval/Count=-1 to soKeepAlive=true with 5/5/3.
+        // Outbound calls to EJBCA, SignServer and the IDP keep the previous semantics.
+        TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext,
+                                                                          HostnameVerificationPolicy.CLIENT,
+                                                                          HttpsSupport.getDefaultHostnameVerifier()
+        );
         SocketConfig socketConfig = SocketConfig.custom()
                                                 .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
+                                                .setSoKeepAlive(false)
+                                                .setTcpKeepIdle(-1)
+                                                .setTcpKeepInterval(-1)
+                                                .setTcpKeepCount(-1)
                                                 .build();
         final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                                                                                .setDefaultSocketConfig(socketConfig)
