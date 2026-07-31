@@ -248,27 +248,42 @@ public class ServerConfiguration {
         }
     }
 
-    private static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor,
-                                            HttpClientProperties properties
-    ) {
-        // Hostname verification and the TCP keep-alive options are stated explicitly rather than left
-        // to the HttpClient defaults, which changed in httpclient5 5.6 / httpcore5 5.4: the
-        // single-argument DefaultClientTlsStrategy constructor now selects
-        // HostnameVerificationPolicy.BUILTIN (JSSE endpoint identification, which rejects
-        // certificates carrying no subjectAltName), and SocketConfig changed its defaults from
-        // soKeepAlive=false with tcpKeepIdle/Interval/Count=-1 to soKeepAlive=true with 5/5/3.
-        // Outbound calls to EJBCA, SignServer and the IDP keep the previous semantics.
-        TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext,
-                                                                          HostnameVerificationPolicy.CLIENT,
-                                                                          HttpsSupport.getDefaultHostnameVerifier()
+    /**
+     * Hostname verification for outbound connections, stated explicitly rather than inherited from the
+     * HttpClient default. httpclient5 5.6 changed the single-argument {@link DefaultClientTlsStrategy}
+     * constructor to select {@link HostnameVerificationPolicy#BUILTIN}, which applies JSSE endpoint
+     * identification and rejects certificates carrying no {@code subjectAltName}. Connections to
+     * EJBCA, SignServer and the IDP keep the earlier {@link HostnameVerificationPolicy#CLIENT}
+     * semantics, which deployments using internal CN-only certificates depend on.
+     */
+    static TlsSocketStrategy outboundTlsSocketStrategy(SSLContext sslContext) {
+        return new DefaultClientTlsStrategy(sslContext,
+                                            HostnameVerificationPolicy.CLIENT,
+                                            HttpsSupport.getDefaultHostnameVerifier()
         );
-        SocketConfig socketConfig = SocketConfig.custom()
-                                                .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
-                                                .setSoKeepAlive(false)
-                                                .setTcpKeepIdle(-1)
-                                                .setTcpKeepInterval(-1)
-                                                .setTcpKeepCount(-1)
-                                                .build();
+    }
+
+    /**
+     * Socket options for outbound connections, stated explicitly rather than inherited from the
+     * defaults. httpcore5 5.4 changed them from {@code soKeepAlive=false} with {@code tcpKeepIdle},
+     * {@code tcpKeepInterval} and {@code tcpKeepCount} all at {@code -1}, to {@code soKeepAlive=true}
+     * with {@code 5}, {@code 5} and {@code 3}.
+     */
+    static SocketConfig outboundSocketConfig(HttpClientProperties properties) {
+        return SocketConfig.custom()
+                           .setSoTimeout(properties.getReadTimeoutSeconds(), TimeUnit.SECONDS)
+                           .setSoKeepAlive(false)
+                           .setTcpKeepIdle(-1)
+                           .setTcpKeepInterval(-1)
+                           .setTcpKeepCount(-1)
+                           .build();
+    }
+
+    static HttpClient getHttpClient(SSLContext sslContext, HttpRequestInterceptor interceptor,
+                                    HttpClientProperties properties
+    ) {
+        TlsSocketStrategy tlsSocketStrategy = outboundTlsSocketStrategy(sslContext);
+        SocketConfig socketConfig = outboundSocketConfig(properties);
         final var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                                                                                .setDefaultSocketConfig(socketConfig)
                                                                                .setTlsSocketStrategy(tlsSocketStrategy)

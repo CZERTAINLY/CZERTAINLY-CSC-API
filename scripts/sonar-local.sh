@@ -25,6 +25,9 @@ PROJECT_KEY="csc-api"
 SONAR_URL="http://localhost:${SONAR_PORT}"
 MAX_DUPLICATION="${MAX_DUPLICATION:-3}"
 SONAR_PLUGIN_VERSION="${SONAR_PLUGIN_VERSION:-5.7.0.6970}"
+# Pinned so the analyser version cannot change under the script without a diff. Override with
+# SONAR_IMAGE to try a different release.
+SONAR_IMAGE="${SONAR_IMAGE:-sonarqube:26.7.0.124771-community}"
 
 cleanup() {
     echo "Stopping SonarQube..."
@@ -34,10 +37,10 @@ trap cleanup EXIT
 
 docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 
-echo "Starting SonarQube Community on port ${SONAR_PORT}..."
+echo "Starting ${SONAR_IMAGE} on port ${SONAR_PORT}..."
 # Bound to the loopback interface only: this instance uses a well-known throwaway admin password
 # (see below) and holds the analysed source, so it must not be reachable from the network.
-docker run -d --name "${CONTAINER_NAME}" -p "127.0.0.1:${SONAR_PORT}:9000" sonarqube:community >/dev/null
+docker run -d --name "${CONTAINER_NAME}" -p "127.0.0.1:${SONAR_PORT}:9000" "${SONAR_IMAGE}" >/dev/null
 
 echo "Waiting for SonarQube to be ready (up to 2 minutes)..."
 for i in $(seq 1 120); do

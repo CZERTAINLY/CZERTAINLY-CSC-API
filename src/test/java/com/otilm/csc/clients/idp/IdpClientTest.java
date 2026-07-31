@@ -19,6 +19,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -57,7 +58,14 @@ public class IdpClientTest {
     private static void issueFullAccessTokensForAdminCli() {
         try (Keycloak adminClient = keycloak.getKeycloakAdminClient()) {
             ClientsResource clients = adminClient.realm(KeycloakContainer.MASTER_REALM).clients();
-            ClientRepresentation adminCli = clients.findByClientId(KeycloakContainer.ADMIN_CLI_CLIENT).getFirst();
+            List<ClientRepresentation> found = clients.findByClientId(KeycloakContainer.ADMIN_CLI_CLIENT);
+            if (found.isEmpty()) {
+                throw new IllegalStateException(
+                        "Keycloak returned no '" + KeycloakContainer.ADMIN_CLI_CLIENT + "' client in the '"
+                                + KeycloakContainer.MASTER_REALM + "' realm, so the access token for these tests "
+                                + "cannot be configured.");
+            }
+            ClientRepresentation adminCli = found.getFirst();
             Map<String, String> attributes = adminCli.getAttributes() == null
                     ? new HashMap<>()
                     : new HashMap<>(adminCli.getAttributes());

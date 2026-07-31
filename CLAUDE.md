@@ -173,7 +173,7 @@ access token, as a real IDP client would.
 
 ## Test Coverage & Sonar
 
-Line coverage is **43.85%** (2682/6116) and instruction coverage 42.81%. This is pre-existing
+Line coverage is **44.54%** (2726/6121) and instruction coverage 43.17%. This is pre-existing
 test debt, concentrated in the signing pipelines, external service clients, and services.
 SonarCloud gates on **new-code** coverage, so the ≥80% standard applies to new and changed
 code; a change that adds no production lines satisfies it trivially. Raising the overall
@@ -185,7 +185,7 @@ destroys the "tests unchanged and still green" signal that regression-free refac
 Run locally before opening a PR (GitHub Actions then run the authoritative SonarCloud and
 CodeQL checks):
 
-- `mvn clean package` — 564 tests, 0 failures. A changed test count means something was
+- `mvn clean package` — 569 tests, 0 failures. A changed test count means something was
   silently skipped.
 - `./scripts/sonar-local.sh` — ephemeral SonarQube smoke check reporting the quality gate,
   duplication, and issues on changed files. Duplication must stay under 3%. An ephemeral
