@@ -123,19 +123,26 @@ com.otilm.csc
 
 ## Dependency Management
 
-Renovate (`renovate.json`, `config:recommended`) opens update PRs. Two rules keep the
+Renovate (`renovate.json`, `config:recommended`) opens update PRs. These rules keep the
 `pom.xml` sane:
 
 - **Do not pin what the Spring Boot BOM manages, unless you mean to move ahead of it.** `flyway`,
-  `snakeyaml`, `commons-lang3`, `httpclient5`, `httpcore5`, `logback`, `jackson` and `tomcat` carry
-  no `<version>` and move with the parent. A forward-pin silently becomes a *downgrade* once the BOM
-  catches up — `<tomcat.version>` was pinned to 11.0.22 ahead of the BOM and was removed when Spring
-  Boot 4.1.0 began managing that exact version.
-- **Deliberate forward overrides of BOM-managed versions.** Spring Boot 4.1.0 manages
-  `postgresql` 42.7.11, `mysql` 9.7.0 and `testcontainers` 2.0.5; the `version.postgresql`,
-  `version.mysql` and `version.testcontainers*` properties override the first two to pick up fixes
-  the BOM has not reached yet. Drop an override once the BOM meets or passes it, or it turns into
-  the `tomcat.version` problem above.
+  `snakeyaml`, `commons-lang3`, `httpclient5`, `httpcore5`, `logback`, `jackson` and `postgresql`
+  carry no `<version>` and move with the parent. A forward-pin silently becomes a *downgrade* once
+  the BOM catches up — `<tomcat.version>` was pinned to 11.0.22 ahead of the BOM and was removed
+  when Spring Boot 4.1.0 began managing that exact version, and `version.postgresql` was dropped
+  when 4.1.1 reached the 42.7.13 it had been holding.
+- **Deliberate forward overrides of BOM-managed versions.** Spring Boot 4.1.1 manages `tomcat`
+  11.0.24 and `mysql` 9.7.0; `tomcat.version` and `version.mysql` move ahead of both to pick up
+  fixes the BOM has not reached. `tomcat.version` is at 11.0.25 because CVE-2026-65905,
+  CVE-2026-65182 and CVE-2026-68525 are fixed there and the GitHub Advisory Database scores all
+  three critical from their CVSS vectors — Apache itself rates them Low, Important and Low, so the
+  pin exists to satisfy the scanners that gate CI, not because Apache calls them critical. Drop an
+  override the moment the BOM meets or passes it, or it turns into the downgrade above.
+- **`version.testcontainers*` are not overrides.** They pin 2.0.5, exactly what the
+  `testcontainers-bom` imported by Spring Boot 4.1.1 already manages. They are held explicitly
+  because `testcontainers-keycloak` is coupled to the TestContainers 2.0.x major (see below), so a
+  BOM move to 3.x should break the build visibly here rather than at runtime in a test.
 - **Not BOM-managed at all**, so the `version.*` property is the only source: BouncyCastle, jjwt,
   commons-text, springdoc, spring-retry, Instancio, testcontainers-keycloak, and the JaCoCo plugin.
 
@@ -166,10 +173,36 @@ Notes on specific dependencies:
   to `true`. Both are stated explicitly so a BOM bump cannot silently change how the service
   authenticates EJBCA, SignServer, and IDP endpoints. Deployments using internal CN-only
   certificates depend on this.
+- **httpcore5 5.4.3 caps incoming HTTP/1 responses** at 100 headers and an 8192-byte header
+  line by default, and no `Http1Config` is set anywhere, so the clients inherit those limits.
+  This cap *is* the fix for CVE-2026-54399, so raising it would reopen the advisory. An EJBCA,
+  SignServer or IDP response that legitimately exceeded either limit would now be rejected —
+  worth knowing before reaching for a network explanation.
+- **httpclient5 5.6.3 counts the scheme in the redirect same-authority check.** A redirect from
+  `https` to `http` on the same host and port is no longer same-authority, so `Authorization`
+  is stripped instead of forwarded. `IdpClient.downloadUserInfo` sets a bearer header per
+  request, so a downgrade-redirecting IDP loses it rather than leaking it over cleartext.
 
 Keycloak's `admin-cli` client enables lightweight access tokens by default, and the userinfo
 endpoint rejects them. `IdpClientTest` turns that flag off during setup so it receives a full
 access token, as a real IDP client would.
+
+## Container Base Images
+
+All three `Dockerfile` stages contribute to the published image, but they carry very different
+vulnerability weight:
+
+- **`build`** (`maven:3.9.x-eclipse-temurin-21`) produces the jar, and the final stage also
+  copies the `docker/` tree out of it. Nothing from the Maven image's own filesystem or packages
+  reaches the published image, so this tag moves on convenience, not urgency.
+- **`optimize`** (`eclipse-temurin:21.0.x_y-jdk-alpine`) is the one that matters most. Its
+  `jlink` output *is* the JRE in the final image, so a stale tag here puts known JDK
+  vulnerabilities into production even though no JDK package is visible to a scanner. Keep it
+  on the newest `21.0.x_y-jdk-alpine` tag.
+- **`alpine:latest`** is deliberately left floating rather than pinned. Together with the
+  `apk upgrade --no-cache` in the same stage, a floating tag rebuilds against current OS
+  packages, which is what keeps the nightly Trivy probe green. Pinning it would trade that for
+  reproducibility and start failing as the pin ages.
 
 ## Test Coverage & Sonar
 
